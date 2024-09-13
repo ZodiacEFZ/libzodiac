@@ -13,9 +13,4 @@ public interface Zervo {
      * Gets the current position.
      */
     double get();
-
-    /**
-     * Covariances the servo motor and returns a generic motor.
-     */
-    ZMotor motor();
 }

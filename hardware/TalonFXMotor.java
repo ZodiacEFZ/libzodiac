@@ -7,44 +7,29 @@ import frc.libzodiac.ZMotor;
 import frc.libzodiac.Zervo;
 import frc.libzodiac.ZmartDash;
 
-public class Falcon extends ZMotor implements ZmartDash {
+public class TalonFXMotor extends ZMotor implements ZmartDash {
     public static final double VELOCITY_RAW_UNIT = 2 * Math.PI;
-
-    public final int can_id;
-
-    public boolean inverted = false;
 
     protected TalonFX motor;
 
-    public Falcon(int can_id) {
-        this.can_id = can_id;
+    public TalonFXMotor(int can_id) {
+        this.motor = new TalonFX(can_id);
     }
 
     @Override
-    protected Falcon bind_can() {
-        this.motor = new TalonFX(this.can_id);
-        return this;
-    }
-
-    @Override
-    public Falcon apply_pid() {
+    protected TalonFXMotor apply_pid() {
         this.motor.getConfigurator().apply(new Slot0Configs().withKP(this.pid.k_p).withKI(this.pid.k_i).withKD(this.pid.k_d));
         return this;
     }
 
     @Override
-    protected Falcon opt_init() {
-        return this;
-    }
-
-    @Override
-    public Falcon shutdown() {
+    public TalonFXMotor shutdown() {
         this.motor.stopMotor();
         return this;
     }
 
     @Override
-    public Falcon stop(boolean stop) {
+    public TalonFXMotor stop(boolean stop) {
         if (stop) {
             this.motor.setControl(new StaticBrake());
         } else {
@@ -54,47 +39,47 @@ public class Falcon extends ZMotor implements ZmartDash {
     }
 
     @Override
-    public Falcon go(String profile) {
+    public TalonFXMotor go(String profile) {
         final var v = this.profile.get(profile);
         return this.go(v);
     }
 
     @Override
-    public Falcon go(double rad_s) {
+    public TalonFXMotor go(double rad_s) {
         final var vel = this.inverted ? -rad_s : rad_s;
-        final var v = new VelocityDutyCycle(vel / Falcon.VELOCITY_RAW_UNIT);
+        final var v = new VelocityDutyCycle(vel / TalonFXMotor.VELOCITY_RAW_UNIT);
         this.motor.setControl(v);
         return this;
     }
 
     @Override
-    public Falcon raw(double output) {
+    public TalonFXMotor raw(double output) {
         this.motor.set(output);
         return this;
     }
 
     @Override
     public String key() {
-        return "Falcon(" + this.can_id + ")";
+        return this.motor.getDescription();
     }
 
-    public Falcon invert(boolean inverted) {
+    public TalonFXMotor invert(boolean inverted) {
         this.inverted = inverted;
         return this;
     }
 
-    public Falcon invert() {
+    public TalonFXMotor invert() {
         return this.invert(true);
     }
 
-    public Falcon go_v(double rad_s) {
+    public TalonFXMotor go_v(double rad_s) {
         final var vel = this.inverted ? -rad_s : rad_s;
-        final var v = new VelocityVoltage(vel / Falcon.VELOCITY_RAW_UNIT);
+        final var v = new VelocityVoltage(vel / TalonFXMotor.VELOCITY_RAW_UNIT);
         this.motor.setControl(v);
         return this;
     }
 
-    public static final class Servo extends Falcon implements Zervo {
+    public static final class Servo extends TalonFXMotor implements Zervo {
         public static final double POSITION_RAW_UNIT = 2 * Math.PI;
 
         public Servo(int can_id) {
@@ -128,11 +113,6 @@ public class Falcon extends ZMotor implements ZmartDash {
         }
 
         @Override
-        public Falcon motor() {
-            return this;
-        }
-
-        @Override
         public Servo invert(boolean inverted) {
             this.inverted = inverted;
             return this;
@@ -145,7 +125,7 @@ public class Falcon extends ZMotor implements ZmartDash {
 
         @Override
         public String key() {
-            return "Falcon.Servo(" + this.can_id + ")";
+            return "Servo " + this.motor.getDescription();
         }
     }
 }

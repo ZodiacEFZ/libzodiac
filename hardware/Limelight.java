@@ -20,17 +20,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Limelight implements ZmartDash {
-    private static final double LIMELIGHT_ROT_KP = 2;
-    private static final double LIMELIGHT_FORWARD_KP = .1;
-
-    public static double getTargetRotateSpeed() {
-        return -Math.toRadians(LimelightHelpers.getTX("limelight")) * LIMELIGHT_ROT_KP;
-    }
-
-    public static double getTargetForwardSpeed() {
-        return -Math.toRadians(LimelightHelpers.getTY("limelight")) * LIMELIGHT_FORWARD_KP;
-    }
-
     @Override
     public String key() {
         return "Limelight";
@@ -769,7 +758,7 @@ public class Limelight implements ZmartDash {
         }
 
         /**
-         * Parses Limelight's JSON results dump into a LimelightResults Object
+         * Parses Limelight's JSON results dump to_polar a LimelightResults Object
          */
         public static LimelightResults getLatestResults(String limelightName) {
             long start = System.nanoTime();

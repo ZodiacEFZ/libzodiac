@@ -4,12 +4,10 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
 
 public final class Xbox {
-    public final int port;
     private final XboxController xbox;
 
     public Xbox(int port) {
-        this.port = port;
-        this.xbox = new XboxController(this.port);
+        this.xbox = new XboxController(port);
     }
 
     public Axis lx() {
@@ -46,22 +44,22 @@ public final class Xbox {
 
     public Button up_pov() {
         final var pov = this.xbox.getPOV();
-        return new Button(() -> pov < 45 || pov >= 315);
+        return new Button(() -> 315 <= pov || 0 <= pov && pov <= 45);
     }
 
     public Button right_pov() {
         final var pov = this.xbox.getPOV();
-        return new Button(() -> pov >= 45 && pov < 135);
+        return new Button(() -> 45 <= pov && pov <= 135);
     }
 
     public Button down_pov() {
         final var pov = this.xbox.getPOV();
-        return new Button(() -> pov >= 135 && pov < 225);
+        return new Button(() -> 135 <= pov && pov <= 225);
     }
 
     public Button left_pov() {
         final var pov = this.xbox.getPOV();
-        return new Button(() -> pov >= 225 && pov < 315);
+        return new Button(() -> 225 <= pov && pov <= 315);
     }
 
     public Button a() {
@@ -80,8 +78,18 @@ public final class Xbox {
         return new Button(this.xbox::getYButton);
     }
 
-    public Xbox begin_rumble() {
+    public Xbox start_rumble() {
         this.xbox.setRumble(RumbleType.kBothRumble, 0.5);
+        return this;
+    }
+
+    public Xbox end_rumble() {
+        this.xbox.setRumble(RumbleType.kBothRumble, 0);
+        return this;
+    }
+
+    public Xbox set_rumble(double v) {
+        this.xbox.setRumble(RumbleType.kBothRumble, v);
         return this;
     }
 }

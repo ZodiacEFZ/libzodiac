@@ -62,7 +62,7 @@ public final class Axis {
         return this.map(f);
     }
 
-    public Button into() {
+    public Button as_button() {
         return new Button(() -> Math.abs(this.raw_input.getAsDouble()) >= 0.5);
     }
 }

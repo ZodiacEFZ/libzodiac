@@ -13,19 +13,19 @@ public class Button {
         this.status = status;
     }
 
-    public boolean status() {
+    public boolean down() {
         return this.status.getAsBoolean();
     }
 
     public boolean pressed() {
-        final var curr = this.status();
+        final var curr = this.down();
         final var res = !this.prev && curr;
         this.prev = curr;
         return res;
     }
 
     public boolean released() {
-        final var curr = this.status();
+        final var curr = this.down();
         final var res = this.prev && !curr;
         this.prev = curr;
         return res;
@@ -36,22 +36,22 @@ public class Button {
     }
 
     public Button on_press(Command cmd) {
-        this.trigger().toggleOnTrue(cmd);
-        return this;
-    }
-
-    public Button on_release(Command cmd) {
-        this.trigger().toggleOnFalse(cmd);
-        return this;
-    }
-
-    public Button on_down(Command cmd) {
         this.trigger().onTrue(cmd);
         return this;
     }
 
-    public Button on_up(Command cmd) {
+    public Button on_release(Command cmd) {
         this.trigger().onFalse(cmd);
+        return this;
+    }
+
+    public Button on_down(Command cmd) {
+        this.trigger().whileTrue(cmd);
+        return this;
+    }
+
+    public Button on_up(Command cmd) {
+        this.trigger().whileFalse(cmd);
         return this;
     }
 }

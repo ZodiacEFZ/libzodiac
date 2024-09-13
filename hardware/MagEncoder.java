@@ -6,19 +6,12 @@ import frc.libzodiac.ZmartDash;
 
 public final class MagEncoder implements ZmartDash {
     public static final double POSITION_RAW_UNIT = 2 * Math.PI / 4096;
-
-    public final int can_id;
+    private final TalonSRX encoder;
     public double zero = 0;
-    private TalonSRX encoder;
 
     public MagEncoder(int can_id) {
-        this.can_id = can_id;
-    }
-
-    public MagEncoder init() {
-        this.encoder = new TalonSRX(this.can_id);
+        this.encoder = new TalonSRX(can_id);
         this.encoder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute);
-        return this;
     }
 
     public MagEncoder set_zero(double zero) {
@@ -32,6 +25,6 @@ public final class MagEncoder implements ZmartDash {
 
     @Override
     public String key() {
-        return "MagEncoder(" + this.can_id + ")";
+        return "MagEncoder(" + this.encoder.getDeviceID() + ")";
     }
 }

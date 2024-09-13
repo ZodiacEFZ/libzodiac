@@ -1,19 +1,20 @@
 package frc.libzodiac;
 
-import edu.wpi.first.wpilibj.Timer;
 import frc.libzodiac.ui.Axis;
+import frc.libzodiac.ui.Button;
 import frc.libzodiac.util.Vec2D;
-
-import java.util.ArrayDeque;
 
 /**
  * A highly implemented class for hopefully all types of swerve control.
  */
 public abstract class Zwerve extends Zubsystem implements ZmartDash {
-    private static final double POS_FIX_KP = 0.2;
-    private static final double ROTATION_OUTPUT = 1;
-    private static final double ROTATION_OUTPUT_SLOW = 0.5;
-    private static final double ROTATION_OUTPUT_FAST = 2;
+    private static final double ROTATION_KP = 0.2;
+    private static final double ROTATION_FAST = 1.5;
+    private static final double ROTATION_NORMAL = 0.75;
+    private static final double ROTATION_SLOW = 0.375;
+    private static final double OUTPUT_FAST = 600;
+    private static final double OUTPUT_NORMAL = 300;
+    private static final double OUTPUT_SLOW = 100;
     public final Vec2D shape;
     /**
      * Gyro.
@@ -21,64 +22,33 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
     public final Axis yaw;
     /**
      * Swerve modules of a rectangular chassis.
-     * <p>
-     * Suppose the robot heads the positive x direction,
-     * relationship between indices and positions of modules are as follows:
-     * <table>
-     * <thead>
-     * <tr>
-     * <th>Galaxy</th>
-     * <th>Index</th>
-     * </tr>
-     * </thead><tbody>
-     * <tr>
-     * <td>I</td>
-     * <td>0</td>
-     * </tr>
-     * <tr>
-     * <td>II</td>
-     * <td>1</td>
-     * </tr>
-     * <tr>
-     * <td>III</td>
-     * <td>2</td>
-     * </tr>
-     * <tr>
-     * <td>IV</td>
-     * <td>3</td>
-     * </tr>
-     * </tbody>
-     * </table>
      */
-    public final Module[] module;
-    private final ArrayDeque<Vec2D> prev = new ArrayDeque<>();
-    private final Timer last_rot = new Timer();
+    public final Module[] module = new Module[4];
     public boolean headless = false;
     public double headless_zero = 0;
-
     /**
      * Modifier timed at the output speed of the chassis.
      */
-    public double output = 1;
-    private double desired_yaw = 0;
+    public double output = OUTPUT_NORMAL;
+    public double rotation_output = ROTATION_NORMAL;
+    private double desired_yaw;
 
     /**
      * Creates a new Zwerve.
      *
-     * @param modules  See <code>Zwerve.module</code>.
      * @param yaw_gyro The gyroscope axis measuring yaw.
      * @param shape    Shape of the robot, <code>x</code> for length and
      *                 <code>y</code> for width.
      */
-    public Zwerve(Module[] modules, Axis yaw_gyro, Vec2D shape) {
-        this.module = modules;
+    public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Axis yaw_gyro, Vec2D shape) {
+        this.module[SwerveModule.FRONT_LEFT] = front_left;
+        this.module[SwerveModule.FRONT_RIGHT] = front_right;
+        this.module[SwerveModule.REAR_LEFT] = rear_left;
+        this.module[SwerveModule.REAR_RIGHT] = rear_right;
         this.yaw = yaw_gyro;
         this.shape = shape;
-        final var v = new Vec2D(0, 0);
-        this.prev.add(v);
-        this.prev.add(v);
-        this.prev.add(v);
-        this.prev.add(v);
+        this.desired_yaw = this.yaw.get();
+        this.mod_reset();
     }
 
     /**
@@ -91,37 +61,19 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
     /**
      * Get the absolute current direction of the robot.j
      */
-    public double dir_curr() {
+    public double curr_dir() {
         return this.yaw.get() - this.headless_zero;
     }
 
     /**
      * Get the direction adjustment applied under headless mode.
      */
-    private double dir_fix() {
+    private double fix_dir() {
         if (this.yaw == null) {
             return 0;
         }
-        return this.headless ? -this.dir_curr() : 0;
+        return this.headless ? -this.curr_dir() : 0;
     }
-
-    /**
-     * Initialize all modules.
-     */
-    public Zwerve init() {
-        for (Module i : this.module) {
-            i.init();
-        }
-        this.opt_init();
-        this.desired_yaw = this.yaw.get();
-        this.last_rot.start();
-        return this;
-    }
-
-    /**
-     * Optional initializations you would like to automatically invoke.
-     */
-    protected abstract Zwerve opt_init();
 
     /**
      * Kinematics part rewritten using vector calculations.
@@ -130,42 +82,40 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
      * @param rot rotate velocity, CCW positive
      */
     public Zwerve go(Vec2D vel, double rot) {
-        // direction adjustment
         final var curr_yaw = this.yaw.get();
+        this.desired_yaw += rot * this.rotation_output;
         this.debug("desired", this.desired_yaw);
-        if (rot != 0) {
-            this.last_rot.reset();
-            this.desired_yaw = curr_yaw;
-        }
 
-        if (this.last_rot.get() < 0.2) {
-            this.desired_yaw = curr_yaw;
-        }
+        final var rt = (this.desired_yaw - curr_yaw) * ROTATION_KP;
 
-        if (!Util.approx(this.desired_yaw, curr_yaw, 0.05)) {
-            final var error = this.desired_yaw - curr_yaw;
-            rot += error * POS_FIX_KP;
-        }
+        final var vt = vel.rot(this.fix_dir());
 
-        this.prev.add(vel.rot(Math.PI));
-        var sum = new Vec2D(0, 0);
-        for (final var i : this.prev) {
-            sum = sum.add(i);
-        }
-        final var vt = sum.div(this.prev.size()).rot(this.dir_fix());
-
-        this.prev.pop();
         this.debug("translation", "" + vt);
-        this.debug("rotation", rot);
         final var l = this.shape.x / 2;
         final var w = this.shape.y / 2;
-        Vec2D[] v = { new Vec2D(l, w), new Vec2D(-l, w), new Vec2D(-l, -w), new Vec2D(l, -w) };
+        Vec2D[] v = new Vec2D[4];
+        v[SwerveModule.FRONT_LEFT] = new Vec2D(l, w);
+        v[SwerveModule.FRONT_RIGHT] = new Vec2D(l, -w);
+        v[SwerveModule.REAR_LEFT] = new Vec2D(-l, w);
+        v[SwerveModule.REAR_RIGHT] = new Vec2D(-l, -w);
         for (var i = 0; i < 4; i++) {
-            v[i] = v[i].rot(Math.PI / 2).with_r(rot * ROTATION_OUTPUT).add(vt);
+            v[i] = v[i].rot(Math.PI / 2).with_r(rt).add(vt);
         }
         for (int i = 0; i < 4; i++) {
             this.module[i].go(v[i].mul(this.output));
         }
+        return this;
+    }
+
+    /**
+     * Kinematics part rewritten using vector calculations.
+     *
+     * @param vel translational velocity, with +x as the head of the bot
+     * @param yaw target yaw
+     */
+    public Zwerve go_yaw(Vec2D vel, double yaw) {
+        this.desired_yaw = yaw;
+        this.go(vel, 0);
         return this;
     }
 
@@ -198,8 +148,22 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
         return this;
     }
 
-    public ZCommand drive(Axis x, Axis y, Axis rot) {
+    public void reset_headless() {
+        this.headless_zero = this.yaw.get();
+    }
+
+    public ZCommand drive(Axis x, Axis y, Axis rot, Button fast, Button slow) {
         return new Zambda(this, () -> {
+            if (fast.down() && !slow.down()) {
+                output = OUTPUT_FAST;
+                rotation_output = ROTATION_FAST;
+            } else if (!fast.down() && slow.down()) {
+                output = OUTPUT_SLOW;
+                rotation_output = ROTATION_SLOW;
+            } else {
+                output = OUTPUT_NORMAL;
+                rotation_output = ROTATION_NORMAL;
+            }
             final var vel = new Vec2D(x.get(), y.get());
             this.go(vel, rot.get());
         });
@@ -221,13 +185,17 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
      * Defines one swerve module.
      */
     public interface Module {
-
-        Module init();
-
         Module go(Vec2D velocity);
 
         Module reset();
 
         Module shutdown();
+    }
+
+    private static class SwerveModule {
+        private static final int FRONT_LEFT = 0;
+        private static final int FRONT_RIGHT = 3;
+        private static final int REAR_LEFT = 1;
+        private static final int REAR_RIGHT = 2;
     }
 }

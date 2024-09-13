@@ -20,32 +20,16 @@ public abstract class ZMotor {
     public boolean inverted = false;
 
     /**
-     * Initialize this motor, e.g. binds to the CAN bus.
-     */
-    public final ZMotor init() {
-        this.bind_can();
-        this.apply_pid();
-        this.opt_init();
-        return this;
-    }
-
-    /**
-     * Binds the motor to specified CAN-bus id(s).
-     */
-    protected abstract ZMotor bind_can();
-
-    /**
      * Override this method to set the motor's PID to <code>this.pid</code>.
      */
     protected abstract ZMotor apply_pid();
-
-    protected abstract ZMotor opt_init();
 
     /**
      * Set PID parameters.
      */
     public ZMotor set_pid(PIDProfile pid) {
         this.pid = pid;
+        this.apply_pid();
         return this;
     }
 

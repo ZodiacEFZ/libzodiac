@@ -1,31 +1,9 @@
 package frc.libzodiac;
 
-import edu.wpi.first.wpilibj.Timer;
-
 /**
  * Common utilities.
  */
 public class Util {
-    public static void blocking_wait(int ms) {
-        final var t = new Timer();
-        while (t.get() < ((double) ms) / 1000)
-            ;
-    }
-
-    /**
-     * Convert degrees to radians.
-     */
-    public static double rad(double deg) {
-        return deg / 180 * Math.PI;
-    }
-
-    /**
-     * Convert radians to degrees.
-     */
-    public static double deg(double rad) {
-        return rad / Math.PI * 180;
-    }
-
     public static double round(double value, int places) {
         if (places < 0) {
             throw new IllegalArgumentException();
@@ -51,63 +29,21 @@ public class Util {
         }
     }
 
-    /**
-     * Extends the modulo operation to R.
-     * <br/>
-     * The definition here:
-     * <br/>
-     * a and b are congruent modulo c, if and only if (a-b)/c is integer.
-     *
-     * @return In (-mod,mod), and NaN for NaN and Infinite parameters.
-     */
-    public static double mod(Double num, double mod) {
-        // I believe there are still some bugs.
-        if (num.isInfinite() || num.isNaN()) {
-            return Double.NaN;
-        }
-        if (num < 0) {
-            return -mod(-num, mod);
-        }
-        final var ans = (int) (num / 2 / mod);
-        final var res = num - ans * 2 * mod;
-        return res > mod ? res - 2 * mod : res;
+    public static boolean approx(double x0, double x1, double thre) {
+        return Math.abs(x0 - x1) < thre;
     }
 
-    /**
-     * Convert a radian into (-pi,pi).
-     */
-    public static double mod_pi(double rad) {
-        return mod(rad, Math.PI);
+    public static boolean approx(double x0, double x1) {
+        return approx(x0, x1, 1e-3);
     }
 
-    public static double closest(double angle) {
-        if (angle < 0) {
-            return -closest(-angle);
-        }
-        final var cnt = (int) (angle / (2 * Math.PI));
-        final var one = cnt * 2 * Math.PI;
-        return angle - one > Math.PI ? one + 2 * Math.PI : one;
+    public static double closer(double x, double x0, double x1) {
+        return Math.abs(x - x0) < Math.abs(x - x1) ? x0 : x1;
     }
 
-    public static boolean approx(double x_1, double x_2, double thre) {
-        return Math.abs(x_1 - x_2) < thre;
-    }
-
-    public static boolean approx(double x_1, double x_2) {
-        return approx(x_1, x_2, 1e-3);
-    }
-
-    public static Tuple2<Double, Boolean> solve(double src, double dst) {
-        final var closest = closest(src);
-        final var d0 = closest + dst;
-        final var d1 = closest + dst - Math.PI;
-        final var d2 = closest + dst + Math.PI;
-        final var a0 = Math.abs(src - d0);
-        final var a1 = Math.abs(src - d1);
-        final var a2 = Math.abs(src - d2);
-
-        final var min = Math.min(a0, Math.min(a1, a2));
-        return min == a0 ? new Tuple2<>(d0, false) : min == a1 ? new Tuple2<>(d1, true) : new Tuple2<>(d2, true);
+    public static Tuple2<Double, Integer> swerve_optimize(double curr, double angle) {
+        var delta = angle - curr;
+        return delta > Math.PI / 2 ? new Tuple2<>(closer(curr, angle - Math.PI, angle + Math.PI), -1) : new Tuple2<>(angle, 1);
     }
 
     public static class Tuple2<T0, T1> {

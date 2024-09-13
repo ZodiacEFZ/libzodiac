@@ -7,31 +7,17 @@ import frc.libzodiac.ZMotor;
 import frc.libzodiac.Zervo;
 
 public class Pro775 extends ZMotor {
-    public final int can_id;
-
     protected TalonSRX motor;
 
     public Pro775(int can_id) {
-        this.can_id = can_id;
+        this.motor = new TalonSRX(can_id);
     }
 
     @Override
-    public Pro775 bind_can() {
-        this.motor = new TalonSRX(this.can_id);
-        this.motor.configFactoryDefault();
-        return this;
-    }
-
-    @Override
-    public Pro775 apply_pid() {
+    protected Pro775 apply_pid() {
         this.motor.config_kP(0, this.pid.k_p);
         this.motor.config_kI(0, this.pid.k_i);
         this.motor.config_kD(0, this.pid.k_d);
-        return this;
-    }
-
-    @Override
-    protected Pro775 opt_init() {
         return this;
     }
 
@@ -72,20 +58,13 @@ public class Pro775 extends ZMotor {
     }
 
     public static class Servo extends Pro775 implements Zervo {
-        public double zero = 0;
-
         public Servo(int can_id) {
             super(can_id);
         }
 
-        public Zervo reset() {
-            this.motor.setSelectedSensorPosition(0);
-            return this;
-        }
-
         @Override
         public Zervo set_zero(double zero) {
-            this.zero = zero;
+            this.motor.setSelectedSensorPosition(zero);
             return this;
         }
 
@@ -103,11 +82,6 @@ public class Pro775 extends ZMotor {
         @Override
         public Servo go(double raw_unit) {
             this.motor.set(ControlMode.Position, raw_unit);
-            return this;
-        }
-
-        @Override
-        public Pro775 motor() {
             return this;
         }
     }
