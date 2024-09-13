@@ -10,7 +10,7 @@ import frc.libzodiac.ZmartDash;
 public class TalonFXMotor extends ZMotor implements ZmartDash {
     public static final double VELOCITY_RAW_UNIT = 2 * Math.PI;
 
-    protected TalonFX motor;
+    protected final TalonFX motor;
 
     public TalonFXMotor(int can_id) {
         this.motor = new TalonFX(can_id);

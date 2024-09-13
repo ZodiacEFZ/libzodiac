@@ -10,7 +10,7 @@ import frc.libzodiac.util.Vec2D;
 import java.security.InvalidParameterException;
 
 public class Pigeon implements Zensor, ZInertialNavigation.Gyro, ZmartDash {
-    protected Pigeon2 pigeon;
+    protected final Pigeon2 pigeon;
 
     public Pigeon(int can_id) {
         this.pigeon = new Pigeon2(can_id);

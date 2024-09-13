@@ -7,7 +7,7 @@ import frc.libzodiac.ZMotor;
 import frc.libzodiac.Zervo;
 
 public class Pro775 extends ZMotor {
-    protected TalonSRX motor;
+    protected final TalonSRX motor;
 
     public Pro775(int can_id) {
         this.motor = new TalonSRX(can_id);

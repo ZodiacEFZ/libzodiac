@@ -12,7 +12,7 @@ public class ZInertialNavigation extends Zubsystem implements ZmartDash {
     private Vec2D pos = new Vec2D(0, 0);
     private Vec2D speed = new Vec2D(0, 0);
 
-    public ZCommand run = new Zambda(this, this::update);
+    public final ZCommand run = new Zambda(this, this::update);
 
     public ZInertialNavigation(Gyro gyro) {
         this.gyro = gyro;
