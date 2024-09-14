@@ -41,7 +41,7 @@ public class TalonFXMotor extends ZMotor implements ZmartDash {
     @Override
     public TalonFXMotor go(String profile) {
         final var v = this.profile.get(profile);
-        return this.go(v);
+        return this.go(inverted ? -v : v);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class TalonFXMotor extends ZMotor implements ZmartDash {
 
     @Override
     public TalonFXMotor raw(double output) {
-        this.motor.set(output);
+        this.motor.set(inverted ? -output : output);
         return this;
     }
 

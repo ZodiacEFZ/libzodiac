@@ -190,6 +190,8 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
         Module reset();
 
         Module shutdown();
+
+        Module invert(boolean speed, boolean angle);
     }
 
     private static class SwerveModule {

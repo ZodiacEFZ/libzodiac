@@ -41,19 +41,19 @@ public class Pro775 extends ZMotor {
 
     @Override
     public Pro775 go(String profile) {
-        var v = this.profile.get(profile);
-        return this.go(v);
+        final var v = this.profile.get(profile);
+        return this.go(inverted ? -v : v);
     }
 
     @Override
     public Pro775 go(double raw_unit) {
-        this.motor.set(ControlMode.Velocity, raw_unit);
+        this.motor.set(ControlMode.Velocity, inverted ? -raw_unit : raw_unit);
         return this;
     }
 
     @Override
     public Pro775 raw(double output) {
-        this.motor.set(ControlMode.PercentOutput, output);
+        this.motor.set(ControlMode.PercentOutput, inverted ? -output : output);
         return this;
     }
 
@@ -70,18 +70,20 @@ public class Pro775 extends ZMotor {
 
         @Override
         public double get() {
-            return this.motor.getSelectedSensorPosition();
+            final var v = this.motor.getSelectedSensorPosition();
+            return inverted ? -v : v;
         }
 
         @Override
         public Servo go(String profile) {
-            this.motor.set(ControlMode.Position, this.profile.get(profile));
+            final var v = this.profile.get(profile);
+            this.motor.set(ControlMode.Position, inverted ? -v : v);
             return this;
         }
 
         @Override
         public Servo go(double raw_unit) {
-            this.motor.set(ControlMode.Position, raw_unit);
+            this.motor.set(ControlMode.Position, inverted ? -raw_unit : raw_unit);
             return this;
         }
     }

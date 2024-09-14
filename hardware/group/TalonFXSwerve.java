@@ -50,6 +50,13 @@ public final class TalonFXSwerve implements Module, ZmartDash {
     }
 
     @Override
+    public TalonFXSwerve invert(boolean speed, boolean angle) {
+        this.speed_motor.invert(speed);
+        this.angle_motor.invert(angle);
+        return this;
+    }
+
+    @Override
     public String key() {
         return "TalonFXSwerve(" + this.speed_motor.key() + ",...)";
     }
