@@ -152,7 +152,7 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
         this.headless_zero = this.yaw.get();
     }
 
-    public ZCommand drive(Axis x, Axis y, Axis rot, Button fast, Button slow) {
+    public ZCommand drive(Axis x, Axis y, Axis rx, Axis ry, Button fast, Button slow, Button rotation) {
         return new Zambda(this, () -> {
             if (fast.down() && !slow.down()) {
                 output = OUTPUT_FAST;
@@ -165,7 +165,16 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
                 rotation_output = ROTATION_NORMAL;
             }
             final var vel = new Vec2D(x.get(), y.get());
-            this.go(vel, rot.get());
+            if (rotation.down()) {
+                this.go(vel, rx.get());
+            } else {
+                final var yaw = new Vec2D(rx.get(), ry.get());
+                if (yaw.r() == 0) {
+                    this.go(vel, 0);
+                } else {
+                    this.go_yaw(vel, yaw.theta());
+                }
+            }
         });
     }
 

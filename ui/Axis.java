@@ -65,4 +65,8 @@ public final class Axis {
     public Button as_button() {
         return new Button(() -> Math.abs(this.raw_input.getAsDouble()) >= 0.5);
     }
+
+    public Button as_button(double thre) {
+        return new Button(() -> Math.abs(this.raw_input.getAsDouble()) >= thre);
+    }
 }
