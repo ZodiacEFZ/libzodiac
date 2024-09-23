@@ -13,5 +13,7 @@ public abstract class Zubsystem extends SubsystemBase {
         this.update();
     }
 
-    abstract Zubsystem update();
+    Zubsystem update() {
+        return this;
+    }
 }

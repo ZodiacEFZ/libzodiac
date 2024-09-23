@@ -1,6 +1,6 @@
 package frc.libzodiac;
 
-import frc.libzodiac.util.PIDProfile;
+import edu.wpi.first.math.controller.PIDController;
 
 import java.util.HashMap;
 
@@ -16,7 +16,7 @@ public abstract class ZMotor {
     /**
      * The PID configuration of this motor.
      */
-    public PIDProfile pid;
+    public PIDController pid;
     public boolean inverted = false;
 
     /**
@@ -27,7 +27,7 @@ public abstract class ZMotor {
     /**
      * Set PID parameters.
      */
-    public ZMotor set_pid(PIDProfile pid) {
+    public ZMotor set_pid(PIDController pid) {
         this.pid = pid;
         this.apply_pid();
         return this;
@@ -37,7 +37,7 @@ public abstract class ZMotor {
      * Set PID parameters.
      */
     public ZMotor set_pid(double k_p, double k_i, double k_d) {
-        return this.set_pid(new PIDProfile(k_p, k_i, k_d));
+        return this.set_pid(new PIDController(k_p, k_i, k_d));
     }
 
     /**

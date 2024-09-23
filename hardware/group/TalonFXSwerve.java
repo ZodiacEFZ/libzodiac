@@ -1,22 +1,25 @@
 package frc.libzodiac.hardware.group;
 
-import frc.libzodiac.Util;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.libzodiac.ZmartDash;
 import frc.libzodiac.Zwerve.Module;
 import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonFXMotor;
-import frc.libzodiac.util.Vec2D;
 
 public final class TalonFXSwerve implements Module, ZmartDash {
     private static final double SWERVE_RATIO = 150.0 / 7.0;
-    public final TalonFXMotor speed_motor;
+    public final TalonFXMotor.Servo speed_motor;
     public final TalonFXMotor.Servo angle_motor;
     private final MagEncoder encoder;
 
     public TalonFXSwerve(int speed_motor_id, int angle_motor_id, int encoder_id, double encoder_zero) {
-        this.speed_motor = new TalonFXMotor(speed_motor_id);
+        this.speed_motor = new TalonFXMotor.Servo(speed_motor_id);
         this.angle_motor = new TalonFXMotor.Servo(angle_motor_id);
         this.encoder = new MagEncoder(encoder_id).set_zero(encoder_zero);
+        this.reset();
     }
 
     @Override
@@ -28,18 +31,21 @@ public final class TalonFXSwerve implements Module, ZmartDash {
     }
 
     @Override
-    public TalonFXSwerve go(Vec2D vel) {
-        if (vel.r() == 0) {
-            this.speed_motor.shutdown();
-            this.angle_motor.shutdown();
-            return this;
-        }
+    public TalonFXSwerve go(SwerveModuleState desiredState) {
+        final var encoderRotation = new Rotation2d(this.angle_motor.get());
 
-        final var best = Util.swerve_optimize(this.angle_motor.get() / SWERVE_RATIO, vel.theta());
+        final var state = SwerveModuleState.optimize(desiredState, encoderRotation);
 
-        this.speed_motor.go_v(best.x1 * vel.r());
-        this.angle_motor.go(best.x0 * SWERVE_RATIO);
+        state.speedMetersPerSecond *= state.angle.minus(encoderRotation).getCos();
+
+        this.speed_motor.go_v(state.speedMetersPerSecond);
+        this.angle_motor.go(state.angle.getRadians() * SWERVE_RATIO);
         return this;
+    }
+
+    @Override
+    public SwerveModulePosition getPosition() {
+        return new SwerveModulePosition(speed_motor.get(), new Rotation2d(angle_motor.get()));
     }
 
     @Override
@@ -53,6 +59,14 @@ public final class TalonFXSwerve implements Module, ZmartDash {
     public TalonFXSwerve invert(boolean speed, boolean angle) {
         this.speed_motor.invert(speed);
         this.angle_motor.invert(angle);
+        return this;
+    }
+
+    @Override
+    public Module set_pid(PIDController v, PIDController a) {
+        a.setIntegratorRange(-Math.PI, Math.PI);
+        this.speed_motor.set_pid(v);
+        this.angle_motor.set_pid(a);
         return this;
     }
 

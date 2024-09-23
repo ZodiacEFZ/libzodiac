@@ -36,23 +36,4 @@ public class Util {
     public static boolean approx(double x0, double x1) {
         return approx(x0, x1, 1e-3);
     }
-
-    public static double closer(double x, double x0, double x1) {
-        return Math.abs(x - x0) < Math.abs(x - x1) ? x0 : x1;
-    }
-
-    public static Tuple2<Double, Integer> swerve_optimize(double curr, double angle) {
-        var delta = angle - curr;
-        return delta > Math.PI / 2 ? new Tuple2<>(closer(curr, angle - Math.PI, angle + Math.PI), -1) : new Tuple2<>(angle, 1);
-    }
-
-    public static class Tuple2<T0, T1> {
-        public final T0 x0;
-        public final T1 x1;
-
-        public Tuple2(T0 x0, T1 x1) {
-            this.x0 = x0;
-            this.x1 = x1;
-        }
-    }
 }

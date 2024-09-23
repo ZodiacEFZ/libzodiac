@@ -15,9 +15,9 @@ public class Pro775 extends ZMotor {
 
     @Override
     protected Pro775 apply_pid() {
-        this.motor.config_kP(0, this.pid.k_p);
-        this.motor.config_kI(0, this.pid.k_i);
-        this.motor.config_kD(0, this.pid.k_d);
+        this.motor.config_kP(0, this.pid.getP());
+        this.motor.config_kI(0, this.pid.getI());
+        this.motor.config_kD(0, this.pid.getD());
         return this;
     }
 

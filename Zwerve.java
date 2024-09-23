@@ -1,5 +1,11 @@
 package frc.libzodiac;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.wpilibj.DriverStation;
+import frc.libzodiac.hardware.Pigeon;
 import frc.libzodiac.ui.Axis;
 import frc.libzodiac.ui.Button;
 import frc.libzodiac.util.Vec2D;
@@ -9,120 +15,43 @@ import frc.libzodiac.util.Vec2D;
  */
 public abstract class Zwerve extends Zubsystem implements ZmartDash {
     private static final double ROTATION_KP = 0.2;
-    private static final double ROTATION_FAST = 1.5;
-    private static final double ROTATION_NORMAL = 0.75;
-    private static final double ROTATION_SLOW = 0.375;
-    private static final double OUTPUT_FAST = 600;
-    private static final double OUTPUT_NORMAL = 300;
-    private static final double OUTPUT_SLOW = 100;
-    public final Vec2D shape;
-    /**
-     * Gyro.
-     */
-    public final Axis yaw;
-    /**
-     * Swerve modules of a rectangular chassis.
-     */
-    public final Module[] module = new Module[4];
-    public boolean headless = false;
-    public double headless_zero = 0;
-    /**
-     * Modifier timed at the output speed of the chassis.
-     */
-    public double output = OUTPUT_NORMAL;
-    public double rotation_output = ROTATION_NORMAL;
-    private double desired_yaw;
+    private static final double OUTPUT_FAST = 6;
+    private static final double OUTPUT_NORMAL = 3;
+    private static final double OUTPUT_SLOW = 1;
+    public static SwerveDriveKinematics kinematics;
+    private final Pigeon gyro;
+    private final ZInertialNavigation inav;
+    private final Module front_left;
+    private final Module rear_left;
+    private final Module front_right;
+    private final Module rear_right;
+    private final SwerveDriveOdometry odometry;
+    private boolean headless = false;
+    private double headless_zero = 0;
 
-    /**
-     * Creates a new Zwerve.
-     *
-     * @param yaw_gyro The gyroscope axis measuring yaw.
-     * @param shape    Shape of the robot, <code>x</code> for length and
-     *                 <code>y</code> for width.
-     */
-    public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Axis yaw_gyro, Vec2D shape) {
-        this.module[SwerveModule.FRONT_LEFT] = front_left;
-        this.module[SwerveModule.FRONT_RIGHT] = front_right;
-        this.module[SwerveModule.REAR_LEFT] = rear_left;
-        this.module[SwerveModule.REAR_RIGHT] = rear_right;
-        this.yaw = yaw_gyro;
-        this.shape = shape;
-        this.desired_yaw = this.yaw.get();
-        this.mod_reset();
+    public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Pigeon gyro, double length, double width) {
+        this.front_left = front_left.reset();
+        this.front_right = front_right.reset();
+        this.rear_left = rear_left.reset();
+        this.rear_right = rear_right.reset();
+        this.gyro = gyro;
+        this.inav = new ZInertialNavigation(gyro);
+        kinematics = new SwerveDriveKinematics(new Translation2d(length / 2, width / 2), new Translation2d(length / 2, -width / 2), new Translation2d(-length / 2, width / 2), new Translation2d(-length / 2, -width / 2));
+        this.odometry = new SwerveDriveOdometry(kinematics, getRotation2d(), new SwerveModulePosition[]{
+                front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()
+        });
     }
 
-    /**
-     * Method to calculate the radius of the rectangular robot.
-     */
-    private double radius() {
-        return this.shape.div(2).r();
-    }
-
-    /**
-     * Get the absolute current direction of the robot.j
-     */
-    public double curr_dir() {
-        return this.yaw.get() - this.headless_zero;
-    }
-
-    /**
-     * Get the direction adjustment applied under headless mode.
-     */
-    private double fix_dir() {
-        if (this.yaw == null) {
-            return 0;
-        }
-        return this.headless ? -this.curr_dir() : 0;
-    }
-
-    /**
-     * Kinematics part rewritten using vector calculations.
-     *
-     * @param vel translational velocity, with +x as the head of the bot
-     * @param rot rotate velocity, CCW positive
-     */
-    public Zwerve go(Vec2D vel, double rot) {
-        final var curr_yaw = this.yaw.get();
-        this.desired_yaw += rot * this.rotation_output;
-        this.debug("desired", this.desired_yaw);
-
-        final var rt = (this.desired_yaw - curr_yaw) * ROTATION_KP;
-
-        final var vt = vel.rot(this.fix_dir());
-
-        this.debug("translation", "" + vt);
-        final var l = this.shape.x / 2;
-        final var w = this.shape.y / 2;
-        Vec2D[] v = new Vec2D[4];
-        v[SwerveModule.FRONT_LEFT] = new Vec2D(l, w);
-        v[SwerveModule.FRONT_RIGHT] = new Vec2D(l, -w);
-        v[SwerveModule.REAR_LEFT] = new Vec2D(-l, w);
-        v[SwerveModule.REAR_RIGHT] = new Vec2D(-l, -w);
-        for (var i = 0; i < 4; i++) {
-            v[i] = v[i].rot(Math.PI / 2).with_r(rt).add(vt);
-        }
-        for (int i = 0; i < 4; i++) {
-            this.module[i].go(v[i].mul(this.output));
-        }
-        return this;
-    }
-
-    /**
-     * Kinematics part rewritten using vector calculations.
-     *
-     * @param vel translational velocity, with +x as the head of the bot
-     * @param yaw target yaw
-     */
-    public Zwerve go_yaw(Vec2D vel, double yaw) {
-        this.desired_yaw = yaw;
-        this.go(vel, 0);
-        return this;
+    public Rotation2d getRotation2d() {
+        return Rotation2d.fromRadians(this.gyro.get() - headless_zero);
     }
 
     @Override
     public Zwerve update() {
-        this.debug("headless", this.headless);
-        this.debug("yaw", this.yaw.get());
+        odometry.update(getRotation2d(), new SwerveModulePosition[]{
+                front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()
+        });
+        inav.update();
         return this;
     }
 
@@ -149,32 +78,25 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
     }
 
     public void reset_headless() {
-        this.headless_zero = this.yaw.get();
+        this.headless_zero = this.gyro.get();
     }
 
     public ZCommand drive(Axis x, Axis y, Axis rx, Axis ry, Button fast, Button slow, Button rotation) {
         return new Zambda(this, () -> {
+            var rot = rotation.down() ? rx.get() : (new Vec2D(rx.get(), ry.get()).theta() - gyro.get()) * ROTATION_KP;
+            var speed = headless ? ChassisSpeeds.fromFieldRelativeSpeeds(x.get(), y.get(), rot, getRotation2d()) : new ChassisSpeeds(x.get(), y.get(), rot);
+            var states = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(speed, 0.02));
+            var output = OUTPUT_NORMAL;
             if (fast.down() && !slow.down()) {
                 output = OUTPUT_FAST;
-                rotation_output = ROTATION_FAST;
             } else if (!fast.down() && slow.down()) {
                 output = OUTPUT_SLOW;
-                rotation_output = ROTATION_SLOW;
-            } else {
-                output = OUTPUT_NORMAL;
-                rotation_output = ROTATION_NORMAL;
             }
-            final var vel = new Vec2D(x.get(), y.get());
-            if (rotation.down()) {
-                this.go(vel, rx.get());
-            } else {
-                final var yaw = new Vec2D(rx.get(), ry.get());
-                if (yaw.r() == 0) {
-                    this.go(vel, 0);
-                } else {
-                    this.go_yaw(vel, yaw.theta());
-                }
-            }
+            SwerveDriveKinematics.desaturateWheelSpeeds(states, output);
+            front_left.go(states[0]);
+            front_right.go(states[1]);
+            rear_left.go(states[2]);
+            rear_right.go(states[3]);
         });
     }
 
@@ -183,30 +105,20 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
         return "Zwerve";
     }
 
-    public Zwerve mod_reset() {
-        for (final var i : this.module) {
-            i.reset();
-        }
-        return this;
-    }
-
     /**
      * Defines one swerve module.
      */
     public interface Module {
-        Module go(Vec2D velocity);
+        Module go(SwerveModuleState desiredState);
+
+        SwerveModulePosition getPosition();
 
         Module reset();
 
         Module shutdown();
 
         Module invert(boolean speed, boolean angle);
-    }
 
-    private static class SwerveModule {
-        private static final int FRONT_LEFT = 0;
-        private static final int FRONT_RIGHT = 3;
-        private static final int REAR_LEFT = 1;
-        private static final int REAR_RIGHT = 2;
+        Module set_pid(PIDController v, PIDController a);
     }
 }

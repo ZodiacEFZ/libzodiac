@@ -2,9 +2,14 @@ package frc.libzodiac.ui;
 
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.libzodiac.Zambda;
+import frc.libzodiac.ZmartDash;
+import frc.libzodiac.Zubsystem;
 
-public final class Xbox {
+public final class Xbox extends Zubsystem implements ZmartDash {
     private final XboxController xbox;
+    private Command rumbleCommand = new Zambda(this, this::end_rumble);
 
     public Xbox(int port) {
         this.xbox = new XboxController(port);
@@ -91,5 +96,23 @@ public final class Xbox {
     public Xbox set_rumble(double v) {
         this.xbox.setRumble(RumbleType.kBothRumble, v);
         return this;
+    }
+
+    public Xbox rumble(double time) {
+        this.rumble(time, 0.5);
+        return this;
+    }
+
+    public Xbox rumble(double time, double v) {
+        if (!rumbleCommand.isScheduled()) {
+            rumbleCommand = new Zambda(this, () -> this.set_rumble(v)).withTimeout(time).finallyDo(this::end_rumble);
+        }
+        rumbleCommand.schedule();
+        return this;
+    }
+
+    @Override
+    public String key() {
+        return "Xbox " + this.xbox.getPort();
     }
 }

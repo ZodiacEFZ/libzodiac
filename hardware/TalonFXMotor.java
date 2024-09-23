@@ -18,7 +18,7 @@ public class TalonFXMotor extends ZMotor implements ZmartDash {
 
     @Override
     protected TalonFXMotor apply_pid() {
-        this.motor.getConfigurator().apply(new Slot0Configs().withKP(this.pid.k_p).withKI(this.pid.k_i).withKD(this.pid.k_d));
+        this.motor.getConfigurator().apply(new Slot0Configs().withKP(this.pid.getP()).withKI(this.pid.getI()).withKD(this.pid.getD()));
         return this;
     }
 
