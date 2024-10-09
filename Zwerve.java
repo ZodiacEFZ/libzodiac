@@ -4,11 +4,10 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
-import edu.wpi.first.wpilibj.DriverStation;
 import frc.libzodiac.hardware.Pigeon;
 import frc.libzodiac.ui.Axis;
+import frc.libzodiac.ui.Axis2D;
 import frc.libzodiac.ui.Button;
-import frc.libzodiac.util.Vec2D;
 
 /**
  * A highly implemented class for hopefully all types of swerve control.
@@ -46,7 +45,6 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
         return Rotation2d.fromRadians(this.gyro.get() - headless_zero);
     }
 
-    @Override
     public Zwerve update() {
         odometry.update(getRotation2d(), new SwerveModulePosition[]{
                 front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()
@@ -81,10 +79,12 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
         this.headless_zero = this.gyro.get();
     }
 
-    public ZCommand drive(Axis x, Axis y, Axis rx, Axis ry, Button fast, Button slow, Button rotation) {
+    public ZCommand drive(Axis2D l, Axis2D r, Axis lx, Axis ly, Axis rx, Axis ry, Button fast, Button slow, Button rotation) {
         return new Zambda(this, () -> {
-            var rot = rotation.down() ? rx.get() : (new Vec2D(rx.get(), ry.get()).theta() - gyro.get()) * ROTATION_KP;
-            var speed = headless ? ChassisSpeeds.fromFieldRelativeSpeeds(x.get(), y.get(), rot, getRotation2d()) : new ChassisSpeeds(x.get(), y.get(), rot);
+            final var lv = l.vec();
+            final var rv = r.vec();
+            var rot = rotation.down() ? rx.get() : (rv.theta() - gyro.get()) * ROTATION_KP;
+            var speed = headless ? ChassisSpeeds.fromFieldRelativeSpeeds(lv.x, lv.y, rot, getRotation2d()) : new ChassisSpeeds(lv.x, lv.y, rot);
             var states = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(speed, 0.02));
             var output = OUTPUT_NORMAL;
             if (fast.down() && !slow.down()) {

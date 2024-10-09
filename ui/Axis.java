@@ -11,7 +11,7 @@ public final class Axis {
 
     public Axis(DoubleSupplier raw_input) {
         this.raw_input = raw_input;
-        this.mapping = x -> x;
+        this.mapping = Function.identity();
     }
 
     public Axis(DoubleSupplier raw_input, Function<Double, Double> mapping) {

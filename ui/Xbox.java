@@ -1,6 +1,7 @@
 package frc.libzodiac.ui;
 
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.libzodiac.Zambda;
@@ -9,10 +10,28 @@ import frc.libzodiac.Zubsystem;
 
 public final class Xbox extends Zubsystem implements ZmartDash {
     private final XboxController xbox;
-    private Command rumbleCommand = new Zambda(this, this::end_rumble);
+    private final Timer rumbleTimer = new Timer();
+    private double rumbleValue = 0.5;
+    private double rumbleEndpoint = 0;
+    private final Command rumbleCommand = new Zambda(this, () -> {
+        if (this.rumbleTimer.get() >= this.rumbleEndpoint) {
+            this.end_rumble();
+        } else {
+            this.set_rumble(rumbleValue);
+        }
+    });
 
     public Xbox(int port) {
         this.xbox = new XboxController(port);
+        this.rumbleTimer.start();
+    }
+
+    public Axis2D l() {
+        return new Axis2D(this.lx(), this.ly());
+    }
+
+    public Axis2D r() {
+        return new Axis2D(this.rx(), this.ry());
     }
 
     public Axis lx() {
@@ -104,15 +123,21 @@ public final class Xbox extends Zubsystem implements ZmartDash {
     }
 
     public Xbox rumble(double time, double v) {
-        if (!rumbleCommand.isScheduled()) {
-            rumbleCommand = new Zambda(this, () -> this.set_rumble(v)).withTimeout(time).finallyDo(this::end_rumble);
-        }
-        rumbleCommand.schedule();
+        this.rumbleTimer.reset();
+        this.rumbleEndpoint = time;
+        this.rumbleValue = v;
+        this.rumbleTimer.start();
         return this;
     }
 
     @Override
     public String key() {
         return "Xbox " + this.xbox.getPort();
+    }
+
+    @Override
+    protected Zubsystem update() {
+        this.rumbleCommand.schedule();
+        return this;
     }
 }
