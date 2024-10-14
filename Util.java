@@ -29,6 +29,10 @@ public class Util {
         }
     }
 
+    public static double closer(double x0, double x1, double x2) {
+        return Math.abs(x0 - x1) < Math.abs(x0 - x2) ? x1 : x2;
+    }
+
     public static boolean approx(double x0, double x1, double thre) {
         return Math.abs(x0 - x1) < thre;
     }

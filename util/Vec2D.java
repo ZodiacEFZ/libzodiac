@@ -55,7 +55,7 @@ public class Vec2D {
     }
 
     public double theta() {
-        return this.to_polar().theta();
+        return Math.atan2(this.y, this.x);
     }
 
     public Vec2D inv() {

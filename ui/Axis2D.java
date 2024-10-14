@@ -30,7 +30,15 @@ public class Axis2D {
     }
 
     public Axis2D inverted() {
-        return new Axis2D(x.inverted(), y.inverted());
+        return new Axis2D(x.inverted(), y.inverted(), mapping);
+    }
+
+    public Axis2D inverted(boolean xi, boolean yi) {
+        return new Axis2D(xi ? x.inverted() : x, yi ? y.inverted() : y, mapping);
+    }
+
+    public Axis2D switched() {
+        return new Axis2D(y, x, mapping);
     }
 
     public Axis2D threshold(double threshold) {

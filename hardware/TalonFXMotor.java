@@ -94,10 +94,13 @@ public class TalonFXMotor extends ZMotor implements ZmartDash {
 
         @Override
         public Servo go(double rad) {
-            final var v = new PositionDutyCycle((this.inverted ? -rad : rad) / Servo.POSITION_RAW_UNIT);
+            final var vel = this.inverted ? -rad : rad;
+            final var v = new PositionDutyCycle(vel / Servo.POSITION_RAW_UNIT);
             this.motor.setControl(v);
             return this;
         }
+
+        //todo: motion magic
 
         @Override
         public Servo set_zero(double zero) {

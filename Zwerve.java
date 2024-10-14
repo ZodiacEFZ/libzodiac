@@ -13,7 +13,7 @@ import frc.libzodiac.ui.Button;
  * A highly implemented class for hopefully all types of swerve control.
  */
 public abstract class Zwerve extends Zubsystem implements ZmartDash {
-    private static final double ROTATION_KP = 0.2;
+    private static final double ROTATION_KP = 0.05;
     private static final double OUTPUT_FAST = 6;
     private static final double OUTPUT_NORMAL = 3;
     private static final double OUTPUT_SLOW = 1;
@@ -81,17 +81,21 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
 
     public ZCommand drive(Axis2D l, Axis2D r, Axis lx, Axis ly, Axis rx, Axis ry, Button fast, Button slow, Button rotation) {
         return new Zambda(this, () -> {
-            final var lv = l.vec();
-            final var rv = r.vec();
-            var rot = rotation.down() ? rx.get() : (rv.theta() - gyro.get()) * ROTATION_KP;
-            var speed = headless ? ChassisSpeeds.fromFieldRelativeSpeeds(lv.x, lv.y, rot, getRotation2d()) : new ChassisSpeeds(lv.x, lv.y, rot);
-            var states = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(speed, 0.02));
             var output = OUTPUT_NORMAL;
             if (fast.down() && !slow.down()) {
                 output = OUTPUT_FAST;
             } else if (!fast.down() && slow.down()) {
                 output = OUTPUT_SLOW;
             }
+
+            final var lv = l.vec().mul(output);
+            final var rv = r.vec();
+            double target_theta = rv.r() > 0.7 ? rv.theta() : gyro.get();
+            var rot = rotation.down() ? rx.get() : (target_theta - gyro.get()) * ROTATION_KP;
+
+            var speed = headless ? ChassisSpeeds.fromFieldRelativeSpeeds(lv.x, lv.y, rot, getRotation2d()) : new ChassisSpeeds(lv.x, lv.y, rot);
+
+            var states = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(speed, 0.02));
             SwerveDriveKinematics.desaturateWheelSpeeds(states, output);
             front_left.go(states[0]);
             front_right.go(states[1]);
