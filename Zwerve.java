@@ -1,6 +1,7 @@
 package frc.libzodiac;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
@@ -8,6 +9,7 @@ import frc.libzodiac.hardware.Pigeon;
 import frc.libzodiac.ui.Axis;
 import frc.libzodiac.ui.Axis2D;
 import frc.libzodiac.ui.Button;
+import frc.libzodiac.util.Vec2D;
 
 /**
  * A highly implemented class for hopefully all types of swerve control.
@@ -27,26 +29,34 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
     private final SwerveDriveOdometry odometry;
     private boolean headless = false;
     private double headless_zero = 0;
+    private double field_zero = 0;
 
-    public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Pigeon gyro, double length, double width) {
+    public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Pigeon gyro, Vec2D size, Pose2d initialPose) {
         this.front_left = front_left.reset();
         this.front_right = front_right.reset();
         this.rear_left = rear_left.reset();
         this.rear_right = rear_right.reset();
         this.gyro = gyro;
         this.inav = new ZInertialNavigation(gyro);
+        this.field_zero = this.headless_zero = this.gyro.get();
+        final var width = size.x;
+        final var length = size.y;
         kinematics = new SwerveDriveKinematics(new Translation2d(length / 2, width / 2), new Translation2d(length / 2, -width / 2), new Translation2d(-length / 2, width / 2), new Translation2d(-length / 2, -width / 2));
-        this.odometry = new SwerveDriveOdometry(kinematics, getRotation2d(), new SwerveModulePosition[]{
+        this.odometry = new SwerveDriveOdometry(kinematics, getFieldRotation(), new SwerveModulePosition[]{
                 front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()
-        });
+        }, initialPose);
     }
 
-    public Rotation2d getRotation2d() {
+    public Rotation2d getHeadlessRotation() {
         return Rotation2d.fromRadians(this.gyro.get() - headless_zero);
     }
 
+    public Rotation2d getFieldRotation() {
+        return Rotation2d.fromRadians(this.gyro.get() - field_zero);
+    }
+
     public Zwerve update() {
-        odometry.update(getRotation2d(), new SwerveModulePosition[]{
+        odometry.update(getFieldRotation(), new SwerveModulePosition[]{
                 front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()
         });
         inav.update();
@@ -70,9 +80,9 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
         return this.headless(true);
     }
 
-    public Zwerve toggle_headless() {
+    public boolean toggle_headless() {
         this.headless = !this.headless;
-        return this;
+        return headless;
     }
 
     public void reset_headless() {
@@ -90,10 +100,11 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
 
             final var lv = l.vec().mul(output);
             final var rv = r.vec();
-            double target_theta = rv.r() > 0.7 ? rv.theta() : gyro.get();
-            var rot = rotation.down() ? rx.get() : (target_theta - gyro.get()) * ROTATION_KP;
+            final var target_theta = rv.r() > 0.7 ? rv.theta() : this.gyro.get();
+            final var delta = new Rotation2d(target_theta - this.gyro.get()).getRadians();
+            var rot = rotation.down() ? rx.get() : delta * ROTATION_KP;
 
-            var speed = headless ? ChassisSpeeds.fromFieldRelativeSpeeds(lv.x, lv.y, rot, getRotation2d()) : new ChassisSpeeds(lv.x, lv.y, rot);
+            var speed = headless ? ChassisSpeeds.fromFieldRelativeSpeeds(lv.x, lv.y, rot, getHeadlessRotation()) : new ChassisSpeeds(lv.x, lv.y, rot);
 
             var states = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(speed, 0.02));
             SwerveDriveKinematics.desaturateWheelSpeeds(states, output);
