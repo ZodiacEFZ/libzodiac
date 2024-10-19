@@ -7,7 +7,7 @@ public class ZInertialNavigation implements ZmartDash {
     private final Gyro gyro;
 
     private final Timer timer = new Timer();
-    private final boolean started = false;
+    private boolean started = false;
     private double zero = 0;
     private Vec2D pos = new Vec2D(0, 0);
     private Vec2D speed = new Vec2D(0, 0);
@@ -23,11 +23,12 @@ public class ZInertialNavigation implements ZmartDash {
 
     public ZInertialNavigation set_zero(double zero) {
         this.zero = zero;
+        this.started = true;
         return this;
     }
 
     public ZInertialNavigation update() {
-        if (!started) {
+        if (!this.started) {
             this.set_zero();
             return this;
         }

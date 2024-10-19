@@ -21,7 +21,7 @@ public class Axis2D {
     }
 
     public Vec2D vec() {
-        var v = new Vec2D(x.get(), y.get());
+        var v = new Vec2D(this.x.get(), this.y.get());
         return v.with_r(this.mapping.apply(v.r()));
     }
 
@@ -30,19 +30,20 @@ public class Axis2D {
     }
 
     public Axis2D inverted() {
-        return new Axis2D(x.inverted(), y.inverted(), mapping);
+        return new Axis2D(this.x.inverted(), this.y.inverted(), this.mapping);
     }
 
     public Axis2D inverted(boolean xi, boolean yi) {
-        return new Axis2D(xi ? x.inverted() : x, yi ? y.inverted() : y, mapping);
+        return new Axis2D(xi ? this.x.inverted() : this.x, yi ? this.y.inverted() : this.y, this.mapping);
     }
 
     public Axis2D switched() {
-        return new Axis2D(y, x, mapping);
+        //noinspection SuspiciousNameCombination
+        return new Axis2D(this.y, this.x, mapping);
     }
 
     public Axis2D threshold(double threshold) {
-        return new Axis2D(x.threshold(threshold), y.threshold(threshold));
+        return new Axis2D(this.x.threshold(threshold), this.y.threshold(threshold));
     }
 
     public Axis2D with_map(Function<Double, Double> mapping) {

@@ -28,8 +28,8 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
     private final Module rear_right;
     private final SwerveDriveOdometry odometry;
     private boolean headless = false;
-    private double headless_zero = 0;
-    private double field_zero = 0;
+    private double headless_zero;
+    private final double field_zero;
 
     public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Pigeon gyro, Vec2D size, Pose2d initialPose) {
         this.front_left = front_left.reset();
