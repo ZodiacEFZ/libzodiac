@@ -5,9 +5,8 @@ import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
 import frc.libzodiac.ZMotor;
 import frc.libzodiac.Zervo;
-import frc.libzodiac.ZmartDash;
 
-public class TalonFXMotor extends ZMotor implements ZmartDash {
+public class TalonFXMotor extends ZMotor {
     public static final double VELOCITY_RAW_UNIT = 2 * Math.PI;
 
     protected final TalonFX motor;
@@ -56,11 +55,6 @@ public class TalonFXMotor extends ZMotor implements ZmartDash {
     public TalonFXMotor raw(double output) {
         this.motor.set(inverted ? -output : output);
         return this;
-    }
-
-    @Override
-    public String key() {
-        return this.motor.getDescription();
     }
 
     public TalonFXMotor invert(boolean inverted) {
@@ -124,11 +118,6 @@ public class TalonFXMotor extends ZMotor implements ZmartDash {
         @Override
         public Servo invert() {
             return this.invert(true);
-        }
-
-        @Override
-        public String key() {
-            return "Servo " + this.motor.getDescription();
         }
     }
 }

@@ -4,12 +4,11 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import frc.libzodiac.ZmartDash;
 import frc.libzodiac.Zwerve.Module;
 import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonFXMotor;
 
-public final class TalonFXSwerve implements Module, ZmartDash {
+public final class TalonFXSwerve implements Module {
     private static final double TURNING_RATIO = 150.0 / 7.0;
     private static final double WHEEL_CIRCUS = 0.1 * Math.PI;
     private static final double DRIVE_RATIO = 6.75;
@@ -70,10 +69,5 @@ public final class TalonFXSwerve implements Module, ZmartDash {
         this.speed_motor.set_pid(v);
         this.angle_motor.set_pid(a);
         return this;
-    }
-
-    @Override
-    public String key() {
-        return "TalonFXSwerve(" + this.speed_motor.key() + ",...)";
     }
 }

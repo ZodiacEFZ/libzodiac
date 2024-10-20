@@ -5,10 +5,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.libzodiac.Zambda;
-import frc.libzodiac.ZmartDash;
 import frc.libzodiac.Zubsystem;
 
-public final class Xbox extends Zubsystem implements ZmartDash {
+public final class Xbox extends Zubsystem {
     private final XboxController xbox;
     private final Timer rumbleTimer = new Timer();
     private double rumbleValue = 0.5;
@@ -128,11 +127,6 @@ public final class Xbox extends Zubsystem implements ZmartDash {
         this.rumbleValue = v;
         this.rumbleTimer.start();
         return this;
-    }
-
-    @Override
-    public String key() {
-        return "Xbox " + this.xbox.getPort();
     }
 
     @Override

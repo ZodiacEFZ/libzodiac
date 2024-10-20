@@ -3,7 +3,7 @@ package frc.libzodiac;
 import edu.wpi.first.wpilibj.Timer;
 import frc.libzodiac.util.Vec2D;
 
-public class ZInertialNavigation implements ZmartDash {
+public class ZInertialNavigation implements ZDashboard.Dashboard {
     private final Gyro gyro;
 
     private final Timer timer = new Timer();
@@ -29,17 +29,18 @@ public class ZInertialNavigation implements ZmartDash {
 
     public ZInertialNavigation update() {
         if (!this.started) {
-            this.set_zero();
             return this;
         }
-        this.debug("posinav", "" + this.getPosition());
-        this.debug("yawinav", this.getYaw());
-        this.debug("acc", "" + this.gyro.getAccelerationNoGravity());
         final var loopTime = this.timer.get();
         this.timer.reset();
-        this.speed = this.speed.add(this.gyro.getAccelerationNoGravity().mul(loopTime));
+
+        final var acc = this.gyro.getAccelerationNoGravity().rot(-this.getYaw());
+        this.speed = this.speed.add(acc.mul(loopTime));
         Vec2D dis = this.speed.mul(loopTime);
         this.pos = this.pos.add(dis);
+        dashboardTab().add("posinav", "" + this.getPosition());
+        dashboardTab().add("yawinav", this.getYaw());
+        dashboardTab().add("acc", "" + acc);
         return this;
     }
 
@@ -53,11 +54,6 @@ public class ZInertialNavigation implements ZmartDash {
 
     public double getYaw() {
         return this.gyro.getYaw() - this.zero;
-    }
-
-    @Override
-    public String key() {
-        return "inav";
     }
 
     public interface Gyro {

@@ -3,13 +3,12 @@ package frc.libzodiac.hardware;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import frc.libzodiac.ZInertialNavigation;
 import frc.libzodiac.Zensor;
-import frc.libzodiac.ZmartDash;
 import frc.libzodiac.ui.Axis;
 import frc.libzodiac.util.Vec2D;
 
 import java.security.InvalidParameterException;
 
-public class Pigeon implements Zensor, ZInertialNavigation.Gyro, ZmartDash {
+public class Pigeon implements Zensor, ZInertialNavigation.Gyro {
     protected final Pigeon2 pigeon;
 
     public Pigeon(int can_id) {
@@ -41,11 +40,6 @@ public class Pigeon implements Zensor, ZInertialNavigation.Gyro, ZmartDash {
             case "roll" -> this.roll().get();
             default -> throw new InvalidParameterException(value);
         };
-    }
-
-    @Override
-    public String key() {
-        return "Pigeon(" + this.pigeon.getDeviceID() + ")";
     }
 
     @Override

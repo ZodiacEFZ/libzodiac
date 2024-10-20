@@ -2,9 +2,8 @@ package frc.libzodiac.hardware;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import frc.libzodiac.ZmartDash;
 
-public final class MagEncoder implements ZmartDash {
+public final class MagEncoder {
     public static final double POSITION_RAW_UNIT = 2 * Math.PI / 4096;
     private final TalonSRX encoder;
     public double zero = 0;
@@ -21,10 +20,5 @@ public final class MagEncoder implements ZmartDash {
 
     public double get() {
         return (this.encoder.getSelectedSensorPosition() - this.zero) * POSITION_RAW_UNIT;
-    }
-
-    @Override
-    public String key() {
-        return "MagEncoder(" + this.encoder.getDeviceID() + ")";
     }
 }

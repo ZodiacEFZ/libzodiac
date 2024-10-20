@@ -14,7 +14,7 @@ import frc.libzodiac.util.Vec2D;
 /**
  * A highly implemented class for hopefully all types of swerve control.
  */
-public abstract class Zwerve extends Zubsystem implements ZmartDash {
+public abstract class Zwerve extends Zubsystem {
     private static final double ROTATION_KP = 0.05;
     private static final double OUTPUT_FAST = 6;
     private static final double OUTPUT_NORMAL = 3;
@@ -27,9 +27,9 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
     private final Module front_right;
     private final Module rear_right;
     private final SwerveDriveOdometry odometry;
+    private final double field_zero;
     private boolean headless = false;
     private double headless_zero;
-    private final double field_zero;
 
     public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Pigeon gyro, Vec2D size, Pose2d initialPose) {
         this.front_left = front_left.reset();
@@ -37,7 +37,7 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
         this.rear_left = rear_left.reset();
         this.rear_right = rear_right.reset();
         this.gyro = gyro;
-        this.inav = new ZInertialNavigation(gyro);
+        this.inav = new ZInertialNavigation(gyro).set_zero();
         this.field_zero = this.headless_zero = this.gyro.get();
         final var width = size.x;
         final var length = size.y;
@@ -113,11 +113,6 @@ public abstract class Zwerve extends Zubsystem implements ZmartDash {
             rear_left.go(states[2]);
             rear_right.go(states[3]);
         });
-    }
-
-    @Override
-    public String key() {
-        return "Zwerve";
     }
 
     /**
