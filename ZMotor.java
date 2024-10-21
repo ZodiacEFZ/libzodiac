@@ -16,20 +16,18 @@ public abstract class ZMotor {
     /**
      * The PID configuration of this motor.
      */
-    public PIDController pid;
     public boolean inverted = false;
 
     /**
      * Override this method to set the motor's PID to <code>this.pid</code>.
      */
-    protected abstract ZMotor apply_pid();
+    protected abstract ZMotor apply_pid(PIDController pid);
 
     /**
      * Set PID parameters.
      */
     public ZMotor set_pid(PIDController pid) {
-        this.pid = pid;
-        this.apply_pid();
+        this.apply_pid(pid);
         return this;
     }
 

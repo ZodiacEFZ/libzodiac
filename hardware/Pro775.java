@@ -3,6 +3,7 @@ package frc.libzodiac.hardware;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import edu.wpi.first.math.controller.PIDController;
 import frc.libzodiac.ZMotor;
 import frc.libzodiac.Zervo;
 
@@ -14,10 +15,10 @@ public class Pro775 extends ZMotor {
     }
 
     @Override
-    protected Pro775 apply_pid() {
-        this.motor.config_kP(0, this.pid.getP());
-        this.motor.config_kI(0, this.pid.getI());
-        this.motor.config_kD(0, this.pid.getD());
+    protected Pro775 apply_pid(PIDController pid) {
+        this.motor.config_kP(0, pid.getP());
+        this.motor.config_kI(0, pid.getI());
+        this.motor.config_kD(0, pid.getD());
         return this;
     }
 

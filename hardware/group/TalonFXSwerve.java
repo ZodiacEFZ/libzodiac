@@ -1,5 +1,6 @@
 package frc.libzodiac.hardware.group;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -65,7 +66,12 @@ public final class TalonFXSwerve implements Module {
 
     @Override
     public Module set_pid(PIDController v, PIDController a) {
-        a.setIntegratorRange(-Math.PI, Math.PI);
+        this.speed_motor.set_pid(v);
+        this.angle_motor.set_pid(a);
+        return this;
+    }
+
+    public Module set_pid(Slot0Configs v, Slot0Configs a) {
         this.speed_motor.set_pid(v);
         this.angle_motor.set_pid(a);
         return this;
