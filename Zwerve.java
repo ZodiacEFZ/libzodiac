@@ -15,10 +15,11 @@ import frc.libzodiac.util.Vec2D;
  * A highly implemented class for hopefully all types of swerve control.
  */
 public abstract class Zwerve extends Zubsystem {
+    public static final double OUTPUT_FAST = 6;
+    public static final double OUTPUT_NORMAL = 3;
+    public static final double OUTPUT_SLOW = 1;
     private static final double ROTATION_KP = 0.05;
-    private static final double OUTPUT_FAST = 6;
-    private static final double OUTPUT_NORMAL = 3;
-    private static final double OUTPUT_SLOW = 1;
+    private static final double K_ROTATION = 1;
     public static SwerveDriveKinematics kinematics;
     private final Pigeon gyro;
     private final ZInertialNavigation inav;
@@ -28,8 +29,9 @@ public abstract class Zwerve extends Zubsystem {
     private final Module rear_right;
     private final SwerveDriveOdometry odometry;
     private final double field_zero;
-    private boolean headless = false;
+    private boolean headless = true;
     private double headless_zero;
+    private double target_theta;
 
     public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Pigeon gyro, Vec2D size, Pose2d initialPose) {
         this.front_left = front_left.reset();
@@ -38,13 +40,13 @@ public abstract class Zwerve extends Zubsystem {
         this.rear_right = rear_right.reset();
         this.gyro = gyro;
         this.inav = new ZInertialNavigation(gyro).set_zero();
-        this.field_zero = this.headless_zero = this.gyro.get();
+        this.field_zero = this.gyro.get();
+        this.headless_zero = this.gyro.get();
+        this.target_theta = this.gyro.get();
         final var width = size.x;
         final var length = size.y;
         kinematics = new SwerveDriveKinematics(new Translation2d(length / 2, width / 2), new Translation2d(length / 2, -width / 2), new Translation2d(-length / 2, width / 2), new Translation2d(-length / 2, -width / 2));
-        this.odometry = new SwerveDriveOdometry(kinematics, getFieldRotation(), new SwerveModulePosition[]{
-                front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()
-        }, initialPose);
+        this.odometry = new SwerveDriveOdometry(kinematics, getFieldRotation(), new SwerveModulePosition[]{front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()}, initialPose);
     }
 
     public Rotation2d getHeadlessRotation() {
@@ -56,9 +58,7 @@ public abstract class Zwerve extends Zubsystem {
     }
 
     public Zwerve update() {
-        odometry.update(getFieldRotation(), new SwerveModulePosition[]{
-                front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()
-        });
+        odometry.update(getFieldRotation(), new SwerveModulePosition[]{front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()});
         inav.update();
         return this;
     }
@@ -91,28 +91,52 @@ public abstract class Zwerve extends Zubsystem {
 
     public ZCommand drive(Axis2D l, Axis2D r, Axis lx, Axis ly, Axis rx, Axis ry, Button fast, Button slow, Button rotation) {
         return new Zambda(this, () -> {
-            var output = OUTPUT_NORMAL;
+            double output;
             if (fast.down() && !slow.down()) {
                 output = OUTPUT_FAST;
             } else if (!fast.down() && slow.down()) {
                 output = OUTPUT_SLOW;
+            } else {
+                output = OUTPUT_NORMAL;
             }
 
             final var lv = l.vec().mul(output);
             final var rv = r.vec();
-            final var target_theta = rv.r() > 0.7 ? rv.theta() : this.gyro.get();
-            final var delta = new Rotation2d(target_theta - this.gyro.get()).getRadians();
-            var rot = rotation.down() ? rx.get() : delta * ROTATION_KP;
 
-            var speed = headless ? ChassisSpeeds.fromFieldRelativeSpeeds(lv.x, lv.y, rot, getHeadlessRotation()) : new ChassisSpeeds(lv.x, lv.y, rot);
+            if (rotation.down()) {
+                this.target_theta = this.target_theta + rx.get() * K_ROTATION;
+            } else {
+                this.target_theta = rv.r() > 0.7 ? rv.theta() : this.target_theta;
+            }
 
-            var states = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(speed, 0.02));
-            SwerveDriveKinematics.desaturateWheelSpeeds(states, output);
-            front_left.go(states[0]);
-            front_right.go(states[1]);
-            rear_left.go(states[2]);
-            rear_right.go(states[3]);
+            this.go(lv, output, headless);
         });
+    }
+
+    public void go(Vec2D v, Rotation2d theta, double output, boolean fieldRelated) {
+        this.target_theta = theta.getRadians();
+        this.go(v, output, fieldRelated);
+    }
+
+    public void go(Vec2D v, double omega, double output, boolean fieldRelated) {
+        this.target_theta = this.target_theta + omega * K_ROTATION;
+        this.go(v, output, fieldRelated);
+    }
+
+    private void go(Vec2D v, double output, boolean fieldRelated) {
+        final var delta = new Rotation2d(this.target_theta - this.gyro.get()).getRadians();
+        var rot = delta * ROTATION_KP;
+        final var speed = fieldRelated ? ChassisSpeeds.fromFieldRelativeSpeeds(v.x, v.y, rot, getHeadlessRotation()) : new ChassisSpeeds(v.x, v.y, rot);
+        this.go(speed, output);
+    }
+
+    private void go(ChassisSpeeds speed, double output) {
+        var states = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(speed, 0.02));
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, output);
+        front_left.go(states[0]);
+        front_right.go(states[1]);
+        rear_left.go(states[2]);
+        rear_right.go(states[3]);
     }
 
     /**
