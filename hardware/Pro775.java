@@ -6,36 +6,37 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.math.controller.PIDController;
 import frc.libzodiac.ZMotor;
 import frc.libzodiac.Zervo;
+import frc.libzodiac.util.Lazy;
 
 public class Pro775 extends ZMotor {
-    protected final TalonSRX motor;
+    protected final Lazy<TalonSRX> motor;
 
     public Pro775(int can_id) {
-        this.motor = new TalonSRX(can_id);
+        this.motor = new Lazy<>(() -> new TalonSRX(can_id));
     }
 
     @Override
     protected Pro775 apply_pid(PIDController pid) {
-        this.motor.config_kP(0, pid.getP());
-        this.motor.config_kI(0, pid.getI());
-        this.motor.config_kD(0, pid.getD());
+        this.motor.get().config_kP(0, pid.getP());
+        this.motor.get().config_kI(0, pid.getI());
+        this.motor.get().config_kD(0, pid.getD());
         return this;
     }
 
     @Override
     public Pro775 shutdown() {
-        this.motor.setNeutralMode(NeutralMode.Coast);
-        this.motor.neutralOutput();
+        this.motor.get().setNeutralMode(NeutralMode.Coast);
+        this.motor.get().neutralOutput();
         return this;
     }
 
     @Override
     public Pro775 stop(boolean stop) {
         if (stop) {
-            this.motor.setNeutralMode(NeutralMode.Brake);
-            this.motor.neutralOutput();
+            this.motor.get().setNeutralMode(NeutralMode.Brake);
+            this.motor.get().neutralOutput();
         } else {
-            this.motor.setNeutralMode(NeutralMode.Coast);
+            this.motor.get().setNeutralMode(NeutralMode.Coast);
         }
         return this;
     }
@@ -48,13 +49,13 @@ public class Pro775 extends ZMotor {
 
     @Override
     public Pro775 go(double raw_unit) {
-        this.motor.set(ControlMode.Velocity, inverted ? -raw_unit : raw_unit);
+        this.motor.get().set(ControlMode.Velocity, inverted ? -raw_unit : raw_unit);
         return this;
     }
 
     @Override
     public Pro775 raw(double output) {
-        this.motor.set(ControlMode.PercentOutput, inverted ? -output : output);
+        this.motor.get().set(ControlMode.PercentOutput, inverted ? -output : output);
         return this;
     }
 
@@ -65,26 +66,26 @@ public class Pro775 extends ZMotor {
 
         @Override
         public Zervo set_zero(double zero) {
-            this.motor.setSelectedSensorPosition(zero);
+            this.motor.get().setSelectedSensorPosition(zero);
             return this;
         }
 
         @Override
         public double get() {
-            final var v = this.motor.getSelectedSensorPosition();
+            final var v = this.motor.get().getSelectedSensorPosition();
             return inverted ? -v : v;
         }
 
         @Override
         public Servo go(String profile) {
             final var v = this.profile.get(profile);
-            this.motor.set(ControlMode.Position, inverted ? -v : v);
+            this.motor.get().set(ControlMode.Position, inverted ? -v : v);
             return this;
         }
 
         @Override
         public Servo go(double raw_unit) {
-            this.motor.set(ControlMode.Position, inverted ? -raw_unit : raw_unit);
+            this.motor.get().set(ControlMode.Position, inverted ? -raw_unit : raw_unit);
             return this;
         }
     }
