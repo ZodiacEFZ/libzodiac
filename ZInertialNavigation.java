@@ -1,7 +1,7 @@
 package frc.libzodiac;
 
 import edu.wpi.first.wpilibj.Timer;
-import frc.libzodiac.util.Vec2D;
+import frc.libzodiac.util.Vec2;
 
 public class ZInertialNavigation implements ZDashboard.Dashboard {
     private final Gyro gyro;
@@ -9,8 +9,8 @@ public class ZInertialNavigation implements ZDashboard.Dashboard {
     private final Timer timer = new Timer();
     private boolean started = false;
     private double zero = 0;
-    private Vec2D pos = new Vec2D(0, 0);
-    private Vec2D speed = new Vec2D(0, 0);
+    private Vec2 pos = new Vec2(0, 0);
+    private Vec2 speed = new Vec2(0, 0);
 
     public ZInertialNavigation(Gyro gyro) {
         this.gyro = gyro;
@@ -36,7 +36,7 @@ public class ZInertialNavigation implements ZDashboard.Dashboard {
 
         final var acc = this.gyro.getAccelerationNoGravity().rot(-this.getYaw());
         this.speed = this.speed.add(acc.mul(loopTime));
-        Vec2D dis = this.speed.mul(loopTime);
+        Vec2 dis = this.speed.mul(loopTime);
         this.pos = this.pos.add(dis);
         dashboardTab().add("posinav", "" + this.getPosition());
         dashboardTab().add("yawinav", this.getYaw());
@@ -44,11 +44,11 @@ public class ZInertialNavigation implements ZDashboard.Dashboard {
         return this;
     }
 
-    public Vec2D getPosition() {
+    public Vec2 getPosition() {
         return pos;
     }
 
-    public Vec2D getSpeed() {
+    public Vec2 getSpeed() {
         return this.speed;
     }
 
@@ -59,6 +59,6 @@ public class ZInertialNavigation implements ZDashboard.Dashboard {
     public interface Gyro {
         double getYaw();
 
-        Vec2D getAccelerationNoGravity();
+        Vec2 getAccelerationNoGravity();
     }
 }

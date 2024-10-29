@@ -3,22 +3,13 @@ package frc.libzodiac.ui;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.Command;
-import frc.libzodiac.Zambda;
-import frc.libzodiac.Zubsystem;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public final class Xbox extends Zubsystem {
+public final class Xbox extends SubsystemBase {
     private final XboxController xbox;
     private final Timer rumbleTimer = new Timer();
     private double rumbleValue = 0.5;
     private double rumbleEndpoint = 0;
-    private final Command rumbleCommand = new Zambda(this, () -> {
-        if (this.rumbleTimer.get() >= this.rumbleEndpoint) {
-            this.end_rumble();
-        } else {
-            this.set_rumble(rumbleValue);
-        }
-    });
 
     public Xbox(int port) {
         this.xbox = new XboxController(port);
@@ -101,11 +92,6 @@ public final class Xbox extends Zubsystem {
         return new Button(this.xbox::getYButton);
     }
 
-    public Xbox start_rumble() {
-        this.xbox.setRumble(RumbleType.kBothRumble, 0.5);
-        return this;
-    }
-
     public Xbox end_rumble() {
         this.xbox.setRumble(RumbleType.kBothRumble, 0);
         return this;
@@ -130,8 +116,11 @@ public final class Xbox extends Zubsystem {
     }
 
     @Override
-    protected Zubsystem update() {
-        this.rumbleCommand.schedule();
-        return this;
+    public void periodic() {
+        if (this.rumbleTimer.get() >= this.rumbleEndpoint) {
+            this.end_rumble();
+        } else {
+            this.set_rumble(rumbleValue);
+        }
     }
 }

@@ -5,7 +5,7 @@ import frc.libzodiac.ZInertialNavigation;
 import frc.libzodiac.Zensor;
 import frc.libzodiac.ui.Axis;
 import frc.libzodiac.util.Lazy;
-import frc.libzodiac.util.Vec2D;
+import frc.libzodiac.util.Vec2;
 
 import java.security.InvalidParameterException;
 
@@ -49,8 +49,8 @@ public class Pigeon implements Zensor, ZInertialNavigation.Gyro {
     }
 
     @Override
-    public Vec2D getAccelerationNoGravity() {
-        return new Vec2D(
+    public Vec2 getAccelerationNoGravity() {
+        return new Vec2(
                 this.pigeon.get().getAccelerationX().refresh().getValue()
                         - this.pigeon.get().getGravityVectorX().refresh().getValue(),
                 this.pigeon.get().getAccelerationY().refresh().getValue()

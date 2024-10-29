@@ -9,7 +9,7 @@ import frc.libzodiac.hardware.Pigeon;
 import frc.libzodiac.ui.Axis;
 import frc.libzodiac.ui.Axis2D;
 import frc.libzodiac.ui.Button;
-import frc.libzodiac.util.Vec2D;
+import frc.libzodiac.util.Vec2;
 
 /**
  * A highly implemented class for hopefully all types of swerve control.
@@ -33,7 +33,7 @@ public abstract class Zwerve extends Zubsystem {
     private double headless_zero;
     private double target_theta;
 
-    public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Pigeon gyro, Vec2D size, Pose2d initialPose) {
+    public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Pigeon gyro, Vec2 size, Pose2d initialPose) {
         this.front_left = front_left.reset();
         this.front_right = front_right.reset();
         this.rear_left = rear_left.reset();
@@ -113,17 +113,17 @@ public abstract class Zwerve extends Zubsystem {
         });
     }
 
-    public void go(Vec2D v, Rotation2d theta, double output, boolean fieldRelated) {
+    public void go(Vec2 v, Rotation2d theta, double output, boolean fieldRelated) {
         this.target_theta = theta.getRadians();
         this.go(v, output, fieldRelated);
     }
 
-    public void go(Vec2D v, double omega, double output, boolean fieldRelated) {
+    public void go(Vec2 v, double omega, double output, boolean fieldRelated) {
         this.target_theta = this.target_theta + omega * K_ROTATION;
         this.go(v, output, fieldRelated);
     }
 
-    private void go(Vec2D v, double output, boolean fieldRelated) {
+    private void go(Vec2 v, double output, boolean fieldRelated) {
         final var delta = new Rotation2d(this.target_theta - this.gyro.get()).getRadians();
         var rot = delta * ROTATION_KP;
         final var speed = fieldRelated ? ChassisSpeeds.fromFieldRelativeSpeeds(v.x(), v.y(), rot, getHeadlessRotation()) : new ChassisSpeeds(v.x(), v.y(), rot);

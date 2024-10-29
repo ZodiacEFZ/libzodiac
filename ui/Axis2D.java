@@ -1,6 +1,6 @@
 package frc.libzodiac.ui;
 
-import frc.libzodiac.util.Vec2D;
+import frc.libzodiac.util.Vec2;
 
 import java.util.function.Function;
 
@@ -20,8 +20,8 @@ public class Axis2D {
         this.mapping = mapping;
     }
 
-    public Vec2D vec() {
-        var v = new Vec2D(this.x.get(), this.y.get());
+    public Vec2 vec() {
+        var v = new Vec2(this.x.get(), this.y.get());
         return v.with_r(this.mapping.apply(v.r()));
     }
 
