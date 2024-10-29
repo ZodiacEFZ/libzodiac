@@ -43,8 +43,8 @@ public abstract class Zwerve extends Zubsystem {
         this.field_zero = this.gyro.get();
         this.headless_zero = this.gyro.get();
         this.target_theta = this.gyro.get();
-        final var width = size.x;
-        final var length = size.y;
+        final var width = size.x();
+        final var length = size.y();
         kinematics = new SwerveDriveKinematics(new Translation2d(length / 2, width / 2), new Translation2d(length / 2, -width / 2), new Translation2d(-length / 2, width / 2), new Translation2d(-length / 2, -width / 2));
         this.odometry = new SwerveDriveOdometry(kinematics, getFieldRotation(), new SwerveModulePosition[]{front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()}, initialPose);
     }
@@ -126,7 +126,7 @@ public abstract class Zwerve extends Zubsystem {
     private void go(Vec2D v, double output, boolean fieldRelated) {
         final var delta = new Rotation2d(this.target_theta - this.gyro.get()).getRadians();
         var rot = delta * ROTATION_KP;
-        final var speed = fieldRelated ? ChassisSpeeds.fromFieldRelativeSpeeds(v.x, v.y, rot, getHeadlessRotation()) : new ChassisSpeeds(v.x, v.y, rot);
+        final var speed = fieldRelated ? ChassisSpeeds.fromFieldRelativeSpeeds(v.x(), v.y(), rot, getHeadlessRotation()) : new ChassisSpeeds(v.x(), v.y(), rot);
         this.go(speed, output);
     }
 

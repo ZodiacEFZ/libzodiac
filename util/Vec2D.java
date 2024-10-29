@@ -4,29 +4,27 @@ import frc.libzodiac.Util;
 
 import java.util.function.Function;
 
-public class Vec2D {
-    public final double x;
-    public final double y;
+import edu.wpi.first.math.geometry.Translation2d;
 
-    public Vec2D(double x, double y) {
-        this.x = x;
-        this.y = y;
+public record Vec2D(double x, double y) {
+    public double x() {
+        return this.x;
     }
 
-    public static Vec2D add(Vec2D a, Vec2D b) {
-        return new Vec2D(a.x + b.x, a.y + b.y);
+    public double y() {
+        return this.y;
     }
 
-    public static Polar add(Polar a, Polar b) {
-        return Vec2D.add(a.to_vec(), b.to_vec()).to_polar();
+    public double r() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
-    public static double mul(Vec2D a, Vec2D b) {
-        return a.r() * b.r() * Math.cos(a.theta() - b.theta());
+    public double theta() {
+        return Math.atan2(this.y, this.x);
     }
 
-    public static double mul(Polar a, Polar b) {
-        return Vec2D.mul(a.to_vec(), b.to_vec());
+    public static Vec2D polar(double r, double theta) {
+        return new Vec2D(r * Math.cos(theta), r * Math.sin(theta));
     }
 
     @Override
@@ -43,19 +41,11 @@ public class Vec2D {
     }
 
     public Vec2D with_r(double r) {
-        return this.to_polar().with_r(r).to_vec();
+        return polar(r, this.theta());
     }
 
     public Vec2D with_theta(double theta) {
-        return this.to_polar().with_theta(theta).to_vec();
-    }
-
-    public double r() {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
-    }
-
-    public double theta() {
-        return Math.atan2(this.y, this.x);
+        return polar(this.r(), theta);
     }
 
     public Vec2D inv() {
@@ -63,27 +53,15 @@ public class Vec2D {
     }
 
     public Vec2D add(Vec2D rhs) {
-        return Vec2D.add(this, rhs);
-    }
-
-    public Vec2D add(Polar rhs) {
-        return this.add(rhs.to_vec());
+        return new Vec2D(this.x + rhs.x, this.y + rhs.y);
     }
 
     public Vec2D sub(Vec2D rhs) {
-        return Vec2D.add(this, rhs.inv());
-    }
-
-    public Vec2D sub(Polar rhs) {
-        return this.add(rhs.to_vec().inv());
+        return this.add(rhs.inv());
     }
 
     public Vec2D mul(double k) {
         return new Vec2D(this.x * k, this.y * k);
-    }
-
-    public Vec2D mul(Vec2D rhs) {
-        return new Vec2D(this.x * rhs.x, this.y * rhs.y);
     }
 
     public Vec2D div(double k) {
@@ -109,57 +87,8 @@ public class Vec2D {
         return this.with_y(mapping.apply(this.y));
     }
 
-    public Polar to_polar() {
-        return new Polar(this.r(), this.theta());
+    public static Vec2D from(Translation2d value) {
+        return new Vec2D(value.getX(), value.getY());
     }
 
-    public record Polar(double r, double theta) {
-        public Polar with_r(double r) {
-            return new Polar(r, this.theta);
-        }
-
-        public Polar with_theta(double theta) {
-            return new Polar(this.r, theta);
-        }
-
-        public Vec2D to_vec() {
-            return new Vec2D(this.r * Math.cos(this.theta), this.r * Math.sin(this.theta));
-        }
-
-        public double x() {
-            return this.to_vec().x;
-        }
-
-        public double y() {
-            return this.to_vec().y;
-        }
-
-        public Polar add(Polar rhs) {
-            return this.to_vec().add(rhs).to_polar();
-        }
-
-        public Polar add(Vec2D rhs) {
-            return this.to_vec().add(rhs).to_polar();
-        }
-
-        public Polar sub(Polar rhs) {
-            return this.to_vec().sub(rhs).to_polar();
-        }
-
-        public Polar sub(Vec2D rhs) {
-            return this.to_vec().sub(rhs).to_polar();
-        }
-
-        public Polar mul(double k) {
-            return this.to_vec().mul(k).to_polar();
-        }
-
-        public Polar div(double k) {
-            return this.to_vec().div(k).to_polar();
-        }
-
-        public Polar rot(double phi) {
-            return this.to_vec().rot(phi).to_polar();
-        }
-    }
 }
