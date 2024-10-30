@@ -150,6 +150,16 @@ public record Vec2(double x, double y) {
     }
 
     /**
+     * The dot-product operation.
+     * 
+     * @param rhs right-hand side of operator
+     * @return result of operator
+     */
+    public double mul(Vec2 rhs) {
+        return this.x * rhs.x + this.y * rhs.y;
+    }
+
+    /**
      * The division operation.
      * 
      * @param k the divisor
@@ -167,6 +177,16 @@ public record Vec2(double x, double y) {
      */
     public Vec2 rot(double phi) {
         return this.with_theta(this.theta() + phi);
+    }
+
+    /**
+     * Calculate the vector's projection on another vector.
+     * 
+     * @param on the vector to project on
+     * @return the projected vector
+     */
+    public Vec2 proj(Vec2 on) {
+        return on.with_r(this.r() * Math.cos(this.theta() - on.theta()));
     }
 
     /**
