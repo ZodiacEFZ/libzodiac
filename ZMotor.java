@@ -1,65 +1,91 @@
 package frc.libzodiac;
 
-import edu.wpi.first.math.controller.PIDController;
-
 import java.util.HashMap;
 
 /**
  * Defines a large collection of APIs to operate various motors so that motors
  * can be controlled under a unified generic way.
  */
-public abstract class ZMotor {
-    /**
-     * Motions profiles pre-defined for future use.
-     */
-    public final HashMap<String, Double> profile = new HashMap<>();
-    /**
-     * The PID configuration of this motor.
-     */
-    public boolean inverted = false;
-
-    /**
-     * Override this method to set the motor's PID to <code>this.pid</code>.
-     */
-    protected abstract ZMotor apply_pid(PIDController pid);
-
-    /**
-     * Set PID parameters.
-     */
-    public ZMotor set_pid(PIDController pid) {
-        this.apply_pid(pid);
-        return this;
-    }
-
-    /**
-     * Set PID parameters.
-     */
-    public ZMotor set_pid(double k_p, double k_i, double k_d) {
-        return this.set_pid(new PIDController(k_p, k_i, k_d));
-    }
+public interface ZMotor {
 
     /**
      * Stop any output behaviour of this motor.
      */
-    public abstract ZMotor shutdown();
+    void shutdown();
 
     /**
-     * Stop the motor.
-     * Using brake mode if it is available.
+     * Brake the motor's motion.
+     * 
+     * @throws UnsupportedOperationException if the motor does not support such type
+     *                                       of control
      */
-    public abstract ZMotor stop(boolean stop);
+    default void brake() {
+        throw new UnsupportedOperationException("the motor does not support braking");
+    }
 
     /**
-     * Perform actions with the specified motion profile.
+     * Control the motor by percent power output.
+     * 
+     * @param ratio the percent power in [-1,1]
+     * @throws UnsupportedOperationException if the motor does not support such type
+     *                                       of control
      */
-    public abstract ZMotor go(String profile);
+    default void power(double ratio) {
+        throw new UnsupportedOperationException("the motor does not support output by percent power");
+    }
 
     /**
-     * Set the output.
-     *
-     * @param rads rad/s for general motors and rad for servos.
+     * Control the motor to turn to a specific angle.
+     * 
+     * @param rad the angle in radian
+     * @throws UnsupportedOperationException if the motor does not support such type
+     *                                       of control
+     * @apiNote Zero position of the angle is implementation defined.
      */
-    public abstract ZMotor go(double rads);
+    default void angle(double rad) {
+        throw new UnsupportedOperationException("the motor does not support turning by angle");
+    }
 
-    public abstract ZMotor raw(double output);
+    /**
+     * Control the motor by its output angular velocity.
+     * 
+     * @param rads the velocity in rad/s
+     * @throws UnsupportedOperationException if the motor does not support such type
+     *                                       of control
+     */
+    default void velocity(double rads) {
+        throw new UnsupportedOperationException("the motor does not support output by velocity");
+    }
+
+    /**
+     * Control the motor by its output voltage.
+     * 
+     * @param volt the voltage in V
+     * @throws UnsupportedOperationException if the motor does not support such type
+     *                                       of control
+     */
+    default void voltage(double volt) {
+        throw new UnsupportedOperationException("the motor does not support output by voltage");
+    }
+
+    /**
+     * Control the motor by its output current.
+     * 
+     * @param amp the current in A
+     * @throws UnsupportedOperationException if the motor does not support such type
+     *                                       of control
+     */
+    default void current(double amp) {
+        throw new UnsupportedOperationException("the motor does not support output by current");
+    }
+
+    /**
+     * Preset motions for the motor.
+     */
+    public static final class Profile extends HashMap<String, Runnable> {
+        public void go(String name) {
+            this.get(name).run();
+        }
+    }
+
 }
