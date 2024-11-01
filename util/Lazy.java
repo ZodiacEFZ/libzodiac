@@ -1,6 +1,7 @@
 package frc.libzodiac.util;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -25,6 +26,22 @@ public final class Lazy<T> implements Supplier<T> {
      */
     public Lazy(Supplier<T> supplier) {
         this.supplier = supplier;
+    }
+
+    /**
+     * Perform some action after the value is initialized.
+     * 
+     * @param action the action to perform
+     * @return a new `Lazy` instance
+     * @apiNote The bahavior is undefined unless <code>this</code> has not been
+     *          evaluated yet.
+     */
+    public Lazy<T> then(Consumer<T> action) {
+        return new Lazy<>(() -> {
+            final var value = this.supplier.get();
+            action.accept(value);
+            return value;
+        });
     }
 
     /**
