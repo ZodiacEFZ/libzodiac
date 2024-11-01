@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import frc.libzodiac.hardware.Pigeon;
 import frc.libzodiac.ui.Axis;
 import frc.libzodiac.ui.Axis2D;
@@ -14,7 +15,7 @@ import frc.libzodiac.util.Vec2;
 /**
  * A highly implemented class for hopefully all types of swerve control.
  */
-public abstract class Zwerve extends Zubsystem implements ZDashboard.Dashboard {
+public abstract class Zwerve extends Zubsystem {
     public static final double OUTPUT_FAST = 6;
     public static final double OUTPUT_NORMAL = 3;
     public static final double OUTPUT_SLOW = 1;
@@ -62,8 +63,8 @@ public abstract class Zwerve extends Zubsystem implements ZDashboard.Dashboard {
         odometry.update(getFieldRotation(), new SwerveModulePosition[]{front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()});
         //debug
         final var pose = odometry.getPoseMeters();
-        //dashboardTab().add("pose", "" + new Vec2D(pose.getX(), pose.getY()));
-        //dashboardTab().add("theta", pose.getRotation().getDegrees());
+        ZDashboard.add("pose", "" + new Vec2(pose.getX(), pose.getY()));
+        ZDashboard.add("theta", pose.getRotation().getDegrees());
         inav.update();
         return this;
     }
@@ -131,7 +132,7 @@ public abstract class Zwerve extends Zubsystem implements ZDashboard.Dashboard {
     private void go(Vec2 v, double output, boolean fieldRelated) {
         final var delta = new Rotation2d(this.target_theta).minus(new Rotation2d(this.gyro.get())).getRadians();
         //var rot = delta * ROTATION_KP;
-		var rot = rotationPID.calculate(delta, 0);
+        var rot = rotationPID.calculate(delta, 0);
         final var speed = fieldRelated ? ChassisSpeeds.fromFieldRelativeSpeeds(v.x(), v.y(), rot, getHeadlessRotation()) : new ChassisSpeeds(v.x(), v.y(), rot);
         this.go(speed, output);
     }

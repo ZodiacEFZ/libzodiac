@@ -3,7 +3,7 @@ package frc.libzodiac;
 import edu.wpi.first.wpilibj.Timer;
 import frc.libzodiac.util.Vec2;
 
-public class ZInertialNavigation implements ZDashboard.Dashboard {
+public class ZInertialNavigation {
     private final Gyro gyro;
 
     private final Timer timer = new Timer();
@@ -39,9 +39,9 @@ public class ZInertialNavigation implements ZDashboard.Dashboard {
         Vec2 dis = this.speed.mul(loopTime);
         this.pos = this.pos.add(dis);
         //debug
-        dashboardTab().add("posinav", "" + this.getPosition());
-        dashboardTab().add("yawinav", this.getYaw());
-        dashboardTab().add("acc", "" + acc);
+        ZDashboard.add("posinav", "" + this.getPosition());
+        ZDashboard.add("yawinav", this.getYaw());
+        ZDashboard.add("acc", "" + acc);
         return this;
     }
 
