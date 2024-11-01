@@ -1,14 +1,13 @@
 package frc.libzodiac.hardware;
 
-import java.util.Optional;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-
 import edu.wpi.first.math.controller.PIDController;
 import frc.libzodiac.ZMotor;
 import frc.libzodiac.util.Lazy;
+
+import java.util.Optional;
 
 /**
  * The <i>Vex 775 pro</i> motor.
@@ -16,20 +15,17 @@ import frc.libzodiac.util.Lazy;
 public final class Pro775 implements ZMotor {
 
     private final Lazy<TalonSRX> motor;
-
-    private Optional<PIDController> pid = Optional.empty();
-
     /**
      * Unit of the sensor wired to the <i>TalonSRX</i> encoder, represents how many
      * radians a raw sensor unit is equal to.
      */
     public double unit = 1;
-
     public Profile profile = new Profile();
+    private Optional<PIDController> pid = Optional.empty();
 
     /**
      * Bind to a <i>TalonSRX</i> encoder.
-     * 
+     *
      * @param can_id id on the CAN bus
      */
     public Pro775(int can_id) {
@@ -44,7 +40,7 @@ public final class Pro775 implements ZMotor {
 
     /**
      * Configure PID arguments of the motor.
-     * 
+     *
      * @param k_p PID proportional term factor
      * @param k_i PID integral term factor
      * @param k_d PID derivative term factor
@@ -58,7 +54,7 @@ public final class Pro775 implements ZMotor {
     /**
      * Configure the sensor unit on the encoder to make methods like
      * <code>.angle(double)</code> work properly under radians.
-     * 
+     *
      * @param unit how many radians a sensor raw unit is equal to
      * @return self for chaining
      */
@@ -86,9 +82,9 @@ public final class Pro775 implements ZMotor {
 
     /**
      * @implNote Unit of the angle may not necessarily be radian but dependant on
-     *           sensor
-     *           wired to the <i>TalonSRX</i> encoder unless <code>.unit</code> is
-     *           properly set.
+     * sensor
+     * wired to the <i>TalonSRX</i> encoder unless <code>.unit</code> is
+     * properly set.
      */
     @Override
     public void angle(double rad) {

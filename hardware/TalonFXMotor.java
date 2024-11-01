@@ -31,7 +31,7 @@ public class TalonFXMotor extends ZMotor {
      * @param kA          Acceleration Feedforward Gain
      */
     public static Slot0Configs PIDConfig(double kP, double kI, double kD, GravityTypeValue gravityType, double kG,
-            double kS, double kV, double kA) {
+                                         double kS, double kV, double kA) {
         return new Slot0Configs().withKP(kP).withKI(kI).withKD(kD).withGravityType(gravityType).withKG(kG).withKS(kS)
                 .withKV(kV).withKA(kA);
     }

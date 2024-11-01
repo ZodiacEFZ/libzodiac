@@ -1,10 +1,9 @@
 package frc.libzodiac.util;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import frc.libzodiac.Util;
 
 import java.util.function.Function;
-
-import edu.wpi.first.math.geometry.Translation2d;
 
 /**
  * A utility for handling 2-dimentional vector calculations.
@@ -12,44 +11,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 public record Vec2(double x, double y) {
 
     /**
-     * Get x component of the vector.
-     * 
-     * @return x
-     */
-    public double x() {
-        return this.x;
-    }
-
-    /**
-     * Get y component of the vector.
-     * 
-     * @return y
-     */
-    public double y() {
-        return this.y;
-    }
-
-    /**
-     * Get the radius/magnitude of the vector.
-     * 
-     * @return positive
-     */
-    public double r() {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
-    }
-
-    /**
-     * Get the direction of the vector.
-     * 
-     * @return in [-pi,pi)
-     */
-    public double theta() {
-        return Math.atan2(this.y, this.x);
-    }
-
-    /**
      * Construct a vector from polar coordinates, i.e. (r,theta) -> (x,y).
-     * 
+     *
      * @param r     the radius of polar coordinates
      * @param theta the angle of polar coordinates
      * @return a rectangular vector
@@ -59,7 +22,53 @@ public record Vec2(double x, double y) {
     }
 
     /**
-     * 
+     * Conversion form WPILib's <code>Translation2d</code>.
+     *
+     * @param value value to convert
+     * @return converted new instance
+     */
+    public static Vec2 from(Translation2d value) {
+        return new Vec2(value.getX(), value.getY());
+    }
+
+    /**
+     * Get x component of the vector.
+     *
+     * @return x
+     */
+    public double x() {
+        return this.x;
+    }
+
+    /**
+     * Get y component of the vector.
+     *
+     * @return y
+     */
+    public double y() {
+        return this.y;
+    }
+
+    /**
+     * Get the radius/magnitude of the vector.
+     *
+     * @return positive
+     */
+    public double r() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
+    /**
+     * Get the direction of the vector.
+     *
+     * @return in [-pi,pi)
+     */
+    public double theta() {
+        return Math.atan2(this.y, this.x);
+    }
+
+    /**
+     *
      */
     @Override
     public String toString() {
@@ -69,7 +78,7 @@ public record Vec2(double x, double y) {
     /**
      * Create new vector instance with specified x component, preserving original y
      * component.
-     * 
+     *
      * @param x the new x component
      * @return the new vector
      */
@@ -80,7 +89,7 @@ public record Vec2(double x, double y) {
     /**
      * Create new vector instance with specified y component, preserving original x
      * component.
-     * 
+     *
      * @param y the new y component
      * @return the new vector
      */
@@ -91,7 +100,7 @@ public record Vec2(double x, double y) {
     /**
      * Create new vector instance with specified radius, preserving
      * original direction.
-     * 
+     *
      * @param r the new radius
      * @return the new vector
      */
@@ -102,7 +111,7 @@ public record Vec2(double x, double y) {
     /**
      * Create new vector instance with specified direction, preserving original
      * radius/magnitude.
-     * 
+     *
      * @param theta the new direction
      * @return the new vector
      */
@@ -112,7 +121,7 @@ public record Vec2(double x, double y) {
 
     /**
      * Invert the vector to opposite direction.
-     * 
+     *
      * @return an inverted vector
      */
     public Vec2 inv() {
@@ -121,7 +130,7 @@ public record Vec2(double x, double y) {
 
     /**
      * The addition operation.
-     * 
+     *
      * @param rhs right-hand side of operator
      * @return result of operator
      */
@@ -131,7 +140,7 @@ public record Vec2(double x, double y) {
 
     /**
      * The substraction operation.
-     * 
+     *
      * @param rhs right-hand side of operator
      * @return result of operator
      */
@@ -141,7 +150,7 @@ public record Vec2(double x, double y) {
 
     /**
      * The multiplication operation.
-     * 
+     *
      * @param k the multiplier
      * @return result of operator
      */
@@ -151,7 +160,7 @@ public record Vec2(double x, double y) {
 
     /**
      * The dot-product operation.
-     * 
+     *
      * @param rhs right-hand side of operator
      * @return result of operator
      */
@@ -161,7 +170,7 @@ public record Vec2(double x, double y) {
 
     /**
      * The division operation.
-     * 
+     *
      * @param k the divisor
      * @return result of operator
      */
@@ -171,7 +180,7 @@ public record Vec2(double x, double y) {
 
     /**
      * Rotate the vector a specific angle. CCW positive.
-     * 
+     *
      * @param phi the angle to rotate
      * @return a rotated vector
      */
@@ -181,7 +190,7 @@ public record Vec2(double x, double y) {
 
     /**
      * Calculate the vector's projection on another vector.
-     * 
+     *
      * @param on the vector to project on
      * @return the projected vector
      */
@@ -191,7 +200,7 @@ public record Vec2(double x, double y) {
 
     /**
      * Compare the magnitude of two vectors, return the maximum.
-     * 
+     *
      * @param other another vector
      * @return the larger one
      */
@@ -201,7 +210,7 @@ public record Vec2(double x, double y) {
 
     /**
      * Compare the magnitude of two vectors, return the minimum.
-     * 
+     *
      * @param other another vector
      * @return the smaller one
      */
@@ -211,7 +220,7 @@ public record Vec2(double x, double y) {
 
     /**
      * Map the x component of the vector.
-     * 
+     *
      * @param mapping mapping to apply to x
      * @return a mapped vector
      */
@@ -221,22 +230,12 @@ public record Vec2(double x, double y) {
 
     /**
      * Map the y component of the vector.
-     * 
+     *
      * @param mapping mapping to apply to y
      * @return a mapped vector
      */
     public Vec2 map_y(Function<Double, Double> mapping) {
         return this.with_y(mapping.apply(this.y));
-    }
-
-    /**
-     * Conversion form WPILib's <code>Translation2d</code>.
-     * 
-     * @param value value to convert
-     * @return converted new instance
-     */
-    public static Vec2 from(Translation2d value) {
-        return new Vec2(value.getX(), value.getY());
     }
 
 }

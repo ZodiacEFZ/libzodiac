@@ -1,7 +1,6 @@
 package frc.libzodiac.hardware;
 
 import com.ctre.phoenix6.hardware.CANcoder;
-
 import frc.libzodiac.util.Lazy;
 
 public class CanCoder {

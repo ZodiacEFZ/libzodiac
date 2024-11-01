@@ -2,7 +2,6 @@ package frc.libzodiac.hardware;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-
 import frc.libzodiac.util.Lazy;
 
 public final class MagEncoder {

@@ -10,18 +10,17 @@ import java.util.function.Supplier;
 public final class Lazy<T> implements Supplier<T> {
 
     /**
+     * The function that performs lazy initialization.
+     */
+    private final Supplier<T> supplier;
+    /**
      * The lazy-initialized value, maybe uninitialized(null).
      */
     private Optional<T> value = Optional.empty();
 
     /**
-     * The function that performs lazy initialization.
-     */
-    private final Supplier<T> supplier;
-
-    /**
      * Create a lazy-initialized object with specified supplier.
-     * 
+     *
      * @param supplier the function that provides the value
      */
     public Lazy(Supplier<T> supplier) {
@@ -30,11 +29,11 @@ public final class Lazy<T> implements Supplier<T> {
 
     /**
      * Perform some action after the value is initialized.
-     * 
+     *
      * @param action the action to perform
      * @return a new `Lazy` instance
      * @apiNote The bahavior is undefined unless <code>this</code> has not been
-     *          evaluated yet.
+     * evaluated yet.
      */
     public Lazy<T> then(Consumer<T> action) {
         return new Lazy<>(() -> {

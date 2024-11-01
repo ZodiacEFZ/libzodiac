@@ -14,7 +14,7 @@ public final class Zambda extends ZCommand {
 
     /**
      * Create a command from code with specified requirement(s).
-     * 
+     *
      * @param req  requirement of this command
      * @param exec the code to execute
      */
@@ -25,7 +25,7 @@ public final class Zambda extends ZCommand {
 
     /**
      * Create a command from code with specified requirement(s).
-     * 
+     *
      * @param req  requirement of this command
      * @param exec the code to execute
      */
@@ -38,12 +38,12 @@ public final class Zambda extends ZCommand {
 
     /**
      * Create an independant/no requirement command.
-     * 
+     *
      * @param exec the code to execute
      * @return a new command
      */
     public static Zambda indep(Runnable exec) {
-        return new Zambda(new Subsystem[] {}, exec);
+        return new Zambda(new Subsystem[]{}, exec);
     }
 
     @Override

@@ -15,7 +15,7 @@ public interface ZMotor {
 
     /**
      * Brake the motor's motion.
-     * 
+     *
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
      */
@@ -25,7 +25,7 @@ public interface ZMotor {
 
     /**
      * Control the motor by percent power output.
-     * 
+     *
      * @param ratio the percent power in [-1,1]
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
@@ -36,7 +36,7 @@ public interface ZMotor {
 
     /**
      * Control the motor to turn to a specific angle.
-     * 
+     *
      * @param rad the angle in radian
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
@@ -48,7 +48,7 @@ public interface ZMotor {
 
     /**
      * Control the motor by its output angular velocity.
-     * 
+     *
      * @param rads the velocity in rad/s
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
@@ -59,7 +59,7 @@ public interface ZMotor {
 
     /**
      * Control the motor by its output voltage.
-     * 
+     *
      * @param volt the voltage in V
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
@@ -70,7 +70,7 @@ public interface ZMotor {
 
     /**
      * Control the motor by its output current.
-     * 
+     *
      * @param amp the current in A
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
@@ -82,7 +82,7 @@ public interface ZMotor {
     /**
      * Preset motions for the motor.
      */
-    public static final class Profile extends HashMap<String, Runnable> {
+    final class Profile extends HashMap<String, Runnable> {
         public void go(String name) {
             this.get(name).run();
         }
