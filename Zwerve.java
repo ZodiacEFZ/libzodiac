@@ -14,13 +14,14 @@ import frc.libzodiac.util.Vec2;
 /**
  * A highly implemented class for hopefully all types of swerve control.
  */
-public abstract class Zwerve extends Zubsystem {
+public abstract class Zwerve extends Zubsystem implements ZDashboard.Dashboard {
     public static final double OUTPUT_FAST = 6;
     public static final double OUTPUT_NORMAL = 3;
     public static final double OUTPUT_SLOW = 1;
     private static final double ROTATION_KP = 0.05;
-    private static final double K_ROTATION = 1;
+    private static final double K_ROTATION = 0.05;
     public static SwerveDriveKinematics kinematics;
+    private final PIDController rotationPID = new PIDController(0.05, 0, 0.01);
     private final Pigeon gyro;
     private final ZInertialNavigation inav;
     private final Module front_left;
@@ -59,6 +60,10 @@ public abstract class Zwerve extends Zubsystem {
 
     public Zwerve update() {
         odometry.update(getFieldRotation(), new SwerveModulePosition[]{front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()});
+        //debug
+        final var pose = odometry.getPoseMeters();
+        //dashboardTab().add("pose", "" + new Vec2D(pose.getX(), pose.getY()));
+        //dashboardTab().add("theta", pose.getRotation().getDegrees());
         inav.update();
         return this;
     }
@@ -124,8 +129,9 @@ public abstract class Zwerve extends Zubsystem {
     }
 
     private void go(Vec2 v, double output, boolean fieldRelated) {
-        final var delta = new Rotation2d(this.target_theta - this.gyro.get()).getRadians();
-        var rot = delta * ROTATION_KP;
+        final var delta = new Rotation2d(this.target_theta).minus(new Rotation2d(this.gyro.get())).getRadians();
+        //var rot = delta * ROTATION_KP;
+		var rot = rotationPID.calculate(delta, 0);
         final var speed = fieldRelated ? ChassisSpeeds.fromFieldRelativeSpeeds(v.x(), v.y(), rot, getHeadlessRotation()) : new ChassisSpeeds(v.x(), v.y(), rot);
         this.go(speed, output);
     }

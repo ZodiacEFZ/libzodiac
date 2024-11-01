@@ -38,6 +38,7 @@ public class ZInertialNavigation implements ZDashboard.Dashboard {
         this.speed = this.speed.add(acc.mul(loopTime));
         Vec2 dis = this.speed.mul(loopTime);
         this.pos = this.pos.add(dis);
+        //debug
         dashboardTab().add("posinav", "" + this.getPosition());
         dashboardTab().add("yawinav", this.getYaw());
         dashboardTab().add("acc", "" + acc);
