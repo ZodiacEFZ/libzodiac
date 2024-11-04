@@ -8,12 +8,12 @@ import edu.wpi.first.wpilibj.shuffleboard.SimpleWidget;
 import java.util.HashMap;
 
 public class ZDashboard {
+    private static final ZDashboard dashboard=new ZDashboard("Debug");
     private static ShuffleboardTab tab;
     private static WidgetStorage widgetStorage;
 
-    public ZDashboard(String name) {
-        ZDashboard.tab = Shuffleboard.getTab(name);
-        Shuffleboard.selectTab("debug");
+    private ZDashboard(String name) {
+        ZDashboard.selectTab(name);
     }
 
     public static ShuffleboardTab tab(String name) {

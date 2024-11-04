@@ -40,8 +40,8 @@ public final class TalonFXSwerve implements Module {
         state.speedMetersPerSecond *= Math.abs(state.angle.minus(currentAngle).getCos());
         var angle = this.angle_motor.get() / TURNING_RATIO + state.angle.minus(currentAngle).getRadians();
 
-        this.speed_motor.go_v(state.speedMetersPerSecond * DRIVE_RATIO / WHEEL_CIRCUS * 2 * Math.PI);
-        this.angle_motor.go(angle * TURNING_RATIO);
+        this.speed_motor.velocity_v(state.speedMetersPerSecond * DRIVE_RATIO / WHEEL_CIRCUS * 2 * Math.PI);
+        this.angle_motor.angle(angle * TURNING_RATIO);
         return this;
     }
 
@@ -61,6 +61,7 @@ public final class TalonFXSwerve implements Module {
     public TalonFXSwerve invert(boolean speed, boolean angle) {
         this.speed_motor.invert(speed);
         this.angle_motor.invert(angle);
+        this.reset();
         return this;
     }
 

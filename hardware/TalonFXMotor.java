@@ -11,7 +11,7 @@ import frc.libzodiac.ZMotor;
 import frc.libzodiac.Zervo;
 import frc.libzodiac.util.Lazy;
 
-public class TalonFXMotor extends ZMotor {
+public class TalonFXMotor implements ZMotor {
     public static final double VELOCITY_RAW_UNIT = 2 * Math.PI;
 
     protected final Lazy<TalonFX> motor;
@@ -19,6 +19,8 @@ public class TalonFXMotor extends ZMotor {
     public TalonFXMotor(int can_id) {
         this.motor = new Lazy<>(() -> new TalonFX(can_id));
     }
+
+    boolean inverted = false;
 
     /**
      * @param kP          Proportional Gain
@@ -57,57 +59,42 @@ public class TalonFXMotor extends ZMotor {
         return new TalonFXConfiguration().withSlot0(pid).withMotionMagic(motionMagic);
     }
 
-    @Override
-    protected TalonFXMotor apply_pid(PIDController pid) {
+    public TalonFXMotor set_pid(PIDController pid) {
         this.motor.get().getConfigurator()
                 .apply(new Slot0Configs().withKP(pid.getP()).withKI(pid.getI()).withKD(pid.getD()));
         return this;
     }
 
-    public ZMotor set_pid(Slot0Configs config) {
+    public TalonFXMotor set_pid(Slot0Configs config) {
         this.motor.get().getConfigurator().apply(config);
         return this;
     }
 
-    public ZMotor set_motion_magic(TalonFXConfiguration config) {
+    public TalonFXMotor set_motion_magic(TalonFXConfiguration config) {
         this.motor.get().getConfigurator().apply(config);
         return this;
     }
 
     @Override
-    public TalonFXMotor shutdown() {
+    public void shutdown() {
         this.motor.get().stopMotor();
-        return this;
     }
 
     @Override
-    public TalonFXMotor stop(boolean stop) {
-        if (stop) {
-            this.motor.get().setControl(new StaticBrake());
-        } else {
-            this.motor.get().setControl(new CoastOut());
-        }
-        return this;
+    public void brake() {
+        this.motor.get().setControl(new StaticBrake());
     }
 
     @Override
-    public TalonFXMotor go(String profile) {
-        final var v = this.profile.get(profile);
-        return this.go(inverted ? -v : v);
-    }
-
-    @Override
-    public TalonFXMotor go(double rad_s) {
+    public void velocity(double rad_s) {
         final var vel = this.inverted ? -rad_s : rad_s;
         final var v = new VelocityDutyCycle(vel / TalonFXMotor.VELOCITY_RAW_UNIT);
         this.motor.get().setControl(v);
-        return this;
     }
 
     @Override
-    public TalonFXMotor raw(double output) {
+    public void power(double output) {
         this.motor.get().set(inverted ? -output : output);
-        return this;
     }
 
     public TalonFXMotor invert(boolean inverted) {
@@ -119,7 +106,7 @@ public class TalonFXMotor extends ZMotor {
         return this.invert(true);
     }
 
-    public TalonFXMotor go_v(double rad_s) {
+    public TalonFXMotor velocity_v(double rad_s) {
         final var vel = this.inverted ? -rad_s : rad_s;
         final var v = new VelocityVoltage(vel / TalonFXMotor.VELOCITY_RAW_UNIT);
         this.motor.get().setControl(v);
@@ -134,17 +121,10 @@ public class TalonFXMotor extends ZMotor {
         }
 
         @Override
-        public Servo go(String profile) {
-            final var v = this.profile.get(profile);
-            return this.go(v);
-        }
-
-        @Override
-        public Servo go(double rad) {
+        public void angle(double rad) {
             final var pos = this.inverted ? -rad : rad;
             final var v = new PositionDutyCycle(pos / Servo.POSITION_RAW_UNIT);
             this.motor.get().setControl(v);
-            return this;
         }
 
         @Override
@@ -178,22 +158,20 @@ public class TalonFXMotor extends ZMotor {
         }
 
         @Override
-        public MotionMagicServo go(double rad) {
+        public void angle(double rad) {
             final var pos = this.inverted ? -rad : rad;
             final var v = new MotionMagicVoltage(pos / Servo.POSITION_RAW_UNIT);
             this.motor.get().setControl(v);
-            return this;
         }
 
         @Override
-        public MotionMagicServo go_v(double rad_s) {
+        public void velocity(double rad_s) {
             final var vel = this.inverted ? -rad_s : rad_s;
             final var v = new MotionMagicVelocityVoltage(vel / TalonFXMotor.VELOCITY_RAW_UNIT);
             this.motor.get().setControl(v);
-            return this;
         }
 
-        public MotionMagicServo go_expo(double rad) {
+        public MotionMagicServo angle_expo(double rad) {
             final var pos = this.inverted ? -rad : rad;
             final var v = new MotionMagicExpoVoltage(pos / Servo.POSITION_RAW_UNIT);
             this.motor.get().setControl(v);
