@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import frc.libzodiac.hardware.Pigeon;
 import frc.libzodiac.ui.Axis;
 import frc.libzodiac.ui.Axis2D;
@@ -36,10 +35,10 @@ public abstract class Zwerve extends Zubsystem {
     private double target_theta;
 
     public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Pigeon gyro, Vec2 size, Pose2d initialPose) {
-        this.front_left = front_left.reset();
-        this.front_right = front_right.reset();
-        this.rear_left = rear_left.reset();
-        this.rear_right = rear_right.reset();
+        this.front_left = front_left;
+        this.front_right = front_right;
+        this.rear_left = rear_left;
+        this.rear_right = rear_right;
         this.gyro = gyro;
         this.inav = new ZInertialNavigation(gyro).set_zero();
         this.field_zero = this.gyro.get();
@@ -154,11 +153,11 @@ public abstract class Zwerve extends Zubsystem {
 
         SwerveModulePosition getPosition();
 
-        Module reset();
+        Module reset(boolean encoder);
 
         Module shutdown();
 
-        Module invert(boolean speed, boolean angle);
+        Module invert(boolean speed, boolean angle, boolean encoder);
 
         Module set_pid(PIDController v, PIDController a);
     }

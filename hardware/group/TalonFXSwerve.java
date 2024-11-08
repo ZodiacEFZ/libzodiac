@@ -21,14 +21,13 @@ public final class TalonFXSwerve implements Module {
         this.speed_motor = new TalonFXMotor.Servo(speed_motor_id);
         this.angle_motor = new TalonFXMotor.Servo(angle_motor_id);
         this.encoder = new MagEncoder(encoder_id).set_zero(encoder_zero);
-        this.reset();
     }
 
     @Override
-    public TalonFXSwerve reset() {
+    public TalonFXSwerve reset(boolean encoder) {
         final var curr = this.encoder.get();
         final var target = curr * TURNING_RATIO;
-        this.angle_motor.set_zero(target);
+        this.angle_motor.set_zero(encoder ? -target : target);
         return this;
     }
 
@@ -58,10 +57,10 @@ public final class TalonFXSwerve implements Module {
     }
 
     @Override
-    public TalonFXSwerve invert(boolean speed, boolean angle) {
+    public TalonFXSwerve invert(boolean speed, boolean angle, boolean encoder) {
         this.speed_motor.invert(speed);
         this.angle_motor.invert(angle);
-        this.reset();
+        this.reset(encoder);
         return this;
     }
 
