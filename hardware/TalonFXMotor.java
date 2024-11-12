@@ -15,12 +15,11 @@ public class TalonFXMotor implements ZMotor {
     public static final double VELOCITY_RAW_UNIT = 2 * Math.PI;
 
     protected final Lazy<TalonFX> motor;
+    boolean inverted = false;
 
     public TalonFXMotor(int can_id) {
         this.motor = new Lazy<>(() -> new TalonFX(can_id));
     }
-
-    boolean inverted = false;
 
     /**
      * @param kP          Proportional Gain

@@ -46,12 +46,12 @@ public class Axis2D {
         return new Axis2D(this.x.threshold(threshold), this.y.threshold(threshold));
     }
 
-    public Axis2D with_map(Function<Double, Double> mapping) {
-        return new Axis2D(this.x, this.y, mapping);
-    }
-
     public Axis2D map(Function<Double, Double> mapping) {
         final var f = this.mapping.compose(mapping);
         return this.with_map(f);
+    }
+
+    public Axis2D with_map(Function<Double, Double> mapping) {
+        return new Axis2D(this.x, this.y, mapping);
     }
 }

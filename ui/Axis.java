@@ -5,7 +5,8 @@ import java.util.function.Function;
 
 public final class Axis {
     public static final Function<Double, Double> QUAD_FILTER = x -> x * x * Math.signum(x);
-    public static final Function<Double, Double> ATAN_FILTER = x -> (0.3771257645012 * Math.atan(8 * Math.abs(x) - 4) + 0.5) * Math.signum(x);
+    public static final Function<Double, Double> ATAN_FILTER =
+            x -> (0.3771257645012 * Math.atan(8 * Math.abs(x) - 4) + 0.5) * Math.signum(x);
     public final Function<Double, Double> mapping;
     private final DoubleSupplier raw_input;
 
@@ -17,10 +18,6 @@ public final class Axis {
     public Axis(DoubleSupplier raw_input, Function<Double, Double> mapping) {
         this.raw_input = raw_input;
         this.mapping = mapping;
-    }
-
-    public static Function<Double, Double> thre_filter(double thre) {
-        return x -> Math.abs(x) < thre ? 0 : x;
     }
 
     /**
@@ -38,11 +35,8 @@ public final class Axis {
         return this.raw_input.getAsDouble();
     }
 
-    /**
-     * Create a new <code>Axis</code> with specified <code>mapping</code>.
-     */
-    public Axis with_map(Function<Double, Double> mapping) {
-        return new Axis(this.raw_input, mapping);
+    public Axis inverted() {
+        return this.map(x -> -x);
     }
 
     /**
@@ -53,13 +47,20 @@ public final class Axis {
         return this.with_map(f);
     }
 
-    public Axis inverted() {
-        return this.map(x -> -x);
+    /**
+     * Create a new <code>Axis</code> with specified <code>mapping</code>.
+     */
+    public Axis with_map(Function<Double, Double> mapping) {
+        return new Axis(this.raw_input, mapping);
     }
 
     public Axis threshold(double thre) {
         final var f = thre_filter(thre);
         return this.map(f);
+    }
+
+    public static Function<Double, Double> thre_filter(double thre) {
+        return x -> Math.abs(x) < thre ? 0 : x;
     }
 
     public Button as_button() {

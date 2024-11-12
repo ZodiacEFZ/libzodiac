@@ -48,8 +48,9 @@ public final class Lazy<T> implements Supplier<T> {
      */
     @Override
     public T get() {
-        if (this.value.isEmpty())
+        if (this.value.isEmpty()) {
             this.value = Optional.of(supplier.get());
+        }
         return this.value.get();
     }
 

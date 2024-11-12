@@ -20,16 +20,16 @@ public final class Xbox extends SubsystemBase {
         return new Axis2D(this.lx(), this.ly());
     }
 
-    public Axis2D r() {
-        return new Axis2D(this.rx(), this.ry());
-    }
-
     public Axis lx() {
         return new Axis(this.xbox::getLeftX);
     }
 
     public Axis ly() {
         return new Axis(this.xbox::getLeftY);
+    }
+
+    public Axis2D r() {
+        return new Axis2D(this.rx(), this.ry());
     }
 
     public Axis rx() {
@@ -92,16 +92,6 @@ public final class Xbox extends SubsystemBase {
         return new Button(this.xbox::getYButton);
     }
 
-    public Xbox end_rumble() {
-        this.xbox.setRumble(RumbleType.kBothRumble, 0);
-        return this;
-    }
-
-    public Xbox set_rumble(double v) {
-        this.xbox.setRumble(RumbleType.kBothRumble, v);
-        return this;
-    }
-
     public Xbox rumble(double time) {
         this.rumble(time, 0.5);
         return this;
@@ -122,5 +112,15 @@ public final class Xbox extends SubsystemBase {
         } else {
             this.set_rumble(rumbleValue);
         }
+    }
+
+    public Xbox end_rumble() {
+        this.xbox.setRumble(RumbleType.kBothRumble, 0);
+        return this;
+    }
+
+    public Xbox set_rumble(double v) {
+        this.xbox.setRumble(RumbleType.kBothRumble, v);
+        return this;
     }
 }

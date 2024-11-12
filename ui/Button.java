@@ -13,15 +13,15 @@ public class Button {
         this.status = status;
     }
 
-    public boolean down() {
-        return this.status.getAsBoolean();
-    }
-
     public boolean pressed() {
         final var curr = this.down();
         final var res = !this.prev && curr;
         this.prev = curr;
         return res;
+    }
+
+    public boolean down() {
+        return this.status.getAsBoolean();
     }
 
     public boolean released() {
@@ -31,13 +31,13 @@ public class Button {
         return res;
     }
 
-    public Trigger trigger() {
-        return new Trigger(this.status);
-    }
-
     public Button on_press(Command cmd) {
         this.trigger().onTrue(cmd);
         return this;
+    }
+
+    public Trigger trigger() {
+        return new Trigger(this.status);
     }
 
     public Button on_release(Command cmd) {

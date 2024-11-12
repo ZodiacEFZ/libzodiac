@@ -24,14 +24,6 @@ public final class TalonFXSwerve implements Module {
     }
 
     @Override
-    public TalonFXSwerve reset(boolean encoder) {
-        final var curr = this.encoder.get();
-        final var target = (encoder ? -curr : curr) * TURNING_RATIO;
-        this.angle_motor.set_zero(target);
-        return this;
-    }
-
-    @Override
     public TalonFXSwerve go(SwerveModuleState desiredState) {
         final var currentAngle = new Rotation2d(this.angle_motor.get() / TURNING_RATIO);
 
@@ -47,6 +39,14 @@ public final class TalonFXSwerve implements Module {
     @Override
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(speed_motor.get(), new Rotation2d(angle_motor.get()));
+    }
+
+    @Override
+    public TalonFXSwerve reset(boolean encoder) {
+        final var curr = this.encoder.get();
+        final var target = (encoder ? -curr : curr) * TURNING_RATIO;
+        this.angle_motor.set_zero(target);
+        return this;
     }
 
     @Override
