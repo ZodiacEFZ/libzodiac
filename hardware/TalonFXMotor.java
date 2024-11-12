@@ -21,6 +21,10 @@ public class TalonFXMotor implements ZMotor {
         this.motor = new Lazy<>(() -> new TalonFX(can_id));
     }
 
+    public static Slot0Configs PIDConfig(double kP, double kI, double kD, double kS) {
+        return PIDConfig(kP, kI, kD, GravityTypeValue.Elevator_Static, 0, kS, 0, 0);
+    }
+
     /**
      * @param kP          Proportional Gain
      * @param kI          Integral Gain
@@ -37,21 +41,17 @@ public class TalonFXMotor implements ZMotor {
                 .withKV(kV).withKA(kA);
     }
 
-    public static Slot0Configs PIDConfig(double kP, double kI, double kD, double kS) {
-        return PIDConfig(kP, kI, kD, GravityTypeValue.Elevator_Static, 0, kS, 0, 0);
-    }
-
     public static MotionMagicConfigs MotionMagicConfig(double v, double a, double j) {
         return MotionMagicConfig(0, 0, v, a, j);
-    }
-
-    public static MotionMagicConfigs MotionMagicConfig(double a, double j) {
-        return MotionMagicConfig(0, 0, 0, a, j);
     }
 
     public static MotionMagicConfigs MotionMagicConfig(double kV, double kA, double v, double a, double j) {
         return new MotionMagicConfigs().withMotionMagicExpo_kV(kV).withMotionMagicExpo_kA(kA)
                 .withMotionMagicCruiseVelocity(v).withMotionMagicAcceleration(a).withMotionMagicJerk(j);
+    }
+
+    public static MotionMagicConfigs MotionMagicConfig(double a, double j) {
+        return MotionMagicConfig(0, 0, 0, a, j);
     }
 
     public static TalonFXConfiguration PIDMotionMagicConfig(Slot0Configs pid, MotionMagicConfigs motionMagic) {
@@ -76,12 +76,24 @@ public class TalonFXMotor implements ZMotor {
 
     @Override
     public void shutdown() {
+        this.motor.get().setControl(new CoastOut());
         this.motor.get().stopMotor();
     }
 
     @Override
     public void brake() {
         this.motor.get().setControl(new StaticBrake());
+        this.motor.get().stopMotor();
+    }
+
+    @Override
+    public void set_brake(boolean brake) {
+        this.motor.get().setControl(brake ? new StaticBrake() : new CoastOut());
+    }
+
+    @Override
+    public void power(double output) {
+        this.motor.get().set(inverted ? -output : output);
     }
 
     @Override
@@ -91,18 +103,13 @@ public class TalonFXMotor implements ZMotor {
         this.motor.get().setControl(v);
     }
 
-    @Override
-    public void power(double output) {
-        this.motor.get().set(inverted ? -output : output);
+    public TalonFXMotor invert() {
+        return this.invert(true);
     }
 
     public TalonFXMotor invert(boolean inverted) {
         this.inverted = inverted;
         return this;
-    }
-
-    public TalonFXMotor invert() {
-        return this.invert(true);
     }
 
     public TalonFXMotor velocity_v(double rad_s) {
