@@ -16,6 +16,21 @@ public class Pigeon implements Zensor, ZInertialNavigation.Gyro {
         this.pigeon = new Lazy<>(() -> new Pigeon2(can_id));
     }
 
+    @Override
+    public double get(String value) {
+        return switch (value.trim().toLowerCase()) {
+            case "yaw" -> this.yaw().get();
+            case "pitch" -> this.pitch().get();
+            case "roll" -> this.roll().get();
+            default -> throw new InvalidParameterException(value);
+        };
+    }
+
+    @Override
+    public double get() {
+        return this.yaw().get();
+    }
+
     public Axis yaw() {
         return new Axis(() -> Math.toRadians(this.pigeon.get().getYaw().refresh().getValue()));
     }
@@ -26,21 +41,6 @@ public class Pigeon implements Zensor, ZInertialNavigation.Gyro {
 
     public Axis roll() {
         return new Axis(() -> Math.toRadians(this.pigeon.get().getRoll().refresh().getValue()));
-    }
-
-    @Override
-    public double get() {
-        return this.yaw().get();
-    }
-
-    @Override
-    public double get(String value) {
-        return switch (value.trim().toLowerCase()) {
-            case "yaw" -> this.yaw().get();
-            case "pitch" -> this.pitch().get();
-            case "roll" -> this.roll().get();
-            default -> throw new InvalidParameterException(value);
-        };
     }
 
     @Override

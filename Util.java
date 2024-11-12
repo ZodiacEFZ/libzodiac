@@ -33,11 +33,11 @@ public class Util {
         return Math.abs(x0 - x1) < Math.abs(x0 - x2) ? x1 : x2;
     }
 
-    public static boolean approx(double x0, double x1, double thre) {
-        return Math.abs(x0 - x1) < thre;
-    }
-
     public static boolean approx(double x0, double x1) {
         return approx(x0, x1, 1e-3);
+    }
+
+    public static boolean approx(double x0, double x1, double thre) {
+        return Math.abs(x0 - x1) < thre;
     }
 }

@@ -16,11 +16,6 @@ public class ZInertialNavigation {
         this.gyro = gyro;
     }
 
-    public ZInertialNavigation set_zero() {
-        this.zero = this.gyro.getYaw();
-        return this;
-    }
-
     public ZInertialNavigation set_zero(double zero) {
         this.zero = zero;
         this.started = true;
@@ -29,8 +24,9 @@ public class ZInertialNavigation {
 
     public ZInertialNavigation update() {
         if (!this.started) {
-            return this;
+            this.set_zero();
         }
+
         final var loopTime = this.timer.get();
         this.timer.reset();
 
@@ -45,16 +41,21 @@ public class ZInertialNavigation {
         return this;
     }
 
+    public ZInertialNavigation set_zero() {
+        this.zero = this.gyro.getYaw();
+        return this;
+    }
+
+    public double getYaw() {
+        return this.gyro.getYaw() - this.zero;
+    }
+
     public Vec2 getPosition() {
         return pos;
     }
 
     public Vec2 getSpeed() {
         return this.speed;
-    }
-
-    public double getYaw() {
-        return this.gyro.getYaw() - this.zero;
     }
 
     public interface Gyro {

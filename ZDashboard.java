@@ -16,14 +16,14 @@ public class ZDashboard {
         ZDashboard.selectTab(name);
     }
 
-    public static ShuffleboardTab tab(String name) {
-        return Shuffleboard.getTab(name);
-    }
-
     public static ShuffleboardTab selectTab(String name) {
         ZDashboard.tab = Shuffleboard.getTab(name);
         Shuffleboard.selectTab(name);
         return ZDashboard.tab;
+    }
+
+    public static ShuffleboardTab tab(String name) {
+        return Shuffleboard.getTab(name);
     }
 
     public static Widget add(String name, Object value) {

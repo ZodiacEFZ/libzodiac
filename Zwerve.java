@@ -46,12 +46,12 @@ public abstract class Zwerve extends Zubsystem {
         this.target_theta = this.gyro.get();
         final var width = size.x();
         final var length = size.y();
-        kinematics = new SwerveDriveKinematics(new Translation2d(length / 2, width / 2), new Translation2d(length / 2, -width / 2), new Translation2d(-length / 2, width / 2), new Translation2d(-length / 2, -width / 2));
-        this.odometry = new SwerveDriveOdometry(kinematics, getFieldRotation(), new SwerveModulePosition[]{front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()}, initialPose);
-    }
-
-    public Rotation2d getHeadlessRotation() {
-        return Rotation2d.fromRadians(this.gyro.get() - headless_zero);
+        kinematics = new SwerveDriveKinematics(new Translation2d(length / 2, width / 2),
+                new Translation2d(length / 2, -width / 2), new Translation2d(-length / 2, width / 2),
+                new Translation2d(-length / 2, -width / 2));
+        this.odometry = new SwerveDriveOdometry(kinematics, getFieldRotation(),
+                new SwerveModulePosition[]{front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(),
+                        rear_right.getPosition()}, initialPose);
     }
 
     public Rotation2d getFieldRotation() {
@@ -59,13 +59,22 @@ public abstract class Zwerve extends Zubsystem {
     }
 
     public Zwerve update() {
-        odometry.update(getFieldRotation(), new SwerveModulePosition[]{front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(), rear_right.getPosition()});
+        odometry.update(getFieldRotation(),
+                new SwerveModulePosition[]{front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(),
+                        rear_right.getPosition()});
         //debug
         final var pose = odometry.getPoseMeters();
         ZDashboard.add("pose", "" + new Vec2(pose.getX(), pose.getY()));
         ZDashboard.add("theta", pose.getRotation().getDegrees());
         inav.update();
         return this;
+    }
+
+    /**
+     * Enable headless mode.
+     */
+    public Zwerve headless() {
+        return this.headless(true);
     }
 
     /**
@@ -76,13 +85,6 @@ public abstract class Zwerve extends Zubsystem {
     public Zwerve headless(boolean status) {
         this.headless = status;
         return this;
-    }
-
-    /**
-     * Enable headless mode.
-     */
-    public Zwerve headless() {
-        return this.headless(true);
     }
 
     public boolean toggle_headless() {
@@ -118,22 +120,17 @@ public abstract class Zwerve extends Zubsystem {
         });
     }
 
-    public void go(Vec2 v, Rotation2d theta, double output, boolean fieldRelated) {
-        this.target_theta = theta.getRadians();
-        this.go(v, output, fieldRelated);
-    }
-
-    public void go(Vec2 v, double omega, double output, boolean fieldRelated) {
-        this.target_theta = this.target_theta + omega * K_ROTATION;
-        this.go(v, output, fieldRelated);
-    }
-
     private void go(Vec2 v, double output, boolean fieldRelated) {
         final var delta = new Rotation2d(this.target_theta).minus(new Rotation2d(this.gyro.get())).getRadians();
         //var rot = delta * ROTATION_KP;
         var rot = rotationPID.calculate(delta, 0);
-        final var speed = fieldRelated ? ChassisSpeeds.fromFieldRelativeSpeeds(v.x(), v.y(), rot, getHeadlessRotation()) : new ChassisSpeeds(v.x(), v.y(), rot);
+        final var speed = fieldRelated ? ChassisSpeeds.fromFieldRelativeSpeeds(v.x(), v.y(), rot,
+                getHeadlessRotation()) : new ChassisSpeeds(v.x(), v.y(), rot);
         this.go(speed, output);
+    }
+
+    public Rotation2d getHeadlessRotation() {
+        return Rotation2d.fromRadians(this.gyro.get() - headless_zero);
     }
 
     private void go(ChassisSpeeds speed, double output) {
@@ -143,6 +140,16 @@ public abstract class Zwerve extends Zubsystem {
         front_right.go(states[1]);
         rear_left.go(states[2]);
         rear_right.go(states[3]);
+    }
+
+    public void go(Vec2 v, Rotation2d theta, double output, boolean fieldRelated) {
+        this.target_theta = theta.getRadians();
+        this.go(v, output, fieldRelated);
+    }
+
+    public void go(Vec2 v, double omega, double output, boolean fieldRelated) {
+        this.target_theta = this.target_theta + omega * K_ROTATION;
+        this.go(v, output, fieldRelated);
     }
 
     /**

@@ -13,10 +13,10 @@ public abstract class ZCommand extends Command {
         return subsys;
     }
 
-    protected abstract ZCommand exec();
-
     @Override
     public void execute() {
         this.exec();
     }
+
+    protected abstract ZCommand exec();
 }

@@ -147,14 +147,14 @@ public class TalonFXMotor implements ZMotor {
         }
 
         @Override
-        public Servo invert(boolean inverted) {
-            this.inverted = inverted;
-            return this;
+        public Servo invert() {
+            return this.invert(true);
         }
 
         @Override
-        public Servo invert() {
-            return this.invert(true);
+        public Servo invert(boolean inverted) {
+            this.inverted = inverted;
+            return this;
         }
     }
 
