@@ -26,8 +26,8 @@ public final class TalonFXSwerve implements Module {
     @Override
     public TalonFXSwerve reset(boolean encoder) {
         final var curr = this.encoder.get();
-        final var target = curr * TURNING_RATIO;
-        this.angle_motor.set_zero(encoder ? -target : target);
+        final var target = (encoder ? -curr : curr) * TURNING_RATIO;
+        this.angle_motor.set_zero(target);
         return this;
     }
 
