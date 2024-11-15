@@ -18,10 +18,9 @@ public abstract class Zwerve extends Zubsystem {
     public static final double OUTPUT_FAST = 6;
     public static final double OUTPUT_NORMAL = 3;
     public static final double OUTPUT_SLOW = 1;
-    private static final double ROTATION_KP = 0.05;
     private static final double K_ROTATION = 0.05;
     public static SwerveDriveKinematics kinematics;
-    private final PIDController rotationPID = new PIDController(0.05, 0, 0.01);
+    // private final PIDController rotationPID = new PIDController(0.05, 0, 0);
     private final Pigeon gyro;
     private final ZInertialNavigation inav;
     private final Module front_left;
@@ -109,12 +108,19 @@ public abstract class Zwerve extends Zubsystem {
 
             final var lv = l.vec().mul(output);
             final var rv = r.vec();
+            ZDashboard.add("rv", rv.theta());
 
             if (rotation.down()) {
+                ZDashboard.add("mode", "rot");
                 this.target_theta = this.target_theta + rx.get() * K_ROTATION;
-            } else {
-                this.target_theta = rv.r() > 0.7 ? rv.theta() : this.target_theta;
+            } else if(rv.r() > 0.7){
+                ZDashboard.add("mode", "dir");
+                this.target_theta =  rv.theta();
+            } else
+            {
+                ZDashboard.add("mode", "none");
             }
+            ZDashboard.add("theta1", this.target_theta);
 
             this.go(lv, output, headless);
         });
@@ -122,8 +128,8 @@ public abstract class Zwerve extends Zubsystem {
 
     private void go(Vec2 v, double output, boolean fieldRelated) {
         final var delta = new Rotation2d(this.target_theta).minus(new Rotation2d(this.gyro.get())).getRadians();
-        //var rot = delta * ROTATION_KP;
-        var rot = rotationPID.calculate(delta, 0);
+        var rot = delta * 0.05;
+        // var rot = rotationPID.calculate(delta, 0);
         final var speed = fieldRelated ? ChassisSpeeds.fromFieldRelativeSpeeds(v.x(), v.y(), rot,
                 getHeadlessRotation()) : new ChassisSpeeds(v.x(), v.y(), rot);
         this.go(speed, output);
