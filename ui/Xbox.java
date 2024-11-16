@@ -4,8 +4,9 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.libzodiac.Zubsystem;
 
-public final class Xbox extends SubsystemBase {
+public final class Xbox extends Zubsystem {
     private final XboxController xbox;
     private final Timer rumbleTimer = new Timer();
     private double rumbleValue = 0.5;
@@ -106,12 +107,13 @@ public final class Xbox extends SubsystemBase {
     }
 
     @Override
-    public void periodic() {
+    public Xbox update() {
         if (this.rumbleTimer.get() >= this.rumbleEndpoint) {
             this.end_rumble();
         } else {
             this.set_rumble(rumbleValue);
         }
+        return this;
     }
 
     public Xbox end_rumble() {

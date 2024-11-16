@@ -1,6 +1,7 @@
 package frc.libzodiac;
 
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.shuffleboard.SimpleWidget;
@@ -8,9 +9,7 @@ import edu.wpi.first.wpilibj.shuffleboard.SimpleWidget;
 import java.util.HashMap;
 
 public class ZDashboard {
-    private static final ZDashboard dashboard = new ZDashboard("Debug");
     private static ShuffleboardTab tab;
-    private static WidgetStorage widgetStorage;
 
     private ZDashboard(String name) {
         ZDashboard.selectTab(name);
@@ -89,6 +88,10 @@ public class ZDashboard {
             }
             return widget;
         }
+    }
+
+    public static class Widgets
+    {
     }
 }
 

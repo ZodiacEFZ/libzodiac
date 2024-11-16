@@ -16,12 +16,6 @@ public class ZInertialNavigation {
         this.gyro = gyro;
     }
 
-    public ZInertialNavigation set_zero(double zero) {
-        this.zero = zero;
-        this.started = true;
-        return this;
-    }
-
     public ZInertialNavigation update() {
         if (!this.started) {
             this.set_zero();
@@ -42,7 +36,7 @@ public class ZInertialNavigation {
     }
 
     public ZInertialNavigation set_zero() {
-        this.zero = this.gyro.getYaw();
+        this.set_zero(this.gyro.getYaw());
         return this;
     }
 
@@ -52,6 +46,12 @@ public class ZInertialNavigation {
 
     public Vec2 getPosition() {
         return pos;
+    }
+
+    public ZInertialNavigation set_zero(double zero) {
+        this.zero = zero;
+        this.started = true;
+        return this;
     }
 
     public Vec2 getSpeed() {

@@ -16,6 +16,7 @@ public final class TalonFXSwerve implements Module {
     public final TalonFXMotor.Servo speed_motor;
     public final TalonFXMotor.Servo angle_motor;
     private final MagEncoder encoder;
+    private SwerveModuleState state;
 
     public TalonFXSwerve(int speed_motor_id, int angle_motor_id, int encoder_id, double encoder_zero) {
         this.speed_motor = new TalonFXMotor.Servo(speed_motor_id);
@@ -27,11 +28,11 @@ public final class TalonFXSwerve implements Module {
     public TalonFXSwerve go(SwerveModuleState desiredState) {
         final var currentAngle = new Rotation2d(this.angle_motor.get() / TURNING_RATIO);
 
-        final var state = SwerveModuleState.optimize(desiredState, currentAngle);
-        state.speedMetersPerSecond *= Math.abs(state.angle.minus(currentAngle).getCos());
-        var angle = this.angle_motor.get() / TURNING_RATIO + state.angle.minus(currentAngle).getRadians();
+        this.state = SwerveModuleState.optimize(desiredState, currentAngle);
+        this.state.speedMetersPerSecond *= Math.abs(this.state.angle.minus(currentAngle).getCos());
+        var angle = this.angle_motor.get() / TURNING_RATIO + this.state.angle.minus(currentAngle).getRadians();
 
-        this.speed_motor.velocity_v(state.speedMetersPerSecond * DRIVE_RATIO / WHEEL_CIRCUS * 2 * Math.PI);
+        this.speed_motor.velocity_v(this.state.speedMetersPerSecond * DRIVE_RATIO / WHEEL_CIRCUS * 2 * Math.PI);
         this.angle_motor.angle(angle * TURNING_RATIO);
         return this;
     }
@@ -39,6 +40,11 @@ public final class TalonFXSwerve implements Module {
     @Override
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(speed_motor.get(), new Rotation2d(angle_motor.get()));
+    }
+
+    @Override
+    public SwerveModuleState getState() {
+        return state;
     }
 
     @Override
