@@ -16,7 +16,7 @@ public final class TalonFXSwerve implements Module {
     public final TalonFXMotor.Servo speed_motor;
     public final TalonFXMotor.Servo angle_motor;
     private final MagEncoder encoder;
-    private SwerveModuleState state;
+    private SwerveModuleState state = new SwerveModuleState();
 
     public TalonFXSwerve(int speed_motor_id, int angle_motor_id, int encoder_id, double encoder_zero) {
         this.speed_motor = new TalonFXMotor.Servo(speed_motor_id);

@@ -21,6 +21,7 @@ public abstract class Zwerve extends Zubsystem {
     public static final double OUTPUT_NORMAL = 3;
     public static final double OUTPUT_SLOW = 1;
     private static final double K_ROTATION = 0.05;
+    private static final double OUTPUT_K = 1;
     public static SwerveDriveKinematics kinematics;
     // private final PIDController rotationPID = new PIDController(0.05, 0, 0);
     private final Pigeon gyro;
@@ -69,7 +70,7 @@ public abstract class Zwerve extends Zubsystem {
     }
 
     public void showDashboard() {
-        SmartDashboard.putData("Swerve Drive", builder -> {
+        /*SmartDashboard.putData("Swerve Drive", builder -> {
             builder.setSmartDashboardType("SwerveDrive");
 
             builder.addDoubleProperty("Front Left Angle", () -> front_left.getPosition().angle.getRadians(), null);
@@ -89,7 +90,7 @@ public abstract class Zwerve extends Zubsystem {
                     null);
 
             builder.addDoubleProperty("Robot Angle", () -> getFieldRotation().getRadians(), null);
-        });
+        });*/
 
         //debug
         final var pose = odometry.getPoseMeters();
@@ -136,7 +137,7 @@ public abstract class Zwerve extends Zubsystem {
                 output = OUTPUT_NORMAL;
             }
 
-            final var lv = l.vec().mul(output);
+            final var lv = l.vec().mul(output * OUTPUT_K);
             final var rv = r.vec();
 
             if (rotation.down()) {
