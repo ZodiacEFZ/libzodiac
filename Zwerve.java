@@ -5,13 +5,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.libzodiac.hardware.Pigeon;
 import frc.libzodiac.ui.Axis;
 import frc.libzodiac.ui.Axis2D;
 import frc.libzodiac.ui.Button;
 import frc.libzodiac.util.Vec2;
-import frc.robot.subsystems.Chassis;
 
 /**
  * A highly implemented class for hopefully all types of swerve control.
@@ -23,7 +21,7 @@ public abstract class Zwerve extends Zubsystem {
     private static final double K_ROTATION = 0.05;
     private static final double OUTPUT_K = 1;
     public static SwerveDriveKinematics kinematics;
-    // private final PIDController rotationPID = new PIDController(0.05, 0, 0);
+    private final PIDController rotationPID = new PIDController(0.05, 0, 1);
     private final Pigeon gyro;
     private final ZInertialNavigation inav;
     private final Module front_left;
@@ -152,8 +150,8 @@ public abstract class Zwerve extends Zubsystem {
 
     private void go(Vec2 v, double output, boolean fieldRelated) {
         final var delta = new Rotation2d(this.target_theta).minus(new Rotation2d(this.gyro.get())).getRadians();
-        var rot = delta * 0.05;
-        // var rot = rotationPID.calculate(delta, 0);
+        //        var rot = delta * 0.05;
+        var rot = rotationPID.calculate(-delta, 0);
         final var speed = fieldRelated ? ChassisSpeeds.fromFieldRelativeSpeeds(v.x(), v.y(), rot,
                 getHeadlessRotation()) : new ChassisSpeeds(v.x(), v.y(), rot);
         this.go(speed, output);
