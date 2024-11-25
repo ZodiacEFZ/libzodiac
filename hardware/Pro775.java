@@ -38,7 +38,7 @@ public final class Pro775 implements ZMotor {
      *
      * @param can_id id on the CAN bus
      */
-    public Pro775 with(int can_id) {
+    public static Pro775 with(int can_id) {
         return new Pro775(can_id);
     }
 
