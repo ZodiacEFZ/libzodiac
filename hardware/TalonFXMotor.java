@@ -8,7 +8,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import edu.wpi.first.math.controller.PIDController;
 import frc.libzodiac.ZMotor;
-import frc.libzodiac.Zervo;
 import frc.libzodiac.util.Lazy;
 
 public class TalonFXMotor implements ZMotor {
@@ -36,7 +35,7 @@ public class TalonFXMotor implements ZMotor {
      * @param kA          Acceleration Feedforward Gain
      */
     public static Slot0Configs PIDConfig(double kP, double kI, double kD, GravityTypeValue gravityType, double kG,
-                                         double kS, double kV, double kA) {
+            double kS, double kV, double kA) {
         return new Slot0Configs().withKP(kP).withKI(kI).withKD(kD).withGravityType(gravityType).withKG(kG).withKS(kS)
                 .withKV(kV).withKA(kA);
     }
@@ -114,69 +113,16 @@ public class TalonFXMotor implements ZMotor {
         return this;
     }
 
-    public static class Servo extends TalonFXMotor implements Zervo {
-        public static final double POSITION_RAW_UNIT = 2 * Math.PI;
+    public static final double POSITION_RAW_UNIT = 2 * Math.PI;
 
-        public Servo(int can_id) {
-            super(can_id);
-        }
-
-        @Override
-        public void angle(double rad) {
-            final var pos = this.inverted ? -rad : rad;
-            final var v = new PositionDutyCycle(pos / Servo.POSITION_RAW_UNIT);
-            this.motor.get().setControl(v);
-        }
-
-        @Override
-        public Servo set_zero(double zero) {
-            final var v = zero / POSITION_RAW_UNIT;
-            this.motor.get().setPosition(this.inverted ? -v : v);
-            return this;
-        }
-
-        @Override
-        public double get() {
-            final var v = this.motor.get().getPosition().refresh().getValue() * POSITION_RAW_UNIT;
-            return this.inverted ? -v : v;
-        }
-
-        @Override
-        public Servo invert() {
-            return this.invert(true);
-        }
-
-        @Override
-        public Servo invert(boolean inverted) {
-            this.inverted = inverted;
-            return this;
-        }
+    public double get() {
+        final var v = this.motor.get().getPosition().refresh().getValue() * POSITION_RAW_UNIT;
+        return this.inverted ? -v : v;
     }
 
-    public static final class MotionMagicServo extends Servo {
-        public MotionMagicServo(int can_id) {
-            super(can_id);
-        }
-
-        @Override
-        public void angle(double rad) {
-            final var pos = this.inverted ? -rad : rad;
-            final var v = new MotionMagicVoltage(pos / Servo.POSITION_RAW_UNIT);
-            this.motor.get().setControl(v);
-        }
-
-        @Override
-        public void velocity(double rad_s) {
-            final var vel = this.inverted ? -rad_s : rad_s;
-            final var v = new MotionMagicVelocityVoltage(vel / TalonFXMotor.VELOCITY_RAW_UNIT);
-            this.motor.get().setControl(v);
-        }
-
-        public MotionMagicServo angle_expo(double rad) {
-            final var pos = this.inverted ? -rad : rad;
-            final var v = new MotionMagicExpoVoltage(pos / Servo.POSITION_RAW_UNIT);
-            this.motor.get().setControl(v);
-            return this;
-        }
+    public void set_zero(double zero) {
+        final var v = zero / POSITION_RAW_UNIT;
+        this.motor.get().setPosition(this.inverted ? -v : v);
     }
+
 }

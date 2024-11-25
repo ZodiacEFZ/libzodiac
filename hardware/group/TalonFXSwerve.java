@@ -13,14 +13,14 @@ public final class TalonFXSwerve implements Module {
     private static final double TURNING_RATIO = 150.0 / 7.0;
     private static final double WHEEL_CIRCUS = 0.1 * Math.PI;
     private static final double DRIVE_RATIO = 6.75;
-    public final TalonFXMotor.Servo speed_motor;
-    public final TalonFXMotor.Servo angle_motor;
+    public final TalonFXMotor speed_motor;
+    public final TalonFXMotor angle_motor;
     private final MagEncoder encoder;
     private SwerveModuleState state = new SwerveModuleState();
 
     public TalonFXSwerve(int speed_motor_id, int angle_motor_id, int encoder_id, double encoder_zero) {
-        this.speed_motor = new TalonFXMotor.Servo(speed_motor_id);
-        this.angle_motor = new TalonFXMotor.Servo(angle_motor_id);
+        this.speed_motor = new TalonFXMotor(speed_motor_id);
+        this.angle_motor = new TalonFXMotor(angle_motor_id);
         this.encoder = MagEncoder.with(encoder_id).config_zero(encoder_zero);
     }
 
