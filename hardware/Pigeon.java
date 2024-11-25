@@ -32,15 +32,15 @@ public class Pigeon implements Zensor, ZInertialNavigation.Gyro {
     }
 
     public Axis yaw() {
-        return new Axis(() -> Math.toRadians(this.pigeon.get().getYaw().refresh().getValue()));
+        return Axis.with(() -> Math.toRadians(this.pigeon.get().getYaw().refresh().getValue()));
     }
 
     public Axis pitch() {
-        return new Axis(() -> Math.toRadians(this.pigeon.get().getPitch().refresh().getValue()));
+        return Axis.with(() -> Math.toRadians(this.pigeon.get().getPitch().refresh().getValue()));
     }
 
     public Axis roll() {
-        return new Axis(() -> Math.toRadians(this.pigeon.get().getRoll().refresh().getValue()));
+        return Axis.with(() -> Math.toRadians(this.pigeon.get().getRoll().refresh().getValue()));
     }
 
     @Override

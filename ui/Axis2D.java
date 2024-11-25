@@ -26,7 +26,7 @@ public class Axis2D {
     }
 
     public Axis r() {
-        return new Axis(this.vec()::r);
+        return Axis.with(this.vec()::r);
     }
 
     public Axis2D inverted() {
@@ -38,7 +38,7 @@ public class Axis2D {
     }
 
     public Axis2D switched() {
-        //noinspection SuspiciousNameCombination
+        // noinspection SuspiciousNameCombination
         return new Axis2D(this.y, this.x, mapping);
     }
 
