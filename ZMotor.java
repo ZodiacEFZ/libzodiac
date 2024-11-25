@@ -23,10 +23,6 @@ public interface ZMotor {
         throw new UnsupportedOperationException("the motor does not support braking");
     }
 
-    default void set_brake(boolean brake) {
-        throw new UnsupportedOperationException("the motor does not support braking mode");
-    }
-
     /**
      * Control the motor by percent power output.
      *

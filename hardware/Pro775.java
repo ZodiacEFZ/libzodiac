@@ -76,11 +76,6 @@ public final class Pro775 implements ZMotor {
     }
 
     @Override
-    public void set_brake(boolean brake) {
-        this.motor.get().setNeutralMode(brake ? NeutralMode.Brake : NeutralMode.Coast);
-    }
-
-    @Override
     public void power(double ratio) {
         this.motor.get().set(ControlMode.PercentOutput, ratio);
     }

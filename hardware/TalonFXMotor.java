@@ -87,11 +87,6 @@ public class TalonFXMotor implements ZMotor {
     }
 
     @Override
-    public void set_brake(boolean brake) {
-        this.motor.get().setControl(brake ? new StaticBrake() : new CoastOut());
-    }
-
-    @Override
     public void power(double output) {
         this.motor.get().set(inverted ? -output : output);
     }
