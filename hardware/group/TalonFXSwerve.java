@@ -21,7 +21,7 @@ public final class TalonFXSwerve implements Module {
     public TalonFXSwerve(int speed_motor_id, int angle_motor_id, int encoder_id, double encoder_zero) {
         this.speed_motor = new TalonFXMotor.Servo(speed_motor_id);
         this.angle_motor = new TalonFXMotor.Servo(angle_motor_id);
-        this.encoder = new MagEncoder(encoder_id).set_zero(encoder_zero);
+        this.encoder = MagEncoder.with(encoder_id).config_zero(encoder_zero);
     }
 
     @Override

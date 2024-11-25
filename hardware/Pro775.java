@@ -23,12 +23,7 @@ public final class Pro775 implements ZMotor {
     public Profile profile = new Profile();
     private Optional<PIDController> pid = Optional.empty();
 
-    /**
-     * Bind to a <i>TalonSRX</i> encoder.
-     *
-     * @param can_id id on the CAN bus
-     */
-    public Pro775(int can_id) {
+    private Pro775(int can_id) {
         this.motor = new Lazy<>(() -> new TalonSRX(can_id)).then(motor -> {
             if (this.pid.isPresent()) {
                 motor.config_kP(0, this.pid.get().getP());
@@ -39,6 +34,15 @@ public final class Pro775 implements ZMotor {
     }
 
     /**
+     * Bind to a <i>TalonSRX</i> encoder.
+     *
+     * @param can_id id on the CAN bus
+     */
+    public Pro775 with(int can_id) {
+        return new Pro775(can_id);
+    }
+
+    /**
      * Configure PID arguments of the motor.
      *
      * @param k_p PID proportional term factor
@@ -46,7 +50,7 @@ public final class Pro775 implements ZMotor {
      * @param k_d PID derivative term factor
      * @return self for chaining
      */
-    public Pro775 with_pid(double k_p, double k_i, double k_d) {
+    public Pro775 config_pid(double k_p, double k_i, double k_d) {
         this.pid = Optional.of(new PIDController(k_p, k_i, k_d));
         return this;
     }
@@ -58,7 +62,7 @@ public final class Pro775 implements ZMotor {
      * @param unit how many radians a sensor raw unit is equal to
      * @return self for chaining
      */
-    public Pro775 with_unit(double unit) {
+    public Pro775 config_unit(double unit) {
         this.unit = unit;
         return this;
     }
@@ -82,9 +86,9 @@ public final class Pro775 implements ZMotor {
 
     /**
      * @implNote Unit of the angle may not necessarily be radian but dependant on
-     * sensor
-     * wired to the <i>TalonSRX</i> encoder unless <code>.unit</code> is
-     * properly set.
+     *           sensor
+     *           wired to the <i>TalonSRX</i> encoder unless <code>.unit</code> is
+     *           properly set.
      */
     @Override
     public void angle(double rad) {

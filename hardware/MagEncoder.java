@@ -4,12 +4,15 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import frc.libzodiac.util.Lazy;
 
+/**
+ * The <i>CTRE MagEncoder</i> sensor.
+ */
 public final class MagEncoder {
     public static final double POSITION_RAW_UNIT = 2 * Math.PI / 4096;
     private final Lazy<TalonSRX> encoder;
     public double zero = 0;
 
-    public MagEncoder(int can_id) {
+    private MagEncoder(int can_id) {
         this.encoder = new Lazy<>(() -> {
             var encoder = new TalonSRX(can_id);
             encoder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute);
@@ -17,7 +20,22 @@ public final class MagEncoder {
         });
     }
 
-    public MagEncoder set_zero(double zero) {
+    /**
+     * Bind to a <i>CTRE MagEncoder</i>.
+     *
+     * @param can_id id on the CAN bus
+     */
+    public static MagEncoder with(int can_id) {
+        return new MagEncoder(can_id);
+    }
+
+    /**
+     * Configure the zero position of the encoder.
+     * 
+     * @param zero the zero position in raw units.
+     * @return self for chaining
+     */
+    public MagEncoder config_zero(double zero) {
         this.zero = zero;
         return this;
     }
