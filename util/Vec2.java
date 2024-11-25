@@ -1,7 +1,6 @@
 package frc.libzodiac.util;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import frc.libzodiac.Util;
 
 import java.util.function.Function;
 
