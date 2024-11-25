@@ -1,4 +1,4 @@
-package frc.libzodiac;
+package frc.libzodiac.api;
 
 import java.util.HashMap;
 

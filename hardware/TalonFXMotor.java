@@ -7,7 +7,7 @@ import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import edu.wpi.first.math.controller.PIDController;
-import frc.libzodiac.ZMotor;
+import frc.libzodiac.api.ZMotor;
 import frc.libzodiac.util.Lazy;
 
 public class TalonFXMotor implements ZMotor {

@@ -4,7 +4,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.math.controller.PIDController;
-import frc.libzodiac.ZMotor;
+import frc.libzodiac.api.ZMotor;
 import frc.libzodiac.util.Lazy;
 
 import java.util.Optional;

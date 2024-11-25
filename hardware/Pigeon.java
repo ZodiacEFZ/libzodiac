@@ -2,7 +2,7 @@ package frc.libzodiac.hardware;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import frc.libzodiac.ZInertialNavigation;
-import frc.libzodiac.Zensor;
+import frc.libzodiac.api.Zensor;
 import frc.libzodiac.ui.Axis;
 import frc.libzodiac.util.Lazy;
 import frc.libzodiac.util.Vec2;
