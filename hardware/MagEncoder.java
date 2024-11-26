@@ -8,8 +8,17 @@ import frc.libzodiac.util.Lazy;
  * The <i>CTRE MagEncoder</i> sensor.
  */
 public final class MagEncoder {
+
+    /**
+     * The <i>MagEncoder</i> use 4096 sensor units per rotation.
+     */
     public static final double POSITION_RAW_UNIT = 2 * Math.PI / 4096;
+
     private final Lazy<TalonSRX> encoder;
+
+    /**
+     * Zero position of the sensor in raw unit (the 4096 unit).
+     */
     public double zero = 0;
 
     private MagEncoder(int can_id) {
