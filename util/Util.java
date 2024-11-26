@@ -4,6 +4,7 @@ package frc.libzodiac.util;
  * Common utilities.
  */
 public class Util {
+
     public static double round(double value, int places) {
         if (places < 0) {
             throw new IllegalArgumentException();
@@ -14,6 +15,12 @@ public class Util {
         return (double) tmp / factor;
     }
 
+    /**
+     * Prettify a float point number to a moderate length to print on the screen.
+     * 
+     * @param value the float point number
+     * @return formatted string
+     */
     public static String printed(double value) {
         final var x = Math.abs(value);
         if (x < 1e-6) {
@@ -29,15 +36,39 @@ public class Util {
         }
     }
 
-    public static double closer(double x0, double x1, double x2) {
-        return Math.abs(x0 - x1) < Math.abs(x0 - x2) ? x1 : x2;
+    /**
+     * Check if two float point numbers are approximately equal. The threshold for
+     * difference of absolute value is 1e-3.
+     * 
+     * @param lhs a float point number
+     * @param rhs another float point number
+     * @return result of comparison
+     */
+    public static boolean approx(double lhs, double rhs) {
+        return approx(lhs, rhs, 1e-3);
     }
 
-    public static boolean approx(double x0, double x1) {
-        return approx(x0, x1, 1e-3);
+    /**
+     * Check if two float point numbers are approximately equal.
+     * 
+     * @param lhs  a float point number
+     * @param rhs  another float point number
+     * @param thre threshold for difference of absolute value
+     * @return result of comparison
+     */
+    public static boolean approx(double lhs, double rhs, double thre) {
+        return Math.abs(lhs - rhs) < thre;
     }
 
-    public static boolean approx(double x0, double x1, double thre) {
-        return Math.abs(x0 - x1) < thre;
+    /**
+     * Check which number is closer to a specified number.
+     * 
+     * @param base the specified number
+     * @param x    a number to compare with
+     * @param y    another number to compare with
+     * @return the "closer" number
+     */
+    public static double closer(double base, double x, double y) {
+        return Math.abs(base - x) < Math.abs(base - y) ? x : y;
     }
 }
