@@ -9,14 +9,18 @@ public interface Zhassis {
 
     /**
      * Set the translational velocity of the chassis. Use +x axis for ahead.
+     * 
+     * @param vel the velocity vector
      */
-    void vel(Vec2 vel);
+    void set_vel(Vec2 vel);
 
     /**
      * Set the rotational velocity of the chassis. Use positive for
      * counter-clockwise.
+     * 
+     * @param rot the rotational velocity
      */
-    double rot();
+    void set_rot(double rot);
 
     /**
      * Request the chassis to coast.
