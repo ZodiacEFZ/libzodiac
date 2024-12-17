@@ -1,14 +1,14 @@
 package frc.libzodiac.ui;
 
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
-import frc.libzodiac.Zubsystem;
 
 /**
  * The <i>Xbox</i> game controller.
  */
-public final class Xbox extends Zubsystem {
+public final class Xbox extends SubsystemBase {
 
     /**
      * Internal access to api.
@@ -233,12 +233,11 @@ public final class Xbox extends Zubsystem {
     }
 
     @Override
-    public Xbox update() {
+    public void periodic() {
         if (this.rumble_timer.get() >= this.rumble_time)
             this.set_rumble(0);
         else
             this.set_rumble(rumble_strength);
-        return this;
     }
 
     /**
