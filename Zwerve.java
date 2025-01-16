@@ -5,6 +5,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.libzodiac.hardware.Pigeon;
 import frc.libzodiac.ui.Axis;
 import frc.libzodiac.ui.Axis2D;
@@ -14,7 +16,7 @@ import frc.libzodiac.util.Vec2;
 /**
  * A highly implemented class for hopefully all types of swerve control.
  */
-public abstract class Zwerve extends Zubsystem {
+public abstract class Zwerve extends SubsystemBase {
     public static final double OUTPUT_FAST = 6;
     public static final double OUTPUT_NORMAL = 3;
     public static final double OUTPUT_SLOW = 1;
@@ -34,7 +36,8 @@ public abstract class Zwerve extends Zubsystem {
     private double headless_zero;
     private double target_theta;
 
-    public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Pigeon gyro, Vec2 size, Pose2d initialPose) {
+    public Zwerve(Module front_left, Module front_right, Module rear_left, Module rear_right, Pigeon gyro, Vec2 size,
+            Pose2d initialPose) {
         this.front_left = front_left;
         this.front_right = front_right;
         this.rear_left = rear_left;
@@ -50,8 +53,10 @@ public abstract class Zwerve extends Zubsystem {
                 new Translation2d(length / 2, -width / 2), new Translation2d(-length / 2, width / 2),
                 new Translation2d(-length / 2, -width / 2));
         this.odometry = new SwerveDriveOdometry(kinematics, getFieldRotation(),
-                new SwerveModulePosition[]{front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(),
-                        rear_right.getPosition()}, initialPose);
+                new SwerveModulePosition[] { front_left.getPosition(), front_right.getPosition(),
+                        rear_left.getPosition(),
+                        rear_right.getPosition() },
+                initialPose);
     }
 
     public Rotation2d getFieldRotation() {
@@ -60,37 +65,49 @@ public abstract class Zwerve extends Zubsystem {
 
     public Zwerve update() {
         odometry.update(getFieldRotation(),
-                new SwerveModulePosition[]{front_left.getPosition(), front_right.getPosition(), rear_left.getPosition(),
-                        rear_right.getPosition()});
+                new SwerveModulePosition[] { front_left.getPosition(), front_right.getPosition(),
+                        rear_left.getPosition(),
+                        rear_right.getPosition() });
         this.inav.update();
         this.showDashboard();
         return this;
     }
 
     public void showDashboard() {
-        /*SmartDashboard.putData("Swerve Drive", builder -> {
-            builder.setSmartDashboardType("SwerveDrive");
+        /*
+         * SmartDashboard.putData("Swerve Drive", builder -> {
+         * builder.setSmartDashboardType("SwerveDrive");
+         * 
+         * builder.addDoubleProperty("Front Left Angle", () ->
+         * front_left.getPosition().angle.getRadians(), null);
+         * builder.addDoubleProperty("Front Left Velocity", () ->
+         * front_left.getState().speedMetersPerSecond,
+         * null);
+         * 
+         * builder.addDoubleProperty("Front Right Angle", () ->
+         * front_right.getPosition().angle.getRadians(),
+         * null);
+         * builder.addDoubleProperty("Front Right Velocity", () ->
+         * front_right.getState().speedMetersPerSecond,
+         * null);
+         * 
+         * builder.addDoubleProperty("Back Left Angle", () ->
+         * rear_left.getPosition().angle.getRadians(), null);
+         * builder.addDoubleProperty("Back Left Velocity", () ->
+         * rear_left.getState().speedMetersPerSecond, null);
+         * 
+         * builder.addDoubleProperty("Back Right Angle", () ->
+         * rear_right.getPosition().angle.getRadians(), null);
+         * builder.addDoubleProperty("Back Right Velocity", () ->
+         * rear_right.getState().speedMetersPerSecond,
+         * null);
+         * 
+         * builder.addDoubleProperty("Robot Angle", () ->
+         * getFieldRotation().getRadians(), null);
+         * });
+         */
 
-            builder.addDoubleProperty("Front Left Angle", () -> front_left.getPosition().angle.getRadians(), null);
-            builder.addDoubleProperty("Front Left Velocity", () -> front_left.getState().speedMetersPerSecond,
-                    null);
-
-            builder.addDoubleProperty("Front Right Angle", () -> front_right.getPosition().angle.getRadians(),
-                    null);
-            builder.addDoubleProperty("Front Right Velocity", () -> front_right.getState().speedMetersPerSecond,
-                    null);
-
-            builder.addDoubleProperty("Back Left Angle", () -> rear_left.getPosition().angle.getRadians(), null);
-            builder.addDoubleProperty("Back Left Velocity", () -> rear_left.getState().speedMetersPerSecond, null);
-
-            builder.addDoubleProperty("Back Right Angle", () -> rear_right.getPosition().angle.getRadians(), null);
-            builder.addDoubleProperty("Back Right Velocity", () -> rear_right.getState().speedMetersPerSecond,
-                    null);
-
-            builder.addDoubleProperty("Robot Angle", () -> getFieldRotation().getRadians(), null);
-        });*/
-
-        //debug
+        // debug
         final var pose = odometry.getPoseMeters();
         ZDashboard.add("pose", "" + new Vec2(pose.getX(), pose.getY()));
         ZDashboard.add("theta", pose.getRotation().getDegrees());
@@ -124,8 +141,9 @@ public abstract class Zwerve extends Zubsystem {
         this.headless_zero = this.gyro.get();
     }
 
-    public ZCommand drive(Axis2D l, Axis2D r, Axis lx, Axis ly, Axis rx, Axis ry, Button fast, Button slow, Button rotation) {
-        return new Zambda(this, () -> {
+    public Command drive(Axis2D l, Axis2D r, Axis lx, Axis ly, Axis rx, Axis ry, Button fast, Button slow,
+            Button rotation) {
+        return Zambda.req(this).runs(() -> {
             double output;
             if (fast.down() && !slow.down()) {
                 output = OUTPUT_FAST;
@@ -150,7 +168,7 @@ public abstract class Zwerve extends Zubsystem {
 
     private void go(Vec2 v, double output, boolean fieldRelated) {
         final var delta = new Rotation2d(this.target_theta).minus(new Rotation2d(this.gyro.get())).getRadians();
-        //        var rot = delta * 0.05;
+        // var rot = delta * 0.05;
         var rot = rotationPID.calculate(-delta, 0);
         final var speed = fieldRelated ? ChassisSpeeds.fromFieldRelativeSpeeds(v.x(), v.y(), rot,
                 getHeadlessRotation()) : new ChassisSpeeds(v.x(), v.y(), rot);

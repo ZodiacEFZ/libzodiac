@@ -1,54 +1,46 @@
 package frc.libzodiac;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
 /**
  * Allow you to construct <i>WPILib</i>'s <code>Command</code> with a lambda.
  */
-public final class Zambda extends ZCommand {
+public final class Zambda extends Command {
 
     /**
      * The action to perform.
      */
-    private final Runnable exec;
+    private Runnable exec;
 
-    /**
-     * Create a command from code with specified requirement(s).
-     *
-     * @param req  requirement of this command
-     * @param exec the code to execute
-     */
-    public Zambda(Subsystem req, Runnable exec) {
-        this.exec = exec;
-        this.require(req);
+    private Zambda(Subsystem... dep) {
+        this.addRequirements(dep);
     }
 
     /**
-     * Create a command from code with specified requirement(s).
-     *
-     * @param req  requirement of this command
-     * @param exec the code to execute
+     * Create a command with specified dependencies. By default the command runs
+     * nothing unless configured with <code>.runs()</code>.
+     * 
+     * @param dep dependencies of the command
+     * @return new
      */
-    public Zambda(Subsystem[] req, Runnable exec) {
-        this.exec = exec;
-        for (final var i : req) {
-            this.require(i);
-        }
+    public static Zambda req(Subsystem... dep) {
+        return new Zambda(dep);
     }
 
     /**
-     * Create an independant/no requirement command.
-     *
-     * @param exec the code to execute
-     * @return a new command
+     * Specify what action to perform with the command.
+     * 
+     * @param exec the code to run
+     * @return self for chaining
      */
-    public static Zambda indep(Runnable exec) {
-        return new Zambda(new Subsystem[]{}, exec);
+    public Zambda runs(Runnable exec) {
+        this.exec = exec;
+        return this;
     }
 
     @Override
-    protected ZCommand exec() {
+    public void execute() {
         this.exec.run();
-        return this;
     }
 }

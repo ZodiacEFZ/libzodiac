@@ -8,6 +8,10 @@ import edu.wpi.first.wpilibj.shuffleboard.SimpleWidget;
 
 import java.util.HashMap;
 
+/**
+ * Moved to <code>util</code>.
+ */
+@Deprecated
 public class ZDashboard {
     private static ShuffleboardTab tab = Shuffleboard.getTab("Debug");
 
@@ -90,8 +94,6 @@ public class ZDashboard {
         }
     }
 
-    public static class Widgets
-    {
+    public static class Widgets {
     }
 }
-
