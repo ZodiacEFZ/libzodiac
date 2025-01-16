@@ -1,4 +1,4 @@
-package frc.libzodiac.ui;
+package frc.libzodiac.util;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;

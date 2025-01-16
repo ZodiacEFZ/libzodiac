@@ -18,13 +18,19 @@ public final class Lazy<T> implements Supplier<T> {
      */
     private Optional<T> value = Optional.empty();
 
+    private Lazy(Supplier<T> supplier) {
+        this.supplier = supplier;
+    }
+
     /**
      * Create a lazy-initialized object with specified supplier.
-     *
+     * 
+     * @param <T>      type of the lazy initialized value
      * @param supplier the function that provides the value
+     * @return new
      */
-    public Lazy(Supplier<T> supplier) {
-        this.supplier = supplier;
+    public static <T> Lazy<T> with(Supplier<T> supplier) {
+        return new Lazy<>(supplier);
     }
 
     /**
@@ -33,7 +39,7 @@ public final class Lazy<T> implements Supplier<T> {
      * @param action the action to perform
      * @return a new `Lazy` instance
      * @apiNote The bahavior is undefined unless <code>this</code> has not been
-     * evaluated yet.
+     *          evaluated yet.
      */
     public Lazy<T> then(Consumer<T> action) {
         return new Lazy<>(() -> {

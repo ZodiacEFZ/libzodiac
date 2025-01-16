@@ -9,7 +9,7 @@ public class CanCoder {
     public double zero = 0;
 
     public CanCoder(int can_id) {
-        this.encoder = new Lazy<>(() -> new CANcoder(can_id));
+        this.encoder = Lazy.with(() -> new CANcoder(can_id));
     }
 
     public CanCoder set_zero(double zero) {

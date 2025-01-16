@@ -2,6 +2,8 @@ package frc.libzodiac.ui;
 
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.libzodiac.util.Axis;
+import frc.libzodiac.util.Button;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 
@@ -45,10 +47,6 @@ public final class Xbox extends SubsystemBase {
         return new Xbox(port);
     }
 
-    public Axis2D l() {
-        return new Axis2D(this.lx(), this.ly());
-    }
-
     /**
      * X axis of the left joystick. The output is in [-1,1].
      * 
@@ -65,10 +63,6 @@ public final class Xbox extends SubsystemBase {
      */
     public Axis ly() {
         return Axis.with(this.xbox::getLeftY);
-    }
-
-    public Axis2D r() {
-        return new Axis2D(this.rx(), this.ry());
     }
 
     /**

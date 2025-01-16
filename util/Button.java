@@ -1,4 +1,4 @@
-package frc.libzodiac.ui;
+package frc.libzodiac.util;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;

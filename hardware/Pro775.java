@@ -24,7 +24,7 @@ public final class Pro775 implements ZMotor {
     private Optional<PIDController> pid = Optional.empty();
 
     private Pro775(int can_id) {
-        this.motor = new Lazy<>(() -> new TalonSRX(can_id)).then(motor -> {
+        this.motor = Lazy.with(() -> new TalonSRX(can_id)).then(motor -> {
             if (this.pid.isPresent()) {
                 motor.config_kP(0, this.pid.get().getP());
                 motor.config_kI(0, this.pid.get().getI());

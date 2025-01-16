@@ -22,7 +22,7 @@ public final class MagEncoder {
     public double zero = 0;
 
     private MagEncoder(int can_id) {
-        this.encoder = new Lazy<>(() -> {
+        this.encoder = Lazy.with(() -> {
             var encoder = new TalonSRX(can_id);
             encoder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute);
             return encoder;

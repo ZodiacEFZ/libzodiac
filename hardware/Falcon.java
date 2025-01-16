@@ -35,7 +35,7 @@ public final class Falcon implements ZMotor {
     private boolean inverted = false;
 
     private Falcon(int can_id, Optional<Slot0Configs> pid, boolean inverted) {
-        this.motor = new Lazy<>(() -> new TalonFX(can_id)).then(motor -> {
+        this.motor = Lazy.with(() -> new TalonFX(can_id)).then(motor -> {
             if (this.pid.isPresent())
                 motor.getConfigurator().apply(this.pid.get());
             motor.setInverted(this.inverted);
