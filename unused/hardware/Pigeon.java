@@ -1,11 +1,10 @@
-package frc.libzodiac.hardware;
+package frc.libzodiac.unused.hardware;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
-
 import edu.wpi.first.units.Units;
-import frc.libzodiac.api.Zensor;
-import frc.libzodiac.util.Axis;
-import frc.libzodiac.util.Lazy;
+import frc.libzodiac.unused.api.Zensor;
+import frc.libzodiac.unused.util.Axis;
+import frc.libzodiac.unused.util.Lazy;
 
 import java.security.InvalidParameterException;
 
@@ -45,7 +44,7 @@ public class Pigeon implements Zensor {
 
     /**
      * The yaw output, or deviation form the +x axis on the xy plane.
-     * 
+     *
      * @return output in radians
      */
     public Axis yaw() {
@@ -54,7 +53,7 @@ public class Pigeon implements Zensor {
 
     /**
      * The pitch output, or deviation form the +x axis on the xz plane.
-     * 
+     *
      * @return output in radians
      */
     public Axis pitch() {
@@ -63,7 +62,7 @@ public class Pigeon implements Zensor {
 
     /**
      * The pitch output, or deviation form the +z axis on the yz plane.
-     * 
+     *
      * @return output in radians
      */
     public Axis roll() {

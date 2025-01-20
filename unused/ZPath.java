@@ -1,4 +1,4 @@
-package frc.libzodiac;
+package frc.libzodiac.unused;
 
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryUtil;

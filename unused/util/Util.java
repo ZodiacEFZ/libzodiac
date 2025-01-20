@@ -1,4 +1,4 @@
-package frc.libzodiac.util;
+package frc.libzodiac.unused.util;
 
 /**
  * Common utilities.
@@ -17,7 +17,7 @@ public class Util {
 
     /**
      * Prettify a float point number to a moderate length to print on the screen.
-     * 
+     *
      * @param value the float point number
      * @return formatted string
      */
@@ -39,7 +39,7 @@ public class Util {
     /**
      * Check if two float point numbers are approximately equal. The threshold for
      * difference of absolute value is 1e-3.
-     * 
+     *
      * @param lhs a float point number
      * @param rhs another float point number
      * @return result of comparison
@@ -50,7 +50,7 @@ public class Util {
 
     /**
      * Check if two float point numbers are approximately equal.
-     * 
+     *
      * @param lhs  a float point number
      * @param rhs  another float point number
      * @param thre threshold for difference of absolute value
@@ -62,7 +62,7 @@ public class Util {
 
     /**
      * Check which number is closer to a specified number.
-     * 
+     *
      * @param base the specified number
      * @param x    a number to compare with
      * @param y    another number to compare with

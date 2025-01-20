@@ -1,12 +1,13 @@
 package frc.libzodiac.api;
 
-import java.util.HashMap;
-
 /**
  * Defines a large collection of APIs to operate various motors so that motors
  * can be controlled under a unified generic way.
  */
 public interface ZMotor {
+    void setInverted(boolean inverted);
+
+    void invert();
 
     /**
      * Stop any output behaviour of this motor.
@@ -78,14 +79,4 @@ public interface ZMotor {
     default void current(double amp) {
         throw new UnsupportedOperationException("the motor does not support output by current");
     }
-
-    /**
-     * Preset motions for the motor.
-     */
-    final class Profile extends HashMap<String, Runnable> {
-        public void go(String name) {
-            this.get(name).run();
-        }
-    }
-
 }

@@ -1,11 +1,11 @@
-package frc.libzodiac.ui;
+package frc.libzodiac.unused.ui;
 
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.libzodiac.util.Axis;
-import frc.libzodiac.util.Button;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.libzodiac.unused.util.Axis;
+import frc.libzodiac.unused.util.Button;
 
 /**
  * The <i>Xbox</i> game controller.
@@ -16,21 +16,18 @@ public final class Xbox extends SubsystemBase {
      * Internal access to api.
      */
     private final XboxController xbox;
-
-    /**
-     * Strength set for current rumble.
-     */
-    private double rumble_strength = 0.5;
-
-    /**
-     * Time set for current rumble.
-     */
-    private double rumble_time = 0;
-
     /**
      * Timer to determine whether rumble should end.
      */
     private final Timer rumble_timer = new Timer();
+    /**
+     * Strength set for current rumble.
+     */
+    private double rumble_strength = 0.5;
+    /**
+     * Time set for current rumble.
+     */
+    private double rumble_time = 0;
 
     private Xbox(int port) {
         this.xbox = new XboxController(port);
@@ -39,7 +36,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * Bind to a controller port.
-     * 
+     *
      * @param port the port on the driver station
      * @return new
      */
@@ -49,7 +46,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * X axis of the left joystick. The output is in [-1,1].
-     * 
+     *
      * @return an <code>Axis</code>
      */
     public Axis lx() {
@@ -58,7 +55,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * Y axis of the left joystick. The output is in [-1,1].
-     * 
+     *
      * @return an <code>Axis</code>
      */
     public Axis ly() {
@@ -67,7 +64,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * X axis of the right joystick. The output is in [-1,1].
-     * 
+     *
      * @return an <code>Axis</code>
      */
     public Axis rx() {
@@ -76,7 +73,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * Y axis of the right joystick. The output is in [-1,1].
-     * 
+     *
      * @return an <code>Axis</code>
      */
     public Axis ry() {
@@ -85,7 +82,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The left trigger. The output is in [0,1].
-     * 
+     *
      * @return an <code>Axis</code>
      */
     public Axis lt() {
@@ -94,7 +91,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The right trigger. The output is in [0,1].
-     * 
+     *
      * @return an <code>Axis</code>
      */
     public Axis rt() {
@@ -103,7 +100,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The left bumper.
-     * 
+     *
      * @return a <code>Button</code>
      */
     public Button lb() {
@@ -112,7 +109,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The right bumper.
-     * 
+     *
      * @return a <code>Button</code>
      */
     public Button rb() {
@@ -121,7 +118,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The POV controller. The output is in [0,360] degrees.
-     * 
+     *
      * @return an <code>Axis</code>
      */
     public Axis pov() {
@@ -130,7 +127,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The POV controller that points up.
-     * 
+     *
      * @return a <code>Button</code>
      */
     public Button up_pov() {
@@ -140,7 +137,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The POV controller that points right.
-     * 
+     *
      * @return a <code>Button</code>
      */
     public Button right_pov() {
@@ -150,7 +147,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The POV controller that points down.
-     * 
+     *
      * @return a <code>Button</code>
      */
     public Button down_pov() {
@@ -160,7 +157,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The POV controller that points left.
-     * 
+     *
      * @return a <code>Button</code>
      */
     public Button left_pov() {
@@ -170,7 +167,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The A button.
-     * 
+     *
      * @return a <code>Button</code>
      */
     public Button a() {
@@ -179,7 +176,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The B button.
-     * 
+     *
      * @return a <code>Button</code>
      */
     public Button b() {
@@ -188,7 +185,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The X button.
-     * 
+     *
      * @return a <code>Button</code>
      */
     public Button x() {
@@ -197,7 +194,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * The Y button.
-     * 
+     *
      * @return a <code>Button</code>
      */
     public Button y() {
@@ -206,7 +203,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * Begin a controller rumble for specified time.
-     * 
+     *
      * @param time the time to rumble
      */
     public void rumble(double time) {
@@ -215,7 +212,7 @@ public final class Xbox extends SubsystemBase {
 
     /**
      * Begin a controller rumble for specified time and strength.
-     * 
+     *
      * @param time     the time to rumble
      * @param strength the strength of the rumble in (0,1)
      */
@@ -228,15 +225,16 @@ public final class Xbox extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (this.rumble_timer.get() >= this.rumble_time)
+        if (this.rumble_timer.get() >= this.rumble_time) {
             this.set_rumble(0);
-        else
+        } else {
             this.set_rumble(rumble_strength);
+        }
     }
 
     /**
      * Set the controller rumbling strength.
-     * 
+     *
      * @param strength the strength to set to, 0 for stop
      */
     public void set_rumble(double strength) {

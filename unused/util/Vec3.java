@@ -1,4 +1,4 @@
-package frc.libzodiac.util;
+package frc.libzodiac.unused.util;
 
 import edu.wpi.first.math.geometry.Translation3d;
 
@@ -19,7 +19,7 @@ public record Vec3(double x, double y, double z) {
 
     /**
      * Get x component of the vector.
-     * 
+     *
      * @return x
      */
     public double x() {
@@ -28,7 +28,7 @@ public record Vec3(double x, double y, double z) {
 
     /**
      * Get y component of the vector.
-     * 
+     *
      * @return y
      */
     public double y() {
@@ -37,54 +37,11 @@ public record Vec3(double x, double y, double z) {
 
     /**
      * Get z component of the vector.
-     * 
+     *
      * @return z
      */
     public double z() {
         return this.z;
-    }
-
-    /**
-     * Get the radius/magnitude of the vector.
-     * 
-     * @return positive
-     */
-    public double r() {
-        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-    }
-
-    /**
-     * Get the angle of the vector on xy-plane.
-     * 
-     * @return in [-pi,pi)
-     */
-    public double theta() {
-        return Math.atan2(this.y, this.x);
-    }
-
-    /**
-     * Get the angle of the vector to z-axis (zenith angle).
-     * 
-     * @return in [-pi/2,pi/2]
-     */
-    public double phi() {
-        return Math.acos(this.z / this.r());
-    }
-
-    /**
-     * Construct a vector from polar coordinates, i.e. (r,theta,phi) -> (x,y,z).
-     * 
-     * @param r     the radius of polar coordinates
-     * @param theta the angle on xy-plane
-     * @param phi   the angle to xy-plane
-     * @return a rectangular vector
-     */
-    public static Vec3 polar(double r, double theta, double phi) {
-        final var z = r * Math.cos(phi);
-        final var xy = r * Math.sin(phi);
-        final var x = xy * Math.cos(theta);
-        final var y = xy * Math.sin(theta);
-        return new Vec3(x, y, z);
     }
 
     @Override
@@ -93,8 +50,18 @@ public record Vec3(double x, double y, double z) {
     }
 
     /**
+     * The substraction operation.
+     *
+     * @param rhs right-hand side of operator
+     * @return result of operator
+     */
+    public Vec3 sub(Vec3 rhs) {
+        return this.add(rhs.inv());
+    }
+
+    /**
      * The addition operation.
-     * 
+     *
      * @param rhs right-hand side of operator
      * @return result of operator
      */
@@ -104,7 +71,7 @@ public record Vec3(double x, double y, double z) {
 
     /**
      * Invert the vector to opposite direction.
-     * 
+     *
      * @return an inverted vector
      */
     public Vec3 inv() {
@@ -112,28 +79,8 @@ public record Vec3(double x, double y, double z) {
     }
 
     /**
-     * The substraction operation.
-     * 
-     * @param rhs right-hand side of operator
-     * @return result of operator
-     */
-    public Vec3 sub(Vec3 rhs) {
-        return this.add(rhs.inv());
-    }
-
-    /**
-     * The multiplication (dot product) operation.
-     * 
-     * @param k the multiplier
-     * @return result of operator
-     */
-    public Vec3 mul(double k) {
-        return new Vec3(this.x * k, this.y * k, this.z * k);
-    }
-
-    /**
      * The division operation.
-     * 
+     *
      * @param k the divisor
      * @return result of operator
      */
@@ -143,17 +90,17 @@ public record Vec3(double x, double y, double z) {
 
     /**
      * The multiplication (dot product) operation.
-     * 
-     * @param rhs right-hand side of operator
+     *
+     * @param k the multiplier
      * @return result of operator
      */
-    public double dot(Vec3 rhs) {
-        return this.x * rhs.x + this.y * rhs.y + this.z * rhs.z;
+    public Vec3 mul(double k) {
+        return new Vec3(this.x * k, this.y * k, this.z * k);
     }
 
     /**
      * The multiplication (cross product) operation.
-     * 
+     *
      * @param rhs right-hand side of operator
      * @return result of operator
      */
@@ -175,9 +122,28 @@ public record Vec3(double x, double y, double z) {
     }
 
     /**
+     * The multiplication (dot product) operation.
+     *
+     * @param rhs right-hand side of operator
+     * @return result of operator
+     */
+    public double dot(Vec3 rhs) {
+        return this.x * rhs.x + this.y * rhs.y + this.z * rhs.z;
+    }
+
+    /**
+     * Get the radius/magnitude of the vector.
+     *
+     * @return positive
+     */
+    public double r() {
+        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    }
+
+    /**
      * Create new vector instance with specified x component, preserving original y
      * and z component.
-     * 
+     *
      * @param x the new x component
      * @return the new vector
      */
@@ -188,7 +154,7 @@ public record Vec3(double x, double y, double z) {
     /**
      * Create new vector instance with specified y component, preserving original x
      * and z component.
-     * 
+     *
      * @param y the new y component
      * @return the new vector
      */
@@ -199,7 +165,7 @@ public record Vec3(double x, double y, double z) {
     /**
      * Create new vector instance with specified z component, preserving original x
      * and y component.
-     * 
+     *
      * @param z the new z component
      * @return the new vector
      */
@@ -210,7 +176,7 @@ public record Vec3(double x, double y, double z) {
     /**
      * Create new vector instance with specified radius, preserving
      * original direction.
-     * 
+     *
      * @param r the new radius
      * @return the new vector
      */
@@ -219,9 +185,43 @@ public record Vec3(double x, double y, double z) {
     }
 
     /**
+     * Construct a vector from polar coordinates, i.e. (r,theta,phi) -> (x,y,z).
+     *
+     * @param r     the radius of polar coordinates
+     * @param theta the angle on xy-plane
+     * @param phi   the angle to xy-plane
+     * @return a rectangular vector
+     */
+    public static Vec3 polar(double r, double theta, double phi) {
+        final var z = r * Math.cos(phi);
+        final var xy = r * Math.sin(phi);
+        final var x = xy * Math.cos(theta);
+        final var y = xy * Math.sin(theta);
+        return new Vec3(x, y, z);
+    }
+
+    /**
+     * Get the angle of the vector on xy-plane.
+     *
+     * @return in [-pi,pi)
+     */
+    public double theta() {
+        return Math.atan2(this.y, this.x);
+    }
+
+    /**
+     * Get the angle of the vector to z-axis (zenith angle).
+     *
+     * @return in [-pi/2,pi/2]
+     */
+    public double phi() {
+        return Math.acos(this.z / this.r());
+    }
+
+    /**
      * Create new vector instance with specified angle on xy-plane, preserving
      * original radius/magnitude.
-     * 
+     *
      * @param theta the new angle on xy-plane
      * @return the new vector
      */
@@ -232,7 +232,7 @@ public record Vec3(double x, double y, double z) {
     /**
      * Create new vector instance with specified angle to z-axis (zenith angle),
      * preserving original radius/magnitude.
-     * 
+     *
      * @param theta the new angle to xy-plane
      * @return the new vector
      */

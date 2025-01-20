@@ -1,4 +1,4 @@
-package frc.libzodiac.util;
+package frc.libzodiac.unused.util;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -24,7 +24,7 @@ public final class Lazy<T> implements Supplier<T> {
 
     /**
      * Create a lazy-initialized object with specified supplier.
-     * 
+     *
      * @param <T>      type of the lazy initialized value
      * @param supplier the function that provides the value
      * @return new
@@ -39,7 +39,7 @@ public final class Lazy<T> implements Supplier<T> {
      * @param action the action to perform
      * @return a new `Lazy` instance
      * @apiNote The bahavior is undefined unless <code>this</code> has not been
-     *          evaluated yet.
+     * evaluated yet.
      */
     public Lazy<T> then(Consumer<T> action) {
         return new Lazy<>(() -> {

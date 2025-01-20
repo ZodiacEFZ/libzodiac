@@ -1,4 +1,4 @@
-package frc.libzodiac.util;
+package frc.libzodiac.unused.util;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
@@ -38,7 +38,7 @@ public final class Axis {
 
     /**
      * Bind to a raw data source.
-     * 
+     *
      * @param raw_input the raw data input
      * @return new
      */
@@ -47,18 +47,8 @@ public final class Axis {
     }
 
     /**
-     * Create a new <code>Axis</code> with specified <code>mapping</code>.
-     * 
-     * @param mapping the mapping for the new axis
-     * @return new
-     */
-    public Axis with_map(Function<Double, Double> mapping) {
-        return new Axis(this.raw_input, mapping);
-    }
-
-    /**
      * Get the processed output.
-     * 
+     *
      * @return process output with `mapping` applied
      */
     public double get() {
@@ -68,7 +58,7 @@ public final class Axis {
 
     /**
      * Get raw output.
-     * 
+     *
      * @return raw data output by the sensor
      */
     public double get_raw() {
@@ -77,7 +67,7 @@ public final class Axis {
 
     /**
      * Create an inverted axis based on current axis.
-     * 
+     *
      * @return new
      */
     public Axis inverted() {
@@ -86,7 +76,7 @@ public final class Axis {
 
     /**
      * Create a new <code>Axis</code> with <code>mapping</code> added.
-     * 
+     *
      * @param mapping the mapping to compose with current
      * @return new
      */
@@ -96,8 +86,18 @@ public final class Axis {
     }
 
     /**
+     * Create a new <code>Axis</code> with specified <code>mapping</code>.
+     *
+     * @param mapping the mapping for the new axis
+     * @return new
+     */
+    public Axis with_map(Function<Double, Double> mapping) {
+        return new Axis(this.raw_input, mapping);
+    }
+
+    /**
      * Add a threshold filter to the current axis.
-     * 
+     *
      * @param thre the threshold
      * @return new
      */
@@ -109,7 +109,7 @@ public final class Axis {
     /**
      * Create a threshold filter that blocks inputs with absolute values less than
      * `thre`.
-     * 
+     *
      * @param thre the threshold
      * @return a filtering function
      */
@@ -119,7 +119,7 @@ public final class Axis {
 
     /**
      * Downcast the axis as a button, use 0.5 as threshold for absolute value.
-     * 
+     *
      * @return the button
      */
     public Button as_button() {
@@ -129,7 +129,7 @@ public final class Axis {
     /**
      * Downcast the axis as a button, use <code>thre</code> as threshold for
      * absolute value.
-     * 
+     *
      * @return the button
      */
     public Button as_button(double thre) {
