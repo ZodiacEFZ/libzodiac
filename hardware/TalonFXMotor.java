@@ -11,7 +11,7 @@ import frc.libzodiac.api.ZMotor;
  * <i>Talon FX/i> motor, such as Falcon 500 and Kraken X60/X44.
  */
 public final class TalonFXMotor implements ZMotor {
-    public static double TALONFX_UNIT = 2 * Math.PI;
+    public static final double TALONFX_UNIT = 2 * Math.PI;
 
     private final TalonFX motor;
     int output = 1;

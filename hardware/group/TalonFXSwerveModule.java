@@ -16,12 +16,12 @@ public class TalonFXSwerveModule {
     private final MagEncoder encoder;
     private Rotation2d lastAngle;
 
-    public TalonFXSwerveModule(int angle, int drive, int encoder, int encoderOffset, boolean angleReversed, boolean driveReversed) {
+    public TalonFXSwerveModule(int angle, int drive, int encoder, int encoderZero, boolean angleReversed, boolean driveReversed) {
         this.drive = new TalonFXMotor(drive, 0.15, 0, 2);
         this.angle = new TalonFXMotor(angle, 10, 0.5, 0.5);
         this.angle.setInverted(angleReversed);
         this.drive.setInverted(driveReversed);
-        this.encoder = new MagEncoder(encoder).setZero(encoderOffset);
+        this.encoder = new MagEncoder(encoder, encoderZero);
         this.lastAngle = this.getAngle();
     }
 
@@ -56,16 +56,17 @@ public class TalonFXSwerveModule {
      */
     public void setDesiredState(SwerveModuleState desiredState) {
         // Optimize the reference state to avoid spinning further than 90 degrees
-        desiredState = optimize(desiredState, this.getAngle());
+        var optimizedDesiredState = optimize(desiredState, this.getAngle());
 
         // Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
         // direction of travel that can occur when modules change directions. This results in smoother
         // driving.
-        desiredState.cosineScale(this.getAngle());
+        optimizedDesiredState.cosineScale(this.getAngle());
 
-        this.drive.velocity(desiredState.speedMetersPerSecond / WHEEL_RADIUS * DRIVE_GEAR_RATIO);
+        this.drive.velocity(optimizedDesiredState.speedMetersPerSecond / WHEEL_RADIUS * DRIVE_GEAR_RATIO);
 
-        Rotation2d angle = (Math.abs(desiredState.speedMetersPerSecond) <= 0.03) ? this.lastAngle : desiredState.angle;
+        Rotation2d angle = (Math.abs(
+                optimizedDesiredState.speedMetersPerSecond) <= 0.03) ? this.lastAngle : optimizedDesiredState.angle;
         this.angle.angle(angle.getRadians() * ANGLE_GEAR_RATIO);
         this.lastAngle = angle;
     }
@@ -116,5 +117,13 @@ public class TalonFXSwerveModule {
      */
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(this.drive.getPosition() / DRIVE_GEAR_RATIO * WHEEL_RADIUS, this.getAngle());
+    }
+
+    public void setMotorBrake(boolean brake) {
+        if (brake) {
+            this.drive.brake();
+        } else {
+            this.drive.shutdown();
+        }
     }
 }

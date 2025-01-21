@@ -83,7 +83,7 @@ public final class TalonSRXMotor implements ZMotor {
     }
 
     /**
-     * @implNote Unit of the angle may not necessarily be radian but dependant on
+     * @implNote Unit of the angle may not necessarily be radian but dependent on
      * sensor
      * wired to the <i>TalonSRX</i> encoder unless <code>.unit</code> is
      * properly set.
