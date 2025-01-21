@@ -46,19 +46,20 @@ public class Zwerve extends SubsystemBase {
     private final SwerveDriveOdometry odometry;
     private final PIDController headingController;
     private boolean fieldCentric = true;
+    private boolean directAngle = true;
 
     /**
      * Creates a new DriveSubsystem.
      */
-    public Zwerve(SwerveConfig config) {
+    public Zwerve(Config config) {
         this.ROBOT_WIDTH = config.ROBOT_WIDTH;
         this.ROBOT_LENGTH = config.ROBOT_LENGTH;
         this.MAX_SPEED = config.MAX_SPEED;
         this.MAX_ANGULAR_SPEED = config.MAX_ANGULAR_SPEED;
-        this.frontLeft = config.frontLeft;
-        this.frontRight = config.frontRight;
-        this.rearLeft = config.rearLeft;
-        this.rearRight = config.rearRight;
+        this.frontLeft = new TalonFXSwerveModule(config.frontLeft, config);
+        this.frontRight = new TalonFXSwerveModule(config.frontRight, config);
+        this.rearLeft = new TalonFXSwerveModule(config.rearLeft, config);
+        this.rearRight = new TalonFXSwerveModule(config.rearRight, config);
         this.gyro = new Pigeon2(config.gyroId);
         this.headingController = config.headingController;
 
@@ -161,7 +162,10 @@ public class Zwerve extends SubsystemBase {
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
-        var chassisSpeeds = getChassisSpeeds(translation, rotation);
+        this.drive(this.getChassisSpeeds(translation, rotation), fieldRelative);
+    }
+
+    private void drive(ChassisSpeeds chassisSpeeds, boolean fieldRelative) {
         if (fieldRelative) {
             this.driveFieldOriented(chassisSpeeds);
         } else {
@@ -169,14 +173,8 @@ public class Zwerve extends SubsystemBase {
         }
     }
 
-    public Command driveCommand(Supplier<ChassisSpeeds> chassisSpeeds, boolean fieldRelative) {
-        return run(() -> {
-            if (fieldRelative) {
-                driveFieldOriented(chassisSpeeds.get());
-            } else {
-                driveRobotRelative(chassisSpeeds.get());
-            }
-        });
+    public Command driveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, boolean driveDirectAngle, boolean fieldRelative) {
+        return run(() -> this.drive(driveDirectAngle ? directAngle.get() : angularVelocity.get(), fieldRelative));
     }
 
     public void driveRobotRelative(ChassisSpeeds speeds) {
@@ -215,7 +213,15 @@ public class Zwerve extends SubsystemBase {
         return MathUtil.clamp(headingController.calculate(this.getYaw().minus(heading).getRadians(), 0), -1, 1);
     }
 
-    public static class SwerveConfig {
+    public boolean getDirectAngle() {
+        return this.directAngle;
+    }
+
+    public void setDirectAngle(boolean directAngle) {
+        this.directAngle = directAngle;
+    }
+
+    public static class Config {
         // Distance between centers of right and left wheels on robot
         public double ROBOT_WIDTH = 0;
         // Distance between front and back wheels on robot
@@ -224,14 +230,20 @@ public class Zwerve extends SubsystemBase {
         public double MAX_ANGULAR_SPEED = 0;
 
         // Robot swerve modules
-        public TalonFXSwerveModule frontLeft = null;
-        public TalonFXSwerveModule rearLeft = null;
-        public TalonFXSwerveModule frontRight = null;
-        public TalonFXSwerveModule rearRight = null;
+        public TalonFXSwerveModule.Config frontLeft = null;
+        public TalonFXSwerveModule.Config rearLeft = null;
+        public TalonFXSwerveModule.Config frontRight = null;
+        public TalonFXSwerveModule.Config rearRight = null;
         // The gyro sensor
         public int gyroId = 0;
 
         public PIDController headingController = null;
+
+        public double ANGLE_GEAR_RATIO;
+        public double DRIVE_GEAR_RATIO;
+        public double WHEEL_RADIUS;
+        public PIDController drivePid;
+        public PIDController anglePid;
     }
 
     public static class SwerveInputStream implements Supplier<ChassisSpeeds> {

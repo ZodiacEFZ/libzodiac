@@ -6,23 +6,27 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonFXMotor;
+import frc.libzodiac.subsystem.Zwerve;
 
 public class TalonFXSwerveModule {
-    private static final double ANGLE_GEAR_RATIO = 150.0 / 7.0;
-    private static final double DRIVE_GEAR_RATIO = 6.75;
-    private static final double WHEEL_RADIUS = 2; //todo
+    private final double ANGLE_GEAR_RATIO;
+    private final double DRIVE_GEAR_RATIO;
+    private final double WHEEL_RADIUS;
     private final TalonFXMotor angle;
     private final TalonFXMotor drive;
     private final MagEncoder encoder;
     private Rotation2d lastAngle;
 
-    public TalonFXSwerveModule(int angle, int drive, int encoder, int encoderZero, boolean angleReversed, boolean driveReversed) {
-        this.drive = new TalonFXMotor(drive, 0.15, 0, 2);
-        this.angle = new TalonFXMotor(angle, 10, 0.5, 0.5);
-        this.angle.setInverted(angleReversed);
-        this.drive.setInverted(driveReversed);
-        this.encoder = new MagEncoder(encoder, encoderZero);
+    public TalonFXSwerveModule(Config config, Zwerve.Config swerveConfig) {
+        this.drive = new TalonFXMotor(config.drive);
+        this.angle = new TalonFXMotor(config.angle);
+        this.angle.setInverted(config.angleReversed);
+        this.drive.setInverted(config.driveReversed);
+        this.encoder = new MagEncoder(config.encoder, config.encoderZero);
         this.lastAngle = this.getAngle();
+        this.ANGLE_GEAR_RATIO = swerveConfig.ANGLE_GEAR_RATIO;
+        this.DRIVE_GEAR_RATIO = swerveConfig.DRIVE_GEAR_RATIO;
+        this.WHEEL_RADIUS = swerveConfig.WHEEL_RADIUS;
     }
 
     private Rotation2d getAngle() {
@@ -124,6 +128,24 @@ public class TalonFXSwerveModule {
             this.drive.brake();
         } else {
             this.drive.shutdown();
+        }
+    }
+
+    public static class Config {
+        final int angle;
+        final int drive;
+        final int encoder;
+        final int encoderZero;
+        final boolean angleReversed;
+        final boolean driveReversed;
+
+        public Config(int angle, int drive, int encoder, int encoderZero, boolean angleReversed, boolean driveReversed) {
+            this.angle = angle;
+            this.drive = drive;
+            this.encoder = encoder;
+            this.encoderZero = encoderZero;
+            this.angleReversed = angleReversed;
+            this.driveReversed = driveReversed;
         }
     }
 }
