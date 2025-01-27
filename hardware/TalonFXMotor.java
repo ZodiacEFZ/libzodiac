@@ -1,12 +1,11 @@
 package frc.libzodiac.hardware;
 
 import com.ctre.phoenix6.Orchestra;
-import com.ctre.phoenix6.configs.AudioConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.util.sendable.Sendable;
@@ -24,7 +23,6 @@ public final class TalonFXMotor implements ZMotor {
     public static final double TALONFX_UNIT = 2 * Math.PI;
 
     private final TalonFX motor;
-    int output = 1;
 
     public TalonFXMotor(int can_id) {
         this.motor = new TalonFX(can_id);
@@ -40,11 +38,20 @@ public final class TalonFXMotor implements ZMotor {
     }
 
     public void setInverted(boolean inverted) {
-        output = inverted ? -1 : 1;
+        MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs();
+        this.motor.getConfigurator().refresh(motorOutputConfigs);
+        motorOutputConfigs.Inverted = inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
+        this.motor.getConfigurator().apply(motorOutputConfigs);
     }
 
     public void invert() {
-        output = -output;
+        MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs();
+        this.motor.getConfigurator().refresh(motorOutputConfigs);
+        motorOutputConfigs.Inverted = switch (motorOutputConfigs.Inverted) {
+            case Clockwise_Positive -> InvertedValue.CounterClockwise_Positive;
+            case CounterClockwise_Positive -> InvertedValue.Clockwise_Positive;
+        };
+        this.motor.getConfigurator().apply(motorOutputConfigs);
     }
 
     @Override
@@ -59,25 +66,25 @@ public final class TalonFXMotor implements ZMotor {
 
     @Override
     public void power(double ratio) {
-        this.motor.set(output * ratio);
+        this.motor.set(ratio);
     }
 
     @Override
     public void angle(double rad) {
-        this.motor.setControl(new PositionDutyCycle(output * rad / TALONFX_UNIT));
+        this.motor.setControl(new PositionDutyCycle(rad / TALONFX_UNIT));
     }
 
     @Override
     public void velocity(double rads) {
-        SmartDashboard.putNumber("Velocity" + this.motor.getDescription(), output * rads / TALONFX_UNIT);
+        SmartDashboard.putNumber("Velocity" + this.motor.getDescription(), rads / TALONFX_UNIT);
         // Our practice suggest that `VelocityVoltage` api produces a somehow more
         // stable output than `VelocityDutyCycle`.
-        this.motor.setControl(new VelocityVoltage(output * rads / TALONFX_UNIT));
+        this.motor.setControl(new VelocityVoltage(rads / TALONFX_UNIT));
     }
 
     @Override
     public void voltage(double volt) {
-        this.motor.setControl(new VoltageOut(output * volt));
+        this.motor.setControl(new VoltageOut(volt));
     }
 
     public void music(double frequency) {
@@ -85,15 +92,15 @@ public final class TalonFXMotor implements ZMotor {
     }
 
     public double getPosition() {
-        return output * this.motor.getPosition().getValue().in(Units.Radians);
+        return this.motor.getPosition().getValue().in(Units.Radians);
     }
 
     public void setPosition(double rad) {
-        this.motor.setPosition(output * rad / TALONFX_UNIT);
+        this.motor.setPosition(rad / TALONFX_UNIT);
     }
 
     public double getVelocity() {
-        return output * this.motor.getVelocity().getValue().in(Units.RadiansPerSecond);
+        return this.motor.getVelocity().getValue().in(Units.RadiansPerSecond);
     }
 
     /**
@@ -122,6 +129,30 @@ public final class TalonFXMotor implements ZMotor {
         slot0Configs.kI = kI;
         slot0Configs.kD = kD;
         this.motor.getConfigurator().apply(slot0Configs);
+    }
+
+    public void setSlot0Configs(Slot0Configs slot0Configs) {
+        this.motor.getConfigurator().apply(slot0Configs);
+    }
+
+    public void setMotionMagicConfigs(MotionMagicConfigs motionMagicConfigs) {
+        this.motor.getConfigurator().apply(motionMagicConfigs);
+    }
+
+    public void MotionMagicPosition(double position) {
+        this.motor.setControl(new MotionMagicVoltage(position / TALONFX_UNIT));
+    }
+
+    public void MotionMagicVelocity(double velocity) {
+        this.motor.setControl(new MotionMagicVelocityVoltage(velocity / TALONFX_UNIT));
+    }
+
+    public void MotionMagicExpo(double position) {
+        this.motor.setControl(new MotionMagicExpoVoltage(position / TALONFX_UNIT));
+    }
+
+    public void setControl(ControlRequest controlRequest) {
+        this.motor.setControl(controlRequest);
     }
 
     public static class MusicPlayer extends Orchestra implements Sendable {

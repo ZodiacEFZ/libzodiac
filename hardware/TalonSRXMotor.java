@@ -3,6 +3,7 @@ package frc.libzodiac.hardware;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.math.controller.PIDController;
 
@@ -16,7 +17,6 @@ public final class TalonSRXMotor implements ZMotor {
      * radians a raw sensor unit is equal to.
      */
     public double unit = 4096 / (2 * Math.PI);
-    int output = 1;
 
     public TalonSRXMotor(int can_id) {
         this.motor = new TalonSRX(can_id);
@@ -54,11 +54,11 @@ public final class TalonSRXMotor implements ZMotor {
     }
 
     public void setInverted(boolean inverted) {
-        output = inverted ? -1 : 1;
+        this.motor.setInverted(inverted);
     }
 
     public void invert() {
-        output = -output;
+        this.motor.setInverted(!this.motor.getInverted());
     }
 
     @Override
@@ -75,7 +75,7 @@ public final class TalonSRXMotor implements ZMotor {
 
     @Override
     public void power(double ratio) {
-        this.motor.set(ControlMode.PercentOutput, output * ratio);
+        this.motor.set(ControlMode.PercentOutput, ratio);
     }
 
     /**
@@ -86,17 +86,17 @@ public final class TalonSRXMotor implements ZMotor {
      */
     @Override
     public void angle(double rad) {
-        this.motor.set(ControlMode.Position, output * rad * unit);
+        this.motor.set(ControlMode.Position, rad * unit);
     }
 
     @Override
     public void velocity(double rads) {
-        this.motor.set(ControlMode.Velocity, output * rads * unit);
+        this.motor.set(ControlMode.Velocity, rads * unit);
     }
 
     @Override
     public void current(double amp) {
-        this.motor.set(ControlMode.Current, output * amp);
+        this.motor.set(ControlMode.Current, amp);
     }
 
     public void setMotionMagicConfig(double kP, double kI, double kD, double kF, double cruiseVelocity, double acceleration, int sCurveStrength) {
@@ -111,19 +111,27 @@ public final class TalonSRXMotor implements ZMotor {
     }
 
     public void MotionMagic(double rad) {
-        this.motor.set(ControlMode.MotionMagic, output * rad * unit);
+        this.motor.set(ControlMode.MotionMagic, rad * unit);
     }
 
     public void MotionMagic(double rad, double feedforward) {
-        this.motor.set(ControlMode.MotionMagic, output * rad * unit, DemandType.ArbitraryFeedForward, feedforward);
+        this.motor.set(ControlMode.MotionMagic, rad * unit, DemandType.ArbitraryFeedForward, feedforward);
+    }
+
+    public void set(TalonSRXControlMode mode, double value) {
+        this.motor.set(mode, value);
+    }
+
+    public void set(TalonSRXControlMode mode, double demand0, DemandType demand1Type, double demand1) {
+        this.motor.set(mode, demand0, demand1Type, demand1);
     }
 
     public double getPosition() {
-        return output * this.motor.getSelectedSensorPosition() / unit;
+        return this.motor.getSelectedSensorPosition() / unit;
     }
 
     public void setPosition(double rad) {
-        this.motor.setSelectedSensorPosition(output * rad * unit);
+        this.motor.setSelectedSensorPosition(rad * unit);
     }
 
     public TalonSRX motor() {
