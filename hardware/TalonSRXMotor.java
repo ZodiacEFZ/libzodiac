@@ -1,6 +1,7 @@
 package frc.libzodiac.hardware;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.math.controller.PIDController;
@@ -14,7 +15,7 @@ public final class TalonSRXMotor implements ZMotor {
      * Unit of the sensor wired to the <i>TalonSRX</i> encoder, represents how many
      * radians a raw sensor unit is equal to.
      */
-    public double unit = 4096;
+    public double unit = 4096 / (2 * Math.PI);
     int output = 1;
 
     public TalonSRXMotor(int can_id) {
@@ -96,6 +97,25 @@ public final class TalonSRXMotor implements ZMotor {
     @Override
     public void current(double amp) {
         this.motor.set(ControlMode.Current, output * amp);
+    }
+
+    public void setMotionMagicConfig(double kP, double kI, double kD, double kF, double cruiseVelocity, double acceleration, int sCurveStrength) {
+        this.motor.config_kP(0, kP);
+        this.motor.config_kI(0, kI);
+        this.motor.config_kD(0, kD);
+        this.motor.config_kF(0, kF);
+
+        this.motor.configMotionCruiseVelocity(cruiseVelocity * unit);
+        this.motor.configMotionAcceleration(acceleration * unit);
+        this.motor.configMotionSCurveStrength(sCurveStrength);
+    }
+
+    public void MotionMagic(double rad) {
+        this.motor.set(ControlMode.MotionMagic, output * rad * unit);
+    }
+
+    public void MotionMagic(double rad, double feedforward) {
+        this.motor.set(ControlMode.MotionMagic, output * rad * unit, DemandType.ArbitraryFeedForward, feedforward);
     }
 
     public double getPosition() {
