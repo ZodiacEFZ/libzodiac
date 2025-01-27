@@ -46,11 +46,12 @@ public class Zwerve extends SubsystemBase {
     // The gyro sensor
     private final Pigeon2 gyro;
 
+    private final PIDController headingController;
     private final SwerveDriveKinematics kinematics;
     private final Field2d field = new Field2d();
     // Odometry class for tracking robot pose
     private final SwerveDriveOdometry odometry;
-    private final PIDController headingController;
+
     private boolean fieldCentric = true;
     private boolean directAngle = true;
     private Rotation2d targetHeading = new Rotation2d();
@@ -67,7 +68,7 @@ public class Zwerve extends SubsystemBase {
         this.frontRight = new TalonFXSwerveModule(config.frontRight, config);
         this.rearLeft = new TalonFXSwerveModule(config.rearLeft, config);
         this.rearRight = new TalonFXSwerveModule(config.rearRight, config);
-        this.gyro = new Pigeon2(config.gyroId);
+        this.gyro = new Pigeon2(config.gyro);
         this.headingController = config.headingController;
 
         kinematics = new SwerveDriveKinematics(new Translation2d(ROBOT_LENGTH / 2, ROBOT_WIDTH / 2),
@@ -266,36 +267,37 @@ public class Zwerve extends SubsystemBase {
 
     public static class Config {
         // Distance between centers of right and left wheels on robot
-        public double ROBOT_WIDTH = 0;
+        public double ROBOT_WIDTH;
         // Distance between front and back wheels on robot
-        public double ROBOT_LENGTH = 0;
-        public double MAX_SPEED = 0;
-        public double MAX_ANGULAR_SPEED = 0;
+        public double ROBOT_LENGTH;
+        public double MAX_SPEED;
+        public double MAX_ANGULAR_SPEED;
 
         // Robot swerve modules
-        public TalonFXSwerveModule.Config frontLeft = null;
-        public TalonFXSwerveModule.Config rearLeft = null;
-        public TalonFXSwerveModule.Config frontRight = null;
-        public TalonFXSwerveModule.Config rearRight = null;
+        public TalonFXSwerveModule.Config frontLeft;
+        public TalonFXSwerveModule.Config rearLeft;
+        public TalonFXSwerveModule.Config frontRight;
+        public TalonFXSwerveModule.Config rearRight;
         // The gyro sensor
-        public int gyroId = 0;
+        public int gyro;
 
-        public PIDController headingController = null;
+        public PIDController headingController;
 
         public double ANGLE_GEAR_RATIO;
         public double DRIVE_GEAR_RATIO;
         public double WHEEL_RADIUS;
+
         public PIDController drivePid;
         public PIDController anglePid;
     }
 
     public static class SwerveInputStream implements Supplier<ChassisSpeeds> {
-        final Zwerve drivetrain;
-        final Translation2dSupplier translation;
-        double deadband = 0;
-        RotationType rotationType = RotationType.NONE;
-        Rotation2dSupplier heading;
-        DoubleSupplier rotation;
+        private final Zwerve drivetrain;
+        private final Translation2dSupplier translation;
+        private double deadband = 0;
+        private RotationType rotationType = RotationType.NONE;
+        private Rotation2dSupplier heading;
+        private DoubleSupplier rotation;
 
         public SwerveInputStream(Zwerve drivetrain, Translation2dSupplier translation) {
             this.drivetrain = drivetrain;
