@@ -1,6 +1,5 @@
 package frc.libzodiac.util;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public class Maths {
@@ -13,7 +12,7 @@ public class Maths {
     }
 
     public static Translation2d applyDeadband(Translation2d translation, double deadband) {
-        return new Translation2d(MathUtil.applyDeadband(translation.getX(), deadband),
-                MathUtil.applyDeadband(translation.getY(), deadband));
+        var distance = translation.getNorm();
+        return new Translation2d(distance < deadband ? 0 : distance, translation.getAngle());
     }
 }

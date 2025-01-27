@@ -1,4 +1,4 @@
-package frc.libzodiac.api;
+package frc.libzodiac.hardware;
 
 /**
  * Defines a large collection of APIs to operate various motors so that motors

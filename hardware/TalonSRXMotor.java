@@ -4,7 +4,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import frc.libzodiac.api.ZMotor;
+import edu.wpi.first.math.controller.PIDController;
 
 /**
  * Motors powered by <i>Talon SRX</i>, such as 775 Pro.
@@ -24,13 +24,12 @@ public final class TalonSRXMotor implements ZMotor {
 
     public TalonSRXMotor(int can_id, double kP, double kI, double kD) {
         this.motor = new TalonSRX(can_id);
-        this.motor.configFactoryDefault();
         this.motor.config_kP(0, kP);
         this.motor.config_kI(0, kI);
         this.motor.config_kD(0, kD);
     }
 
-    public void factoryDefault(int can_id, TalonFXConfiguration config) {
+    public void factoryDefault() {
         this.motor.configFactoryDefault();
     }
 
@@ -45,6 +44,10 @@ public final class TalonSRXMotor implements ZMotor {
         this.motor.config_kP(0, kP);
         this.motor.config_kI(0, kI);
         this.motor.config_kD(0, kD);
+    }
+
+    public void setPid(PIDController pid) {
+        this.setPid(pid.getP(), pid.getI(), pid.getD());
     }
 
     /**

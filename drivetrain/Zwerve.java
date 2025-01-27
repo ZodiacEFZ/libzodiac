@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.libzodiac.subsystem;
+package frc.libzodiac.drivetrain;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -12,9 +12,12 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.libzodiac.hardware.group.TalonFXSwerveModule;
 import frc.libzodiac.util.Maths;
@@ -47,6 +50,7 @@ public class Zwerve extends SubsystemBase {
     private final PIDController headingController;
     private boolean fieldCentric = true;
     private boolean directAngle = true;
+    private Rotation2d targetHeading = new Rotation2d();
 
     /**
      * Creates a new DriveSubsystem.
@@ -72,8 +76,9 @@ public class Zwerve extends SubsystemBase {
         this.zeroHeading();
 
         // By pausing init for a second before setting module offsets, we avoid a bug with inverting motors.
-        Timer.delay(1.0);
+        Timer.delay(0.5);
         this.resetEncoders();
+        Timer.delay(0.5);
 
         this.odometry = new SwerveDriveOdometry(kinematics, this.getYaw(), this.getModulePositions());
     }
@@ -120,6 +125,39 @@ public class Zwerve extends SubsystemBase {
         return this.odometry.getPoseMeters();
     }
 
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.setSmartDashboardType("Swerve Drivetrain");
+        builder.setActuator(true);
+        builder.addBooleanProperty("Field Centric", this::getFieldCentric, this::setFieldCentric);
+        builder.addBooleanProperty("Direct Angle", this::getDirectAngle, this::setDirectAngle);
+        builder.addDoubleProperty("Heading", () -> -this.getYaw().getDegrees(), null);
+        builder.addStringProperty("Pose", () -> this.getPose().getTranslation().toString(), null);
+
+        SmartDashboard.putData("Front Left Module", this.frontLeft);
+        SmartDashboard.putData("Front Right Module", this.frontRight);
+        SmartDashboard.putData("Rear Left Module", this.rearLeft);
+        SmartDashboard.putData("Rear Right Module", this.rearRight);
+
+        SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading));
+    }
+
+    public boolean getFieldCentric() {
+        return this.fieldCentric;
+    }
+
+    public void setFieldCentric(boolean fieldCentric) {
+        this.fieldCentric = fieldCentric;
+    }
+
+    public boolean getDirectAngle() {
+        return this.directAngle;
+    }
+
+    public void setDirectAngle(boolean directAngle) {
+        this.directAngle = directAngle;
+    }
+
     public ChassisSpeeds getRobotRelativeSpeeds() {
         return kinematics.toChassisSpeeds(getModuleStates());
     }
@@ -135,7 +173,6 @@ public class Zwerve extends SubsystemBase {
      * @param desiredStates The desired TalonFXSwerveModule states.
      */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, MAX_SPEED);
         frontLeft.setDesiredState(desiredStates[0]);
         frontRight.setDesiredState(desiredStates[1]);
         rearLeft.setDesiredState(desiredStates[2]);
@@ -166,6 +203,7 @@ public class Zwerve extends SubsystemBase {
     }
 
     private void drive(ChassisSpeeds chassisSpeeds, boolean fieldRelative) {
+        SmartDashboard.putString("Chassis Speeds", chassisSpeeds.toString());
         if (fieldRelative) {
             this.driveFieldOriented(chassisSpeeds);
         } else {
@@ -194,14 +232,6 @@ public class Zwerve extends SubsystemBase {
         this.fieldCentric = !this.fieldCentric;
     }
 
-    public boolean getFieldCentric() {
-        return this.fieldCentric;
-    }
-
-    public void setFieldCentric(boolean fieldCentric) {
-        this.fieldCentric = fieldCentric;
-    }
-
     public void centerModules() {
         this.frontLeft.setDesiredState(new SwerveModuleState(0, new Rotation2d()));
         this.frontRight.setDesiredState(new SwerveModuleState(0, new Rotation2d()));
@@ -209,16 +239,13 @@ public class Zwerve extends SubsystemBase {
         this.rearRight.setDesiredState(new SwerveModuleState(0, new Rotation2d()));
     }
 
-    private double calculateRotation(Rotation2d heading) {
-        return MathUtil.clamp(headingController.calculate(this.getYaw().minus(heading).getRadians(), 0), -1, 1);
+    private double calculateRotation(Rotation2dSupplier headingSupplier) {
+        targetHeading = headingSupplier.asTranslation().getNorm() < 0.5 ? targetHeading : headingSupplier.get();
+        return MathUtil.clamp(headingController.calculate(this.getYaw().minus(targetHeading).getRadians(), 0), -1, 1);
     }
 
-    public boolean getDirectAngle() {
-        return this.directAngle;
-    }
-
-    public void setDirectAngle(boolean directAngle) {
-        this.directAngle = directAngle;
+    public void toggleDirectAngle() {
+        this.directAngle = !this.directAngle;
     }
 
     public static class Config {
@@ -247,15 +274,15 @@ public class Zwerve extends SubsystemBase {
     }
 
     public static class SwerveInputStream implements Supplier<ChassisSpeeds> {
-        final Zwerve swerve;
+        final Zwerve drivetrain;
         final Translation2dSupplier translation;
         double deadband = 0;
         RotationType rotationType = RotationType.NONE;
         Rotation2dSupplier heading;
         DoubleSupplier rotation;
 
-        public SwerveInputStream(Zwerve swerve, Translation2dSupplier translation) {
-            this.swerve = swerve;
+        public SwerveInputStream(Zwerve drivetrain, Translation2dSupplier translation) {
+            this.drivetrain = drivetrain;
             this.translation = translation;
         }
 
@@ -263,11 +290,11 @@ public class Zwerve extends SubsystemBase {
         public ChassisSpeeds get() {
             var translation = Maths.cubeTranslation(Maths.applyDeadband(this.translation.get(), this.deadband));
             var rotation = switch (rotationType) {
-                case HEADING -> this.swerve.calculateRotation(heading.get());
+                case HEADING -> this.drivetrain.calculateRotation(heading);
                 case ROTATION -> Maths.cube(MathUtil.applyDeadband(this.rotation.getAsDouble(), this.deadband));
                 case NONE -> 0;
             };
-            return swerve.getChassisSpeeds(translation, rotation);
+            return drivetrain.getChassisSpeeds(translation, rotation);
         }
 
         public SwerveInputStream withRotation(DoubleSupplier rotation) {

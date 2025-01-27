@@ -3,12 +3,13 @@ package frc.libzodiac.hardware.group;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import frc.libzodiac.drivetrain.Zwerve;
 import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonFXMotor;
-import frc.libzodiac.subsystem.Zwerve;
 
-public class TalonFXSwerveModule {
+public class TalonFXSwerveModule implements Sendable {
     private final double ANGLE_GEAR_RATIO;
     private final double DRIVE_GEAR_RATIO;
     private final double WHEEL_RADIUS;
@@ -20,6 +21,10 @@ public class TalonFXSwerveModule {
     public TalonFXSwerveModule(Config config, Zwerve.Config swerveConfig) {
         this.drive = new TalonFXMotor(config.drive);
         this.angle = new TalonFXMotor(config.angle);
+        this.angle.factoryDefault();
+        this.drive.factoryDefault();
+        this.angle.setPid(swerveConfig.anglePid);
+        this.drive.setPid(swerveConfig.drivePid);
         this.angle.setInverted(config.angleReversed);
         this.drive.setInverted(config.driveReversed);
         this.encoder = new MagEncoder(config.encoder, config.encoderZero);
@@ -31,59 +36,6 @@ public class TalonFXSwerveModule {
 
     private Rotation2d getAngle() {
         return new Rotation2d(this.angle.getPosition() / ANGLE_GEAR_RATIO);
-    }
-
-    /**
-     * Zeroes all the SwerveModule encoders.
-     */
-    public void resetEncoder() {
-        this.angle.setPosition(this.getAngleEncoder().getRadians() * ANGLE_GEAR_RATIO);
-    }
-
-    private Rotation2d getAngleEncoder() {
-        return this.encoder.getRotation2d();
-    }
-
-    /**
-     * Returns the current state of the module.
-     *
-     * @return The current state of the module.
-     */
-    public SwerveModuleState getState() {
-        return new SwerveModuleState(this.drive.getVelocity() / DRIVE_GEAR_RATIO * WHEEL_RADIUS, this.getAngle());
-    }
-
-    /**
-     * Sets the desired state for the module.
-     *
-     * @param desiredState Desired state with speed and angle.
-     */
-    public void setDesiredState(SwerveModuleState desiredState) {
-        // Optimize the reference state to avoid spinning further than 90 degrees
-        var optimizedDesiredState = optimize(desiredState, this.getAngle());
-
-        // Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
-        // direction of travel that can occur when modules change directions. This results in smoother
-        // driving.
-        optimizedDesiredState.cosineScale(this.getAngle());
-
-        this.drive.velocity(optimizedDesiredState.speedMetersPerSecond / WHEEL_RADIUS * DRIVE_GEAR_RATIO);
-
-        Rotation2d angle = (Math.abs(
-                optimizedDesiredState.speedMetersPerSecond) <= 0.03) ? this.lastAngle : optimizedDesiredState.angle;
-        this.angle.angle(angle.getRadians() * ANGLE_GEAR_RATIO);
-        this.lastAngle = angle;
-    }
-
-    private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d currentAngle) {
-        double targetAngle = placeInAppropriate0To360Scope(currentAngle.getDegrees(), desiredState.angle.getDegrees());
-        double targetSpeed = desiredState.speedMetersPerSecond;
-        double delta = Units.degreesToRadians(targetAngle - currentAngle.getDegrees());
-        if (Math.abs(delta) > Math.PI / 2) {
-            targetSpeed = -targetSpeed;
-            targetAngle = delta > Math.PI / 2 ? (targetAngle - Math.PI) : (targetAngle + Math.PI);
-        }
-        return new SwerveModuleState(targetSpeed, new Rotation2d(targetAngle));
     }
 
     /**
@@ -115,6 +67,60 @@ public class TalonFXSwerveModule {
     }
 
     /**
+     * Zeroes all the SwerveModule encoders.
+     */
+    public void resetEncoder() {
+        this.angle.setPosition(this.getAngleEncoder().getRadians() * ANGLE_GEAR_RATIO);
+    }
+
+    private Rotation2d getAngleEncoder() {
+        return this.encoder.getRotation2d();
+    }
+
+    /**
+     * Returns the current state of the module.
+     *
+     * @return The current state of the module.
+     */
+    public SwerveModuleState getState() {
+        return new SwerveModuleState(this.drive.getVelocity() / DRIVE_GEAR_RATIO * WHEEL_RADIUS, this.getAngle());
+    }
+
+    /**
+     * Sets the desired state for the module.
+     *
+     * @param desiredState Desired state with speed and angle.
+     */
+    public void setDesiredState(SwerveModuleState desiredState) {
+        var currentAngle = this.getAngle();
+        // Optimize the reference state to avoid spinning further than 90 degrees
+        var optimizedDesiredState = optimize(desiredState, currentAngle);
+        // Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
+        // direction of travel that can occur when modules change directions. This results in smoother
+        // driving.
+        optimizedDesiredState.cosineScale(currentAngle);
+
+        this.drive.velocity(optimizedDesiredState.speedMetersPerSecond / WHEEL_RADIUS * DRIVE_GEAR_RATIO);
+
+        this.lastAngle = (Math.abs(
+                optimizedDesiredState.speedMetersPerSecond) < 0.03) ? this.lastAngle : optimizedDesiredState.angle;
+        this.angle.angle(this.lastAngle.getRadians() * ANGLE_GEAR_RATIO);
+    }
+
+    private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d angle) {
+        var currentAngle = new Rotation2d(angle.getCos(), angle.getSin());
+        var desiredAngle = new Rotation2d(desiredState.angle.getCos(), desiredState.angle.getSin());
+        var targetSpeed = desiredState.speedMetersPerSecond;
+        var delta = desiredAngle.minus(currentAngle);
+        var targetAngle = angle.plus(delta);
+        if (Math.abs(delta.getRadians()) > Math.PI / 2) {
+            targetSpeed = -targetSpeed;
+            targetAngle = targetAngle.minus(new Rotation2d(Math.PI));
+        }
+        return new SwerveModuleState(targetSpeed, targetAngle);
+    }
+
+    /**
      * Returns the current position of the module.
      *
      * @return The current position of the module.
@@ -129,6 +135,16 @@ public class TalonFXSwerveModule {
         } else {
             this.drive.shutdown();
         }
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.setSmartDashboardType("Swerve Module");
+        builder.addDoubleProperty("Angle", () -> {
+            var angle = this.getAngle();
+            return new Rotation2d(angle.getCos(), angle.getSin()).getRadians();
+        }, null);
+        builder.addDoubleProperty("Speed", this.drive::getVelocity, null);
     }
 
     public static class Config {
