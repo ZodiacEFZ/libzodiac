@@ -5,6 +5,7 @@
 package frc.libzodiac.drivetrain;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
+import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -24,6 +25,8 @@ import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
 import frc.libzodiac.util.Translation2dSupplier;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -246,6 +249,19 @@ public class Zwerve extends SubsystemBase {
 
     public void toggleDirectAngle() {
         this.directAngle = !this.directAngle;
+    }
+
+    public Collection<ParentDevice> getMotors() {
+        Collection<ParentDevice> motors = new HashSet<>();
+        motors.add(this.frontLeft.getAngleMotor().getMotor());
+        motors.add(this.frontLeft.getDriveMotor().getMotor());
+        motors.add(this.frontRight.getAngleMotor().getMotor());
+        motors.add(this.frontRight.getDriveMotor().getMotor());
+        motors.add(this.rearLeft.getAngleMotor().getMotor());
+        motors.add(this.rearLeft.getDriveMotor().getMotor());
+        motors.add(this.rearRight.getAngleMotor().getMotor());
+        motors.add(this.rearRight.getDriveMotor().getMotor());
+        return motors;
     }
 
     public static class Config {

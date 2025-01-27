@@ -1,5 +1,6 @@
 package frc.libzodiac.hardware.group;
 
+import com.ctre.phoenix6.hardware.ParentDevice;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -36,34 +37,6 @@ public class TalonFXSwerveModule implements Sendable {
 
     private Rotation2d getAngle() {
         return new Rotation2d(this.angle.getPosition() / ANGLE_GEAR_RATIO);
-    }
-
-    /**
-     * @param scopeReference Current Angle
-     * @param newAngle       Target Angle
-     * @return Closest angle within scope
-     */
-    public static double placeInAppropriate0To360Scope(double scopeReference, double newAngle) {
-        double lowerBound, upperBound, lowerOffset = scopeReference % 360;
-        if (lowerOffset >= 0) {
-            lowerBound = scopeReference - lowerOffset;
-            upperBound = scopeReference + (360 - lowerOffset);
-        } else {
-            upperBound = scopeReference - lowerOffset;
-            lowerBound = scopeReference - (360 + lowerOffset);
-        }
-        while (newAngle < lowerBound) {
-            newAngle += 360;
-        }
-        while (newAngle > upperBound) {
-            newAngle -= 360;
-        }
-        if (newAngle - scopeReference > 180) {
-            newAngle -= 360;
-        } else if (newAngle - scopeReference < -180) {
-            newAngle += 360;
-        }
-        return newAngle;
     }
 
     /**
@@ -145,6 +118,14 @@ public class TalonFXSwerveModule implements Sendable {
             return new Rotation2d(angle.getCos(), angle.getSin()).getRadians();
         }, null);
         builder.addDoubleProperty("Speed", this.drive::getVelocity, null);
+    }
+
+    public TalonFXMotor getAngleMotor() {
+        return this.angle;
+    }
+
+    public TalonFXMotor getDriveMotor() {
+        return this.drive;
     }
 
     public static class Config {
