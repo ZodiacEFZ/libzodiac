@@ -15,8 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.IntStream;
 
 /**
@@ -30,15 +28,6 @@ public final class TalonFXMotor implements ZMotor {
 
     public TalonFXMotor(int can_id) {
         this.motor = new TalonFX(can_id);
-    }
-
-    public TalonFXMotor(int can_id, double kP, double kI, double kD) {
-        this.motor = new TalonFX(can_id);
-        var slot0Configs = new Slot0Configs();
-        slot0Configs.kP = kP;
-        slot0Configs.kI = kI;
-        slot0Configs.kD = kD;
-        this.motor.getConfigurator().apply(new TalonFXConfiguration().withSlot0(slot0Configs));
     }
 
     public void factoryDefault() {

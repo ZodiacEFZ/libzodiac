@@ -3,7 +3,6 @@ package frc.libzodiac.hardware;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import edu.wpi.first.math.controller.PIDController;
 
 /**
@@ -18,19 +17,16 @@ public final class TalonSRXMotor implements ZMotor {
     public double unit = 4096;
     int output = 1;
 
-    private TalonSRXMotor(int can_id) {
+    public TalonSRXMotor(int can_id) {
         this.motor = new TalonSRX(can_id);
-    }
-
-    public TalonSRXMotor(int can_id, double kP, double kI, double kD) {
-        this.motor = new TalonSRX(can_id);
-        this.motor.config_kP(0, kP);
-        this.motor.config_kI(0, kI);
-        this.motor.config_kD(0, kD);
     }
 
     public void factoryDefault() {
         this.motor.configFactoryDefault();
+    }
+
+    public void setPid(PIDController pid) {
+        this.setPid(pid.getP(), pid.getI(), pid.getD());
     }
 
     /**
@@ -44,10 +40,6 @@ public final class TalonSRXMotor implements ZMotor {
         this.motor.config_kP(0, kP);
         this.motor.config_kI(0, kI);
         this.motor.config_kD(0, kD);
-    }
-
-    public void setPid(PIDController pid) {
-        this.setPid(pid.getP(), pid.getI(), pid.getD());
     }
 
     /**
@@ -116,5 +108,9 @@ public final class TalonSRXMotor implements ZMotor {
 
     public TalonSRX motor() {
         return this.motor;
+    }
+
+    public void follow(TalonSRXMotor master) {
+        this.motor.follow(master.motor);
     }
 }

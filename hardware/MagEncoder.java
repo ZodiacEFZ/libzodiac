@@ -37,6 +37,11 @@ public final class MagEncoder {
         this.zero = zero;
     }
 
+    public void reset() {
+        this.encoder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
+        this.encoder.setSelectedSensorPosition(0);
+    }
+
     public Rotation2d getRotation2d() {
         return new Rotation2d(this.getRadians());
     }
