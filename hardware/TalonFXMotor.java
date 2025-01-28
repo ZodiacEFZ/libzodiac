@@ -10,7 +10,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -76,7 +75,6 @@ public final class TalonFXMotor implements ZMotor {
 
     @Override
     public void velocity(double rads) {
-        SmartDashboard.putNumber("Velocity" + this.motor.getDescription(), rads / TALONFX_UNIT);
         // Our practice suggest that `VelocityVoltage` api produces a somehow more
         // stable output than `VelocityDutyCycle`.
         this.motor.setControl(new VelocityVoltage(rads / TALONFX_UNIT));
@@ -155,63 +153,44 @@ public final class TalonFXMotor implements ZMotor {
         this.motor.setControl(controlRequest);
     }
 
-    public static class MusicPlayer extends Orchestra implements Sendable {
-        Music music;
+    public static class MusicPlayer implements Sendable {
+        private final Orchestra orchestra;
+        private final Collection<ParentDevice> instruments;
+        private String file;
+        private int track;
 
-        public void addInstrument(TalonFXMotor motor) {
-            this.addInstrument(motor.motor);
+        public MusicPlayer() {
+            this.orchestra = new Orchestra();
+            this.instruments = new java.util.ArrayList<>();
         }
 
-        public void setInstrumentAllTracks(TalonFXMotor... motors) {
-            if (this.music.track == -1) {
-                this.setInstrument(motors);
-                return;
-            }
-            this.clearInstruments();
-            IntStream.range(0, motors.length).forEachOrdered(i -> this.addInstrument(motors[i], i % this.music.track));
+        public void addInstrument(TalonFXMotor... motor) {
+            this.addInstrument(Arrays.stream(motor).map(TalonFXMotor::getMotor).toArray(ParentDevice[]::new));
         }
 
-        public void setInstrument(TalonFXMotor... motors) {
-            this.clearInstruments();
-            for (var motor : motors) {
-                this.addInstrument(motor.motor);
-            }
+        public void addInstrument(ParentDevice... instruments) {
+            this.instruments.addAll(Arrays.asList(instruments));
         }
 
-        public void addInstrument(TalonFXMotor motor, int trackNumber) {
-            this.addInstrument(motor.motor, trackNumber);
+        public void clearInstruments() {
+            this.instruments.clear();
         }
 
-        public void setInstrumentAllTracks(ParentDevice... instruments) {
-            this.setInstrumentAllTracks(Arrays.asList(instruments));
+        public void loadMusic(String file, int track) {
+            this.file = file;
+            this.track = track;
+            this.orchestra.loadMusic(file);
+            this.setInstrumentAllTracks(this.instruments);
         }
 
-        public void setInstrumentAllTracks(Collection<ParentDevice> instruments) {
-            if (this.music.track == -1) {
-                this.setInstrument(instruments);
-                return;
-            }
-            this.clearInstruments();
-            IntStream.range(0, instruments.size()).forEachOrdered(
-                    i -> this.addInstrument(instruments.toArray(new ParentDevice[0])[i], i % this.music.track));
+        private void setInstrumentAllTracks(Collection<ParentDevice> instruments) {
+            var instrumentsList = instruments.stream().toList();
+            IntStream.range(0, instrumentsList.size())
+                    .forEach(i -> this.orchestra.addInstrument(instrumentsList.get(i), i % this.track));
         }
 
-        public void setInstrument(Collection<ParentDevice> instruments) {
-            this.clearInstruments();
-            for (var instrument : instruments) {
-                this.addInstrument(instrument);
-            }
-        }
-
-        public void setInstrument(ParentDevice... instruments) {
-            this.clearInstruments();
-            for (var instrument : instruments) {
-                this.addInstrument(instrument);
-            }
-        }
-
-        public void loadMusic(Music music) {
-            this.music = music;
+        public void addInstrument(Collection<ParentDevice> instruments) {
+            this.instruments.addAll(instruments);
         }
 
         @Override
@@ -219,38 +198,36 @@ public final class TalonFXMotor implements ZMotor {
             builder.setSmartDashboardType("Music Player");
             builder.addBooleanProperty("Playing", this::isPlaying, this::setPlayingState);
             builder.addDoubleProperty("Time", this::getCurrentTime, null);
-            builder.addDoubleProperty("Track", () -> this.music.track, null);
-            builder.addStringProperty("File", () -> this.music.file, null);
+            builder.addDoubleProperty("Track", () -> this.track, null);
+            builder.addStringProperty("File", () -> this.file, null);
+        }
+
+        public boolean isPlaying() {
+            return this.orchestra.isPlaying();
         }
 
         public void setPlayingState(boolean playing) {
             if (playing) {
-                this.play();
+                this.orchestra.play();
             } else {
-                this.pause();
+                this.orchestra.pause();
             }
         }
 
-        public static class Music {
-            private final String file;
-            private final int track;
-
-            Music(String file, int track) {
-                this.file = file;
-                this.track = track;
-            }
-
-            public String getFile() {
-                return file;
-            }
-
-            public int getTrack() {
-                return track;
-            }
+        public double getCurrentTime() {
+            return this.orchestra.getCurrentTime();
         }
 
-        public static class Musics {
-            public static final Music StarWarsMainTheme = new Music("music/StarWarsMainTheme.chrp", 1);
+        public void play() {
+            this.orchestra.play();
+        }
+
+        public void pause() {
+            this.orchestra.pause();
+        }
+
+        public void stop() {
+            this.orchestra.stop();
         }
     }
 }
