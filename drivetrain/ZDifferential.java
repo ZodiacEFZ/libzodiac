@@ -117,7 +117,7 @@ public class ZDifferential extends SubsystemBase implements Sendable {
         rightLeader.velocity(speeds.rightMetersPerSecond * GEAR_RATIO / WHEEL_RADIUS);
     }
 
-    public Command driveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, boolean driveDirectAngle) {
+    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, boolean driveDirectAngle) {
         return run(() -> this.drive(driveDirectAngle ? directAngle.get() : angularVelocity.get()));
     }
 
@@ -229,7 +229,7 @@ public class ZDifferential extends SubsystemBase implements Sendable {
             this.velocity = velocity;
         }
 
-        public DifferentialInputStream withRotation(DoubleSupplier rotation) {
+        public DifferentialInputStream rotation(DoubleSupplier rotation) {
             this.rotation = rotation;
             this.rotationType = DifferentialInputStream.RotationType.ROTATION;
             return this;
@@ -240,7 +240,7 @@ public class ZDifferential extends SubsystemBase implements Sendable {
             return this;
         }
 
-        public DifferentialInputStream withHeading(Rotation2dSupplier heading) {
+        public DifferentialInputStream heading(Rotation2dSupplier heading) {
             this.heading = heading;
             this.rotationType = DifferentialInputStream.RotationType.HEADING;
             return this;
