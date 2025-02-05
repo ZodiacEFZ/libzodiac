@@ -215,7 +215,7 @@ public class Zwerve extends SubsystemBase {
         }
     }
 
-    public Command driveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, boolean driveDirectAngle, boolean fieldRelative) {
+    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, boolean driveDirectAngle, boolean fieldRelative) {
         return run(() -> this.drive(driveDirectAngle ? directAngle.get() : angularVelocity.get(), fieldRelative));
     }
 
@@ -315,7 +315,7 @@ public class Zwerve extends SubsystemBase {
             return drivetrain.getChassisSpeeds(translation, rotation);
         }
 
-        public SwerveInputStream withRotation(DoubleSupplier rotation) {
+        public SwerveInputStream rotation(DoubleSupplier rotation) {
             this.rotation = rotation;
             this.rotationType = RotationType.ROTATION;
             return this;
@@ -326,7 +326,7 @@ public class Zwerve extends SubsystemBase {
             return this;
         }
 
-        public SwerveInputStream withHeading(Rotation2dSupplier heading) {
+        public SwerveInputStream heading(Rotation2dSupplier heading) {
             this.heading = heading;
             this.rotationType = RotationType.HEADING;
             return this;
