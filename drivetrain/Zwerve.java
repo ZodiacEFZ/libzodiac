@@ -9,10 +9,14 @@ import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -20,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.group.TalonFXSwerveModule;
 import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
@@ -30,7 +35,7 @@ import java.util.HashSet;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class Zwerve extends SubsystemBase {
+public class Zwerve extends SubsystemBase implements ZDrivetrain {
     // Distance between centers of right and left wheels on robot
     public final double ROBOT_WIDTH;
     // Distance between front and back wheels on robot
@@ -49,9 +54,7 @@ public class Zwerve extends SubsystemBase {
     private final PIDController headingController;
     private final SwerveDriveKinematics kinematics;
     private final Field2d field = new Field2d();
-    // Odometry class for tracking robot pose
-    private final SwerveDriveOdometry odometry;
-
+    private final SwerveDrivePoseEstimator poseEstimator;
     private boolean fieldCentric = true;
     private boolean directAngle = true;
     private Rotation2d targetHeading = new Rotation2d();
@@ -59,7 +62,7 @@ public class Zwerve extends SubsystemBase {
     /**
      * Creates a new DriveSubsystem.
      */
-    public Zwerve(Config config) {
+    public Zwerve(Config config, Pose2d initialPose) {
         this.ROBOT_WIDTH = config.ROBOT_WIDTH;
         this.ROBOT_LENGTH = config.ROBOT_LENGTH;
         this.MAX_SPEED = config.MAX_SPEED;
@@ -84,7 +87,8 @@ public class Zwerve extends SubsystemBase {
         this.resetEncoders();
         Timer.delay(0.5);
 
-        this.odometry = new SwerveDriveOdometry(kinematics, this.getYaw(), this.getModulePositions());
+        this.poseEstimator = new SwerveDrivePoseEstimator(this.kinematics, this.getYaw(), this.getModulePositions(),
+                initialPose);
     }
 
     /**
@@ -116,7 +120,8 @@ public class Zwerve extends SubsystemBase {
     @Override
     public void periodic() {
         // Update the odometry in the periodic block
-        this.odometry.update(this.getYaw(), this.getModulePositions());
+        this.poseEstimator.update(this.getYaw(), this.getModulePositions());
+        Limelight.update();
         this.field.setRobotPose(this.getPose());
     }
 
@@ -126,7 +131,16 @@ public class Zwerve extends SubsystemBase {
      * @return The pose.
      */
     public Pose2d getPose() {
-        return this.odometry.getPoseMeters();
+        return this.poseEstimator.getEstimatedPosition();
+    }
+
+    /**
+     * Resets the odometry to the specified pose.
+     *
+     * @param pose The pose to which to set the odometry.
+     */
+    public void setPose(Pose2d pose) {
+        this.poseEstimator.resetPosition(this.getYaw(), getModulePositions(), pose);
     }
 
     @Override
@@ -181,15 +195,6 @@ public class Zwerve extends SubsystemBase {
         frontRight.setDesiredState(desiredStates[1]);
         rearLeft.setDesiredState(desiredStates[2]);
         rearRight.setDesiredState(desiredStates[3]);
-    }
-
-    /**
-     * Resets the odometry to the specified pose.
-     *
-     * @param pose The pose to which to set the odometry.
-     */
-    public void resetOdometry(Pose2d pose) {
-        this.odometry.resetPosition(this.getYaw(), getModulePositions(), pose);
     }
 
     public void driveFieldOriented(ChassisSpeeds speeds) {
@@ -263,6 +268,16 @@ public class Zwerve extends SubsystemBase {
         motors.add(this.rearRight.getAngleMotor().getMotor());
         motors.add(this.rearRight.getDriveMotor().getMotor());
         return motors;
+    }
+
+    @Override
+    public SwerveDrivePoseEstimator getPoseEstimator() {
+        return this.poseEstimator;
+    }
+
+    @Override
+    public Pigeon2 getGyro() {
+        return this.gyro;
     }
 
     public static class Config {

@@ -3,16 +3,20 @@ package frc.libzodiac.drivetrain;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.*;
-import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonSRXMotor;
 import frc.libzodiac.util.Maths;
@@ -21,7 +25,7 @@ import frc.libzodiac.util.Rotation2dSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class ZDifferential extends SubsystemBase implements Sendable {
+public class ZDifferential extends SubsystemBase implements ZDrivetrain {
     public final double MAX_SPEED;
     public final double MAX_ANGULAR_SPEED;
     private final double GEAR_RATIO;
@@ -38,7 +42,7 @@ public class ZDifferential extends SubsystemBase implements Sendable {
     private final PIDController headingController;
     private final DifferentialDriveKinematics kinematics;
     private final Field2d field = new Field2d();
-    private final DifferentialDriveOdometry odometry;
+    private final DifferentialDrivePoseEstimator poseEstimator;
     private boolean directAngle = true;
     private Rotation2d targetHeading = new Rotation2d();
 
@@ -46,7 +50,7 @@ public class ZDifferential extends SubsystemBase implements Sendable {
      * Constructs a differential drive object. Sets the Encoder distance per pulse and resets the
      * gyro.
      */
-    public ZDifferential(Config config) {
+    public ZDifferential(Config config, Pose2d initialPose) {
         this.MAX_SPEED = config.MAX_SPEED;
         this.MAX_ANGULAR_SPEED = config.MAX_ANGULAR_SPEED;
         this.GEAR_RATIO = config.GEAR_RATIO;
@@ -80,8 +84,8 @@ public class ZDifferential extends SubsystemBase implements Sendable {
         this.rightEncoder.reset();
 
         var wheelPositions = this.getWheelPositions();
-        this.odometry = new DifferentialDriveOdometry(this.getYaw(), wheelPositions.leftMeters,
-                wheelPositions.rightMeters);
+        this.poseEstimator = new DifferentialDrivePoseEstimator(this.kinematics, this.getYaw(),
+                wheelPositions.leftMeters, wheelPositions.rightMeters, initialPose);
     }
 
     private DifferentialDriveWheelPositions getWheelPositions() {
@@ -124,7 +128,8 @@ public class ZDifferential extends SubsystemBase implements Sendable {
     @Override
     public void periodic() {
         // Update the odometry in the periodic block
-        this.odometry.update(this.getYaw(), this.getWheelPositions());
+        this.poseEstimator.update(this.getYaw(), this.getWheelPositions());
+        Limelight.update();
         this.field.setRobotPose(this.getPose());
     }
 
@@ -134,7 +139,16 @@ public class ZDifferential extends SubsystemBase implements Sendable {
      * @return The pose.
      */
     public Pose2d getPose() {
-        return this.odometry.getPoseMeters();
+        return this.poseEstimator.getEstimatedPosition();
+    }
+
+    /**
+     * Resets the odometry to the specified pose.
+     *
+     * @param pose The pose to which to set the odometry.
+     */
+    public void setPose(Pose2d pose) {
+        this.poseEstimator.resetPosition(this.getYaw(), this.getWheelPositions(), pose);
     }
 
     @Override
@@ -163,15 +177,6 @@ public class ZDifferential extends SubsystemBase implements Sendable {
         this.directAngle = directAngle;
     }
 
-    /**
-     * Resets the odometry to the specified pose.
-     *
-     * @param pose The pose to which to set the odometry.
-     */
-    public void resetOdometry(Pose2d pose) {
-        this.odometry.resetPosition(this.getYaw(), this.getWheelPositions(), pose);
-    }
-
     public void setMotorBrake(boolean brake) {
         if (brake) {
             this.leftLeader.brake();
@@ -197,6 +202,16 @@ public class ZDifferential extends SubsystemBase implements Sendable {
 
     public ChassisSpeeds getChassisSpeeds(double velocity, double rotation) {
         return new ChassisSpeeds(velocity * MAX_SPEED, 0, rotation * MAX_ANGULAR_SPEED);
+    }
+
+    @Override
+    public DifferentialDrivePoseEstimator getPoseEstimator() {
+        return this.poseEstimator;
+    }
+
+    @Override
+    public Pigeon2 getGyro() {
+        return this.gyro;
     }
 
     public static class Config {
