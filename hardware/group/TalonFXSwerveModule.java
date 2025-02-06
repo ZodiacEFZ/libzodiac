@@ -55,7 +55,8 @@ public class TalonFXSwerveModule implements Sendable {
      * @return The current state of the module.
      */
     public SwerveModuleState getState() {
-        return new SwerveModuleState(this.drive.getVelocity() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS, this.getAngle());
+        return new SwerveModuleState(this.drive.getVelocity() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS,
+                this.getAngle());
     }
 
     /**
@@ -98,7 +99,8 @@ public class TalonFXSwerveModule implements Sendable {
      * @return The current position of the module.
      */
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(this.drive.getPosition() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS, this.getAngle());
+        return new SwerveModulePosition(this.drive.getPosition() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS,
+                this.getAngle());
     }
 
     public void setMotorBrake(boolean brake) {

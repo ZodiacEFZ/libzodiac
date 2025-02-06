@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.libzodiac.hardware.Limelight;
-import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonSRXMotor;
 import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
@@ -35,8 +34,6 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
     private final TalonSRXMotor leftFollower;
     private final TalonSRXMotor rightLeader;
     private final TalonSRXMotor rightFollower;
-    private final MagEncoder leftEncoder;
-    private final MagEncoder rightEncoder;
     private final Pigeon2 gyro;
 
     private final PIDController headingController;
@@ -59,8 +56,6 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
         this.leftFollower = new TalonSRXMotor(config.leftFollower);
         this.rightLeader = new TalonSRXMotor(config.rightLeader);
         this.rightFollower = new TalonSRXMotor(config.rightFollower);
-        this.leftEncoder = new MagEncoder(config.leftEncoder);
-        this.rightEncoder = new MagEncoder(config.rightEncoder);
         this.gyro = new Pigeon2(config.gyro);
         this.headingController = config.headingController;
         this.kinematics = new DifferentialDriveKinematics(config.ROBOT_WIDTH);
@@ -74,14 +69,15 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
         // We need to invert one side of the drivetrain so that positive voltages
         // result in both sides moving forward. Depending on how your robot's
         // gearbox is constructed, you might have to invert the left side instead.
+        this.leftLeader.setInverted(false);
         this.rightLeader.setInverted(true);
         this.leftFollower.follow(this.leftLeader);
         this.rightFollower.follow(this.rightLeader);
 
         this.gyro.reset();
 
-        this.leftEncoder.reset();
-        this.rightEncoder.reset();
+        this.leftLeader.resetPosition();
+        this.rightLeader.resetPosition();
 
         var wheelPositions = this.getWheelPositions();
         this.poseEstimator = new DifferentialDrivePoseEstimator(this.kinematics, this.getYaw(),
@@ -89,8 +85,8 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
     }
 
     private DifferentialDriveWheelPositions getWheelPositions() {
-        return new DifferentialDriveWheelPositions(leftEncoder.getRadians() * WHEEL_RADIUS,
-                rightEncoder.getRadians() * WHEEL_RADIUS);
+        return new DifferentialDriveWheelPositions(this.leftLeader.getPosition() * this.WHEEL_RADIUS,
+                this.rightLeader.getPosition() * this.WHEEL_RADIUS);
     }
 
     public Rotation2d getYaw() {
@@ -108,7 +104,7 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
     }
 
     public void drive(ChassisSpeeds chassisSpeeds) {
-        this.setSpeeds(kinematics.toWheelSpeeds(chassisSpeeds));
+        this.setSpeeds(this.kinematics.toWheelSpeeds(chassisSpeeds));
     }
 
     /**
@@ -117,8 +113,8 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
      * @param speeds The desired wheel speeds.
      */
     public void setSpeeds(DifferentialDriveWheelSpeeds speeds) {
-        leftLeader.velocity(speeds.leftMetersPerSecond * GEAR_RATIO / WHEEL_RADIUS);
-        rightLeader.velocity(speeds.rightMetersPerSecond * GEAR_RATIO / WHEEL_RADIUS);
+        this.leftLeader.velocity(speeds.leftMetersPerSecond * this.GEAR_RATIO / this.WHEEL_RADIUS);
+        this.rightLeader.velocity(speeds.rightMetersPerSecond * this.GEAR_RATIO / this.WHEEL_RADIUS);
     }
 
     public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, boolean driveDirectAngle) {
@@ -196,12 +192,14 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
     }
 
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
-        targetHeading = headingSupplier.asTranslation().getNorm() < 0.5 ? targetHeading : headingSupplier.get();
-        return MathUtil.clamp(headingController.calculate(this.getYaw().minus(targetHeading).getRadians(), 0), -1, 1);
+        this.targetHeading = headingSupplier.asTranslation()
+                .getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
+        return MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0),
+                -1, 1);
     }
 
     public ChassisSpeeds getChassisSpeeds(double velocity, double rotation) {
-        return new ChassisSpeeds(velocity * MAX_SPEED, 0, rotation * MAX_ANGULAR_SPEED);
+        return new ChassisSpeeds(velocity * this.MAX_SPEED, 0, rotation * this.MAX_ANGULAR_SPEED);
     }
 
     @Override
@@ -214,6 +212,15 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
         return this.gyro;
     }
 
+    public ChassisSpeeds getRobotRelativeSpeeds() {
+        return this.kinematics.toChassisSpeeds(this.getWheelSpeeds());
+    }
+
+    private DifferentialDriveWheelSpeeds getWheelSpeeds() {
+        return new DifferentialDriveWheelSpeeds(this.leftLeader.getVelocity() * this.WHEEL_RADIUS / this.GEAR_RATIO,
+                this.rightLeader.getVelocity() * this.WHEEL_RADIUS / this.GEAR_RATIO);
+    }
+
     public static class Config {
         public double ROBOT_WIDTH; // meters
         public double MAX_SPEED; // meters per second
@@ -224,14 +231,12 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
         public int leftFollower;
         public int rightLeader;
         public int rightFollower;
-        public int leftEncoder;
-        public int rightEncoder;
         public int gyro;
         public PIDController pidController;
         public PIDController headingController;
     }
 
-    public static class DifferentialInputStream implements Supplier<ChassisSpeeds> {
+    public static class InputStream implements Supplier<ChassisSpeeds> {
         private final ZDifferential drivetrain;
         private final DoubleSupplier velocity;
         private double deadband = 0;
@@ -239,37 +244,37 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
         private Rotation2dSupplier heading;
         private DoubleSupplier rotation;
 
-        public DifferentialInputStream(ZDifferential drivetrain, DoubleSupplier velocity) {
+        public InputStream(ZDifferential drivetrain, DoubleSupplier velocity) {
             this.drivetrain = drivetrain;
             this.velocity = velocity;
         }
 
-        public DifferentialInputStream rotation(DoubleSupplier rotation) {
+        public InputStream rotation(DoubleSupplier rotation) {
             this.rotation = rotation;
-            this.rotationType = DifferentialInputStream.RotationType.ROTATION;
+            this.rotationType = InputStream.RotationType.ROTATION;
             return this;
         }
 
-        public DifferentialInputStream deadband(double deadband) {
+        public InputStream deadband(double deadband) {
             this.deadband = deadband;
             return this;
         }
 
-        public DifferentialInputStream heading(Rotation2dSupplier heading) {
+        public InputStream heading(Rotation2dSupplier heading) {
             this.heading = heading;
-            this.rotationType = DifferentialInputStream.RotationType.HEADING;
+            this.rotationType = InputStream.RotationType.HEADING;
             return this;
         }
 
         @Override
         public ChassisSpeeds get() {
             var velocity = Maths.cube(MathUtil.applyDeadband(this.velocity.getAsDouble(), this.deadband));
-            var rotation = switch (rotationType) {
-                case HEADING -> this.drivetrain.calculateRotation(heading);
+            var rotation = switch (this.rotationType) {
+                case HEADING -> this.drivetrain.calculateRotation(this.heading);
                 case ROTATION -> Maths.cube(MathUtil.applyDeadband(this.rotation.getAsDouble(), this.deadband));
                 case NONE -> 0;
             };
-            return drivetrain.getChassisSpeeds(velocity, rotation);
+            return this.drivetrain.getChassisSpeeds(velocity, rotation);
         }
 
         enum RotationType {

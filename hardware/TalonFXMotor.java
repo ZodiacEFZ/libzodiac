@@ -133,6 +133,10 @@ public final class TalonFXMotor implements ZMotor {
         this.motor.getConfigurator().apply(slot0Configs);
     }
 
+    public void setFeedbackConfigs(FeedbackConfigs feedbackConfigs) {
+        this.motor.getConfigurator().apply(feedbackConfigs);
+    }
+
     public void setMotionMagicConfigs(MotionMagicConfigs motionMagicConfigs) {
         this.motor.getConfigurator().apply(motionMagicConfigs);
     }

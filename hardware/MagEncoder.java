@@ -8,7 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
  * The <i>CTRE MagEncoder</i> sensor.
  */
 public final class MagEncoder {
-    private static final double CTRE_MAG_ENCODER_UNIT = 2 * Math.PI / 4096;
+    private static final double CTRE_MAG_ENCODER_UNIT = 4096 / (2 * Math.PI);
 
     private final TalonSRX encoder;
 
@@ -47,6 +47,6 @@ public final class MagEncoder {
     }
 
     public double getRadians() {
-        return (this.encoder.getSelectedSensorPosition() - this.zero) * CTRE_MAG_ENCODER_UNIT;
+        return (this.encoder.getSelectedSensorPosition() - this.zero) / CTRE_MAG_ENCODER_UNIT;
     }
 }

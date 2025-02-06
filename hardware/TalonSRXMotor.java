@@ -1,9 +1,6 @@
 package frc.libzodiac.hardware;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.DemandType;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
+import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.math.controller.PIDController;
 
@@ -134,11 +131,20 @@ public final class TalonSRXMotor implements ZMotor {
         this.motor.setSelectedSensorPosition(rad * this.unit);
     }
 
+    public void resetPosition() {
+        this.motor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
+        this.motor.setSelectedSensorPosition(0);
+    }
+
     public TalonSRX motor() {
         return this.motor;
     }
 
     public void follow(TalonSRXMotor master) {
         this.motor.follow(master.motor);
+    }
+
+    public double getVelocity() {
+        return this.motor.getSelectedSensorVelocity() / this.unit;
     }
 }

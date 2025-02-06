@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.libzodiac.drivetrain;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
@@ -228,8 +224,10 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
     }
 
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
-        this.targetHeading = headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
-        return MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0), -1, 1);
+        this.targetHeading = headingSupplier.asTranslation()
+                .getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
+        return MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0),
+                -1, 1);
     }
 
     public void toggleDirectAngle() {
