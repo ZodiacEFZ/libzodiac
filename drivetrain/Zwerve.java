@@ -74,10 +74,10 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
         this.gyro = new Pigeon2(config.gyro);
         this.headingController = config.headingController;
 
-        kinematics = new SwerveDriveKinematics(new Translation2d(ROBOT_LENGTH / 2, ROBOT_WIDTH / 2),
-                new Translation2d(ROBOT_LENGTH / 2, -ROBOT_WIDTH / 2),
-                new Translation2d(-ROBOT_LENGTH / 2, ROBOT_WIDTH / 2),
-                new Translation2d(-ROBOT_LENGTH / 2, -ROBOT_WIDTH / 2));
+        this.kinematics = new SwerveDriveKinematics(new Translation2d(this.ROBOT_LENGTH / 2, this.ROBOT_WIDTH / 2),
+                new Translation2d(this.ROBOT_LENGTH / 2, -this.ROBOT_WIDTH / 2),
+                new Translation2d(-this.ROBOT_LENGTH / 2, this.ROBOT_WIDTH / 2),
+                new Translation2d(-this.ROBOT_LENGTH / 2, -this.ROBOT_WIDTH / 2));
 
         this.gyro.getConfigurator().apply(new Pigeon2Configuration());
         this.zeroHeading();
@@ -102,10 +102,10 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
      * Resets the drive encoders to currently read a position of 0.
      */
     public void resetEncoders() {
-        frontLeft.resetEncoder();
-        rearLeft.resetEncoder();
-        frontRight.resetEncoder();
-        rearRight.resetEncoder();
+        this.frontLeft.resetEncoder();
+        this.rearLeft.resetEncoder();
+        this.frontRight.resetEncoder();
+        this.rearRight.resetEncoder();
     }
 
     public Rotation2d getYaw() {
@@ -140,7 +140,7 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
      * @param pose The pose to which to set the odometry.
      */
     public void setPose(Pose2d pose) {
-        this.poseEstimator.resetPosition(this.getYaw(), getModulePositions(), pose);
+        this.poseEstimator.resetPosition(this.getYaw(), this.getModulePositions(), pose);
     }
 
     @Override
@@ -176,39 +176,18 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
         this.directAngle = directAngle;
     }
 
-    public ChassisSpeeds getRobotRelativeSpeeds() {
-        return kinematics.toChassisSpeeds(getModuleStates());
-    }
-
-    public SwerveModuleState[] getModuleStates() {
-        return new SwerveModuleState[]{this.frontLeft.getState(), this.frontRight.getState(), this.rearLeft.getState(),
-                this.rearRight.getState()};
-    }
-
-    /**
-     * Sets the swerve ModuleStates.
-     *
-     * @param desiredStates The desired TalonFXSwerveModule states.
-     */
-    public void setModuleStates(SwerveModuleState[] desiredStates) {
-        frontLeft.setDesiredState(desiredStates[0]);
-        frontRight.setDesiredState(desiredStates[1]);
-        rearLeft.setDesiredState(desiredStates[2]);
-        rearRight.setDesiredState(desiredStates[3]);
-    }
-
     public void driveFieldOriented(ChassisSpeeds speeds) {
-        this.driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getYaw()));
+        this.driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, this.getYaw()));
     }
 
-    public ChassisSpeeds getChassisSpeeds(Translation2d translation, double rotation) {
-        translation = translation.times(MAX_SPEED);
-        rotation = rotation * MAX_ANGULAR_SPEED;
+    public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
+        translation = translation.times(this.MAX_SPEED);
+        rotation = rotation * this.MAX_ANGULAR_SPEED;
         return new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
-        this.drive(this.getChassisSpeeds(translation, rotation), fieldRelative);
+        this.drive(this.calculateChassisSpeeds(translation, rotation), fieldRelative);
     }
 
     private void drive(ChassisSpeeds chassisSpeeds, boolean fieldRelative) {
@@ -225,8 +204,8 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
     }
 
     public void driveRobotRelative(ChassisSpeeds speeds) {
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_SPEED);
+        SwerveModuleState[] states = this.kinematics.toSwerveModuleStates(speeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, this.MAX_SPEED);
         this.setModuleStates(states);
     }
 
@@ -249,8 +228,8 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
     }
 
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
-        targetHeading = headingSupplier.asTranslation().getNorm() < 0.5 ? targetHeading : headingSupplier.get();
-        return MathUtil.clamp(headingController.calculate(this.getYaw().minus(targetHeading).getRadians(), 0), -1, 1);
+        this.targetHeading = headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
+        return MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0), -1, 1);
     }
 
     public void toggleDirectAngle() {
@@ -280,6 +259,27 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
         return this.gyro;
     }
 
+    public ChassisSpeeds getRobotRelativeSpeeds() {
+        return this.kinematics.toChassisSpeeds(this.getModuleStates());
+    }
+
+    public SwerveModuleState[] getModuleStates() {
+        return new SwerveModuleState[]{this.frontLeft.getState(), this.frontRight.getState(), this.rearLeft.getState(),
+                this.rearRight.getState()};
+    }
+
+    /**
+     * Sets the swerve ModuleStates.
+     *
+     * @param desiredStates The desired TalonFXSwerveModule states.
+     */
+    public void setModuleStates(SwerveModuleState[] desiredStates) {
+        this.frontLeft.setDesiredState(desiredStates[0]);
+        this.frontRight.setDesiredState(desiredStates[1]);
+        this.rearLeft.setDesiredState(desiredStates[2]);
+        this.rearRight.setDesiredState(desiredStates[3]);
+    }
+
     public static class Config {
         // Distance between centers of right and left wheels on robot
         public double ROBOT_WIDTH;
@@ -306,7 +306,7 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
         public PIDController anglePid;
     }
 
-    public static class SwerveInputStream implements Supplier<ChassisSpeeds> {
+    public static class InputStream implements Supplier<ChassisSpeeds> {
         private final Zwerve drivetrain;
         private final Translation2dSupplier translation;
         private double deadband = 0;
@@ -314,7 +314,7 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
         private Rotation2dSupplier heading;
         private DoubleSupplier rotation;
 
-        public SwerveInputStream(Zwerve drivetrain, Translation2dSupplier translation) {
+        public InputStream(Zwerve drivetrain, Translation2dSupplier translation) {
             this.drivetrain = drivetrain;
             this.translation = translation;
         }
@@ -322,26 +322,26 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
         @Override
         public ChassisSpeeds get() {
             var translation = Maths.cubeTranslation(Maths.applyDeadband(this.translation.get(), this.deadband));
-            var rotation = switch (rotationType) {
-                case HEADING -> this.drivetrain.calculateRotation(heading);
+            var rotation = switch (this.rotationType) {
+                case HEADING -> this.drivetrain.calculateRotation(this.heading);
                 case ROTATION -> Maths.cube(MathUtil.applyDeadband(this.rotation.getAsDouble(), this.deadband));
                 case NONE -> 0;
             };
-            return drivetrain.getChassisSpeeds(translation, rotation);
+            return this.drivetrain.calculateChassisSpeeds(translation, rotation);
         }
 
-        public SwerveInputStream rotation(DoubleSupplier rotation) {
+        public InputStream rotation(DoubleSupplier rotation) {
             this.rotation = rotation;
             this.rotationType = RotationType.ROTATION;
             return this;
         }
 
-        public SwerveInputStream deadband(double deadband) {
+        public InputStream deadband(double deadband) {
             this.deadband = deadband;
             return this;
         }
 
-        public SwerveInputStream heading(Rotation2dSupplier heading) {
+        public InputStream heading(Rotation2dSupplier heading) {
             this.heading = heading;
             this.rotationType = RotationType.HEADING;
             return this;

@@ -86,12 +86,12 @@ public final class TalonSRXMotor implements ZMotor {
      */
     @Override
     public void angle(double rad) {
-        this.motor.set(ControlMode.Position, rad * unit);
+        this.motor.set(ControlMode.Position, rad * this.unit);
     }
 
     @Override
     public void velocity(double rads) {
-        this.motor.set(ControlMode.Velocity, rads * unit);
+        this.motor.set(ControlMode.Velocity, rads * this.unit);
     }
 
     @Override
@@ -105,17 +105,17 @@ public final class TalonSRXMotor implements ZMotor {
         this.motor.config_kD(0, kD);
         this.motor.config_kF(0, kF);
 
-        this.motor.configMotionCruiseVelocity(cruiseVelocity * unit);
-        this.motor.configMotionAcceleration(acceleration * unit);
+        this.motor.configMotionCruiseVelocity(cruiseVelocity * this.unit);
+        this.motor.configMotionAcceleration(acceleration * this.unit);
         this.motor.configMotionSCurveStrength(sCurveStrength);
     }
 
     public void MotionMagic(double rad) {
-        this.motor.set(ControlMode.MotionMagic, rad * unit);
+        this.motor.set(ControlMode.MotionMagic, rad * this.unit);
     }
 
     public void MotionMagic(double rad, double feedforward) {
-        this.motor.set(ControlMode.MotionMagic, rad * unit, DemandType.ArbitraryFeedForward, feedforward);
+        this.motor.set(ControlMode.MotionMagic, rad * this.unit, DemandType.ArbitraryFeedForward, feedforward);
     }
 
     public void set(TalonSRXControlMode mode, double value) {
@@ -127,11 +127,11 @@ public final class TalonSRXMotor implements ZMotor {
     }
 
     public double getPosition() {
-        return this.motor.getSelectedSensorPosition() / unit;
+        return this.motor.getSelectedSensorPosition() / this.unit;
     }
 
     public void setPosition(double rad) {
-        this.motor.setSelectedSensorPosition(rad * unit);
+        this.motor.setSelectedSensorPosition(rad * this.unit);
     }
 
     public TalonSRX motor() {

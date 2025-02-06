@@ -35,14 +35,14 @@ public class TalonFXSwerveModule implements Sendable {
     }
 
     private Rotation2d getAngle() {
-        return new Rotation2d(this.angle.getPosition() / ANGLE_GEAR_RATIO);
+        return new Rotation2d(this.angle.getPosition() / this.ANGLE_GEAR_RATIO);
     }
 
     /**
      * Zeroes all the SwerveModule encoders.
      */
     public void resetEncoder() {
-        this.angle.setPosition(this.getAngleEncoder().getRadians() * ANGLE_GEAR_RATIO);
+        this.angle.setPosition(this.getAngleEncoder().getRadians() * this.ANGLE_GEAR_RATIO);
     }
 
     private Rotation2d getAngleEncoder() {
@@ -55,7 +55,7 @@ public class TalonFXSwerveModule implements Sendable {
      * @return The current state of the module.
      */
     public SwerveModuleState getState() {
-        return new SwerveModuleState(this.drive.getVelocity() / DRIVE_GEAR_RATIO * WHEEL_RADIUS, this.getAngle());
+        return new SwerveModuleState(this.drive.getVelocity() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS, this.getAngle());
     }
 
     /**
@@ -72,11 +72,11 @@ public class TalonFXSwerveModule implements Sendable {
         // driving.
         optimizedDesiredState.cosineScale(currentAngle);
 
-        this.drive.velocity(optimizedDesiredState.speedMetersPerSecond / WHEEL_RADIUS * DRIVE_GEAR_RATIO);
+        this.drive.velocity(optimizedDesiredState.speedMetersPerSecond / this.WHEEL_RADIUS * this.DRIVE_GEAR_RATIO);
 
         this.lastAngle = (Math.abs(
                 optimizedDesiredState.speedMetersPerSecond) < 0.03) ? this.lastAngle : optimizedDesiredState.angle;
-        this.angle.angle(this.lastAngle.getRadians() * ANGLE_GEAR_RATIO);
+        this.angle.angle(this.lastAngle.getRadians() * this.ANGLE_GEAR_RATIO);
     }
 
     private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d angle) {
@@ -98,7 +98,7 @@ public class TalonFXSwerveModule implements Sendable {
      * @return The current position of the module.
      */
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(this.drive.getPosition() / DRIVE_GEAR_RATIO * WHEEL_RADIUS, this.getAngle());
+        return new SwerveModulePosition(this.drive.getPosition() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS, this.getAngle());
     }
 
     public void setMotorBrake(boolean brake) {
