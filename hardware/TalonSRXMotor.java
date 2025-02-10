@@ -7,7 +7,7 @@ import edu.wpi.first.math.controller.PIDController;
 /**
  * Motors powered by <i>Talon SRX</i>, such as 775 Pro.
  */
-public final class TalonSRXMotor implements ZMotor {
+public final class TalonSRXMotor implements BaseMotor {
     private final TalonSRX motor;
     /**
      * Unit of the sensor wired to the <i>TalonSRX</i> encoder, represents how many
@@ -71,8 +71,8 @@ public final class TalonSRXMotor implements ZMotor {
     }
 
     @Override
-    public void power(double ratio) {
-        this.motor.set(ControlMode.PercentOutput, ratio);
+    public void power(double percent) {
+        this.motor.set(TalonSRXControlMode.PercentOutput, percent);
     }
 
     /**
@@ -83,17 +83,17 @@ public final class TalonSRXMotor implements ZMotor {
      */
     @Override
     public void angle(double rad) {
-        this.motor.set(ControlMode.Position, rad * this.unit);
+        this.motor.set(TalonSRXControlMode.Position, rad * this.unit);
     }
 
     @Override
-    public void velocity(double rads) {
-        this.motor.set(ControlMode.Velocity, rads * this.unit);
+    public void velocity(double radPerSec) {
+        this.motor.set(TalonSRXControlMode.Velocity, radPerSec * this.unit);
     }
 
     @Override
     public void current(double amp) {
-        this.motor.set(ControlMode.Current, amp);
+        this.motor.set(TalonSRXControlMode.Current, amp);
     }
 
     public void setMotionMagicConfig(double kP, double kI, double kD, double kF, double cruiseVelocity, double acceleration, int sCurveStrength) {
@@ -108,11 +108,11 @@ public final class TalonSRXMotor implements ZMotor {
     }
 
     public void MotionMagic(double rad) {
-        this.motor.set(ControlMode.MotionMagic, rad * this.unit);
+        this.motor.set(TalonSRXControlMode.MotionMagic, rad * this.unit);
     }
 
     public void MotionMagic(double rad, double feedforward) {
-        this.motor.set(ControlMode.MotionMagic, rad * this.unit, DemandType.ArbitraryFeedForward, feedforward);
+        this.motor.set(TalonSRXControlMode.MotionMagic, rad * this.unit, DemandType.ArbitraryFeedForward, feedforward);
     }
 
     public void set(TalonSRXControlMode mode, double value) {
@@ -131,6 +131,10 @@ public final class TalonSRXMotor implements ZMotor {
         this.motor.setSelectedSensorPosition(rad * this.unit);
     }
 
+    public void setSensor(FeedbackDevice sensor) {
+        this.motor.configSelectedFeedbackSensor(sensor);
+    }
+
     public void resetPosition() {
         this.motor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
         this.motor.setSelectedSensorPosition(0);
@@ -141,7 +145,12 @@ public final class TalonSRXMotor implements ZMotor {
     }
 
     public void follow(TalonSRXMotor master) {
+        this.follow(master, true);
+    }
+
+    public void follow(TalonSRXMotor master, boolean invert) {
         this.motor.follow(master.motor);
+        this.motor.setInverted(invert ? InvertType.OpposeMaster : InvertType.FollowMaster);
     }
 
     public double getVelocity() {

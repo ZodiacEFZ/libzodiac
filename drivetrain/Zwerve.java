@@ -3,6 +3,8 @@ package frc.libzodiac.drivetrain;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -19,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.group.TalonFXSwerveModule;
@@ -31,13 +34,13 @@ import java.util.HashSet;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class Zwerve extends SubsystemBase implements ZDrivetrain {
+public class Zwerve extends SubsystemBase implements BaseDrivetrain {
     // Distance between centers of right and left wheels on robot
     public final double ROBOT_WIDTH;
     // Distance between front and back wheels on robot
     public final double ROBOT_LENGTH;
     public final double MAX_SPEED;
-    private final double MAX_ANGULAR_SPEED;
+    private final double MAX_ANGULAR_VELOCITY;
 
     // Robot swerve modules
     private final TalonFXSwerveModule frontLeft;
@@ -62,7 +65,7 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
         this.ROBOT_WIDTH = config.ROBOT_WIDTH;
         this.ROBOT_LENGTH = config.ROBOT_LENGTH;
         this.MAX_SPEED = config.MAX_SPEED;
-        this.MAX_ANGULAR_SPEED = config.MAX_ANGULAR_SPEED;
+        this.MAX_ANGULAR_VELOCITY = config.MAX_ANGULAR_VELOCITY;
         this.frontLeft = new TalonFXSwerveModule(config.frontLeft, config);
         this.frontRight = new TalonFXSwerveModule(config.frontRight, config);
         this.rearLeft = new TalonFXSwerveModule(config.rearLeft, config);
@@ -121,24 +124,6 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
         this.field.setRobotPose(this.getPose());
     }
 
-    /**
-     * Returns the currently-estimated pose of the robot.
-     *
-     * @return The pose.
-     */
-    public Pose2d getPose() {
-        return this.poseEstimator.getEstimatedPosition();
-    }
-
-    /**
-     * Resets the odometry to the specified pose.
-     *
-     * @param pose The pose to which to set the odometry.
-     */
-    public void setPose(Pose2d pose) {
-        this.poseEstimator.resetPosition(this.getYaw(), this.getModulePositions(), pose);
-    }
-
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.setSmartDashboardType("Swerve Drivetrain");
@@ -178,7 +163,7 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
 
     public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
         translation = translation.times(this.MAX_SPEED);
-        rotation = rotation * this.MAX_ANGULAR_SPEED;
+        rotation = rotation * this.MAX_ANGULAR_VELOCITY;
         return new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
     }
 
@@ -197,12 +182,6 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
 
     public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, boolean driveDirectAngle, boolean fieldRelative) {
         return run(() -> this.drive(driveDirectAngle ? directAngle.get() : angularVelocity.get(), fieldRelative));
-    }
-
-    public void driveRobotRelative(ChassisSpeeds speeds) {
-        SwerveModuleState[] states = this.kinematics.toSwerveModuleStates(speeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, this.MAX_SPEED);
-        this.setModuleStates(states);
     }
 
     public void setMotorBrake(boolean brake) {
@@ -257,19 +236,76 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
         return this.gyro;
     }
 
+    /**
+     * Returns the currently-estimated pose of the robot.
+     *
+     * @return The pose.
+     */
+    @Override
+    public Pose2d getPose() {
+        return this.poseEstimator.getEstimatedPosition();
+    }
+
+    /**
+     * Resets the odometry to the specified pose.
+     *
+     * @param pose The pose to which to set the odometry.
+     */
+    @Override
+    public void setPose(Pose2d pose) {
+        this.poseEstimator.resetPosition(this.getYaw(), this.getModulePositions(), pose);
+    }
+
+    @Override
     public ChassisSpeeds getRobotRelativeSpeeds() {
         return this.kinematics.toChassisSpeeds(this.getModuleStates());
     }
 
+    @Override
+    public void driveRobotRelative(ChassisSpeeds speeds) {
+        SwerveModuleState[] states;
+        states = PathPlanner.generateSwerveSetpoint(speeds);
+        if (states == null) {
+            states = this.kinematics.toSwerveModuleStates(speeds);
+            SwerveDriveKinematics.desaturateWheelSpeeds(states, this.MAX_SPEED);
+        }
+        this.setModuleStates(states);
+    }
+
+    @Override
+    public Subsystem getSubsystemBase() {
+        return this;
+    }
+
+    @Override
+    public PPHolonomicDriveController getPathFollowingController() {
+        //TODO: Tune these PID constants
+        return new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                new PIDConstants(this.headingController.getP(), this.headingController.getI(),
+                        this.headingController.getD())// Rotation PID constants
+        );
+    }
+
+    @Override
+    public Field2d getField() {
+        return this.field;
+    }
+
+    @Override
+    public double getMaxAngularVelocity() {
+        return this.MAX_ANGULAR_VELOCITY;
+    }
+
+    @Override
     public SwerveModuleState[] getModuleStates() {
         return new SwerveModuleState[]{this.frontLeft.getState(), this.frontRight.getState(), this.rearLeft.getState(),
                 this.rearRight.getState()};
     }
 
     /**
-     * Sets the swerve ModuleStates.
+     * Sets the swerve module states.
      *
-     * @param desiredStates The desired TalonFXSwerveModule states.
+     * @param desiredStates The desired swerve module states.
      */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
         this.frontLeft.setDesiredState(desiredStates[0]);
@@ -284,7 +320,7 @@ public class Zwerve extends SubsystemBase implements ZDrivetrain {
         // Distance between front and back wheels on robot
         public double ROBOT_LENGTH;
         public double MAX_SPEED;
-        public double MAX_ANGULAR_SPEED;
+        public double MAX_ANGULAR_VELOCITY;
 
         // Robot swerve modules
         public TalonFXSwerveModule.Config frontLeft;

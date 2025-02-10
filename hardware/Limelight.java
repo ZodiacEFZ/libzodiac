@@ -5,7 +5,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.units.Units;
-import frc.libzodiac.drivetrain.ZDrivetrain;
+import frc.libzodiac.drivetrain.BaseDrivetrain;
 import frc.libzodiac.hardware.limelight.LimelightHelpers;
 
 import java.util.ArrayList;
@@ -18,17 +18,17 @@ public class Limelight {
     private final Pigeon2 gyro;
     private final PoseEstimator<?> poseEstimator;
 
-    public Limelight(ZDrivetrain drivetrain) {
+    public Limelight(BaseDrivetrain drivetrain) {
         this("limelight", drivetrain);
     }
 
-    public Limelight(String name, ZDrivetrain drivetrain) {
+    public Limelight(String name, BaseDrivetrain drivetrain) {
         this.name = name;
         this.gyro = drivetrain.getGyro();
         this.poseEstimator = drivetrain.getPoseEstimator();
 
         for (int port = 5800; port <= 5809; port++) {
-            PortForwarder.add(port, this.name + ".local", port);
+            PortForwarder.add(port + limelights.size() * 10, this.name + ".local", port);
         }
 
         limelights.add(this);

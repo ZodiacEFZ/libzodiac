@@ -18,7 +18,7 @@ import java.util.stream.IntStream;
 /**
  * <i>Talon FX/i> motor, such as Falcon 500 and Kraken X60/X44.
  */
-public final class TalonFXMotor implements ZMotor {
+public final class TalonFXMotor implements BaseMotor {
     public static final double TALONFX_UNIT = 2 * Math.PI;
 
     private final TalonFX motor;
@@ -64,8 +64,8 @@ public final class TalonFXMotor implements ZMotor {
     }
 
     @Override
-    public void power(double ratio) {
-        this.motor.set(ratio);
+    public void power(double percent) {
+        this.motor.set(percent);
     }
 
     @Override
@@ -74,10 +74,10 @@ public final class TalonFXMotor implements ZMotor {
     }
 
     @Override
-    public void velocity(double rads) {
+    public void velocity(double radPerSec) {
         // Our practice suggest that `VelocityVoltage` api produces a somehow more
         // stable output than `VelocityDutyCycle`.
-        this.motor.setControl(new VelocityVoltage(rads / TALONFX_UNIT));
+        this.motor.setControl(new VelocityVoltage(radPerSec / TALONFX_UNIT));
     }
 
     @Override
@@ -85,8 +85,8 @@ public final class TalonFXMotor implements ZMotor {
         this.motor.setControl(new VoltageOut(volt));
     }
 
-    public void music(double frequency) {
-        this.motor.setControl(new MusicTone(frequency).withUpdateFreqHz(50));
+    public void frequency(double hz) {
+        this.motor.setControl(new MusicTone(hz).withUpdateFreqHz(50));
     }
 
     public double getPosition() {
@@ -129,32 +129,100 @@ public final class TalonFXMotor implements ZMotor {
         this.motor.getConfigurator().apply(slot0Configs);
     }
 
-    public void setSlot0Configs(Slot0Configs slot0Configs) {
-        this.motor.getConfigurator().apply(slot0Configs);
+    public void applyConfiguration(TalonFXConfiguration configs) {
+        this.motor.getConfigurator().apply(configs);
     }
 
-    public void setFeedbackConfigs(FeedbackConfigs feedbackConfigs) {
-        this.motor.getConfigurator().apply(feedbackConfigs);
+    public void applyConfiguration(MotorOutputConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
     }
 
-    public void setMotionMagicConfigs(MotionMagicConfigs motionMagicConfigs) {
-        this.motor.getConfigurator().apply(motionMagicConfigs);
+    public void applyConfiguration(CurrentLimitsConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
     }
 
-    public void MotionMagicPosition(double position) {
-        this.motor.setControl(new MotionMagicVoltage(position / TALONFX_UNIT));
+    public void applyConfiguration(VoltageConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
     }
 
-    public void MotionMagicVelocity(double velocity) {
-        this.motor.setControl(new MotionMagicVelocityVoltage(velocity / TALONFX_UNIT));
+    public void applyConfiguration(TorqueCurrentConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
     }
 
-    public void MotionMagicExpo(double position) {
-        this.motor.setControl(new MotionMagicExpoVoltage(position / TALONFX_UNIT));
+    public void applyConfiguration(FeedbackConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
     }
 
-    public void setControl(ControlRequest controlRequest) {
-        this.motor.setControl(controlRequest);
+    public void applyConfiguration(DifferentialSensorsConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(DifferentialConstantsConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(OpenLoopRampsConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(ClosedLoopRampsConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(HardwareLimitSwitchConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(AudioConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(SoftwareLimitSwitchConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(MotionMagicConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(CustomParamsConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(ClosedLoopGeneralConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(Slot0Configs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(Slot1Configs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(Slot2Configs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(SlotConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void MotionMagicPosition(double rad) {
+        this.motor.setControl(new MotionMagicVoltage(rad / TALONFX_UNIT));
+    }
+
+    public void MotionMagicVelocity(double radPerSec) {
+        this.motor.setControl(new MotionMagicVelocityVoltage(radPerSec / TALONFX_UNIT));
+    }
+
+    public void MotionMagicExpo(double rad) {
+        this.motor.setControl(new MotionMagicExpoVoltage(rad / TALONFX_UNIT));
+    }
+
+    public void setControl(ControlRequest request) {
+        this.motor.setControl(request);
     }
 
     public static class MusicPlayer implements Sendable {

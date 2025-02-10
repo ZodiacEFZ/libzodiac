@@ -4,7 +4,7 @@ package frc.libzodiac.hardware;
  * Defines a large collection of APIs to operate various motors so that motors
  * can be controlled under a unified generic way.
  */
-public interface ZMotor {
+public interface BaseMotor {
     void setInverted(boolean inverted);
 
     void invert();

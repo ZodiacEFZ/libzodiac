@@ -18,14 +18,18 @@ public final class MagEncoder {
     public double zero = 0;
 
     public MagEncoder(int can_id, double zero) {
-        this(can_id);
+        this.encoder = new TalonSRX(can_id);
+        this.encoder.configFactoryDefault();
+        this.encoder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute);
         this.zero = zero;
     }
 
     public MagEncoder(int can_id) {
         this.encoder = new TalonSRX(can_id);
-        this.encoder.configFactoryDefault();
-        this.encoder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute);
+    }
+
+    public void setInverted(boolean inverted) {
+        this.encoder.setSensorPhase(inverted);
     }
 
     /**
@@ -38,6 +42,7 @@ public final class MagEncoder {
     }
 
     public void reset() {
+        this.zero = 0;
         this.encoder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
         this.encoder.setSelectedSensorPosition(0);
     }

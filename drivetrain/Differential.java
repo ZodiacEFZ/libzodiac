@@ -1,20 +1,19 @@
 package frc.libzodiac.drivetrain;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.pathplanner.lib.controllers.PPLTVController;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
-import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.TalonSRXMotor;
@@ -24,9 +23,9 @@ import frc.libzodiac.util.Rotation2dSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class ZDifferential extends SubsystemBase implements ZDrivetrain {
+public class Differential extends SubsystemBase implements BaseDrivetrain {
     public final double MAX_SPEED;
-    public final double MAX_ANGULAR_SPEED;
+    public final double MAX_ANGULAR_VELOCITY;
     private final double GEAR_RATIO;
     private final double WHEEL_RADIUS; // meters
 
@@ -47,9 +46,9 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
      * Constructs a differential drive object. Sets the Encoder distance per pulse and resets the
      * gyro.
      */
-    public ZDifferential(Config config, Pose2d initialPose) {
+    public Differential(Config config, Pose2d initialPose) {
         this.MAX_SPEED = config.MAX_SPEED;
-        this.MAX_ANGULAR_SPEED = config.MAX_ANGULAR_SPEED;
+        this.MAX_ANGULAR_VELOCITY = config.MAX_ANGULAR_VELOCITY;
         this.GEAR_RATIO = config.GEAR_RATIO;
         this.WHEEL_RADIUS = config.WHEEL_RADIUS;
         this.leftLeader = new TalonSRXMotor(config.leftLeader);
@@ -64,8 +63,10 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
         this.leftFollower.factoryDefault();
         this.rightLeader.factoryDefault();
         this.rightFollower.factoryDefault();
+
         this.leftLeader.setPid(config.pidController);
         this.rightLeader.setPid(config.pidController);
+
         // We need to invert one side of the drivetrain so that positive voltages
         // result in both sides moving forward. Depending on how your robot's
         // gearbox is constructed, you might have to invert the left side instead.
@@ -129,24 +130,6 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
         this.field.setRobotPose(this.getPose());
     }
 
-    /**
-     * Returns the currently-estimated pose of the robot.
-     *
-     * @return The pose.
-     */
-    public Pose2d getPose() {
-        return this.poseEstimator.getEstimatedPosition();
-    }
-
-    /**
-     * Resets the odometry to the specified pose.
-     *
-     * @param pose The pose to which to set the odometry.
-     */
-    public void setPose(Pose2d pose) {
-        this.poseEstimator.resetPosition(this.getYaw(), this.getWheelPositions(), pose);
-    }
-
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.setSmartDashboardType("Differential Drivetrain");
@@ -199,7 +182,7 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
     }
 
     public ChassisSpeeds getChassisSpeeds(double velocity, double rotation) {
-        return new ChassisSpeeds(velocity * this.MAX_SPEED, 0, rotation * this.MAX_ANGULAR_SPEED);
+        return new ChassisSpeeds(velocity * this.MAX_SPEED, 0, rotation * this.MAX_ANGULAR_VELOCITY);
     }
 
     @Override
@@ -212,8 +195,59 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
         return this.gyro;
     }
 
+    /**
+     * Returns the currently-estimated pose of the robot.
+     *
+     * @return The pose.
+     */
+    @Override
+    public Pose2d getPose() {
+        return this.poseEstimator.getEstimatedPosition();
+    }
+
+    /**
+     * Resets the odometry to the specified pose.
+     *
+     * @param pose The pose to which to set the odometry.
+     */
+    @Override
+    public void setPose(Pose2d pose) {
+        this.poseEstimator.resetPosition(this.getYaw(), this.getWheelPositions(), pose);
+    }
+
+    @Override
     public ChassisSpeeds getRobotRelativeSpeeds() {
         return this.kinematics.toChassisSpeeds(this.getWheelSpeeds());
+    }
+
+    @Override
+    public void driveRobotRelative(ChassisSpeeds chassisSpeeds) {
+        this.drive(chassisSpeeds);
+    }
+
+    @Override
+    public Subsystem getSubsystemBase() {
+        return this;
+    }
+
+    @Override
+    public PPLTVController getPathFollowingController() {
+        return new PPLTVController(0.02);
+    }
+
+    @Override
+    public Field2d getField() {
+        return this.field;
+    }
+
+    @Override
+    public double getMaxAngularVelocity() {
+        return this.MAX_ANGULAR_VELOCITY;
+    }
+
+    @Override
+    public SwerveModuleState[] getModuleStates() {
+        return null;
     }
 
     private DifferentialDriveWheelSpeeds getWheelSpeeds() {
@@ -224,7 +258,7 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
     public static class Config {
         public double ROBOT_WIDTH; // meters
         public double MAX_SPEED; // meters per second
-        public double MAX_ANGULAR_SPEED; // one rotation per second
+        public double MAX_ANGULAR_VELOCITY; // radians per second
         public double GEAR_RATIO;
         public double WHEEL_RADIUS; // meters
         public int leftLeader;
@@ -237,14 +271,14 @@ public class ZDifferential extends SubsystemBase implements ZDrivetrain {
     }
 
     public static class InputStream implements Supplier<ChassisSpeeds> {
-        private final ZDifferential drivetrain;
+        private final Differential drivetrain;
         private final DoubleSupplier velocity;
         private double deadband = 0;
         private RotationType rotationType = RotationType.NONE;
         private Rotation2dSupplier heading;
         private DoubleSupplier rotation;
 
-        public InputStream(ZDifferential drivetrain, DoubleSupplier velocity) {
+        public InputStream(Differential drivetrain, DoubleSupplier velocity) {
             this.drivetrain = drivetrain;
             this.velocity = velocity;
         }
