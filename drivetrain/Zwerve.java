@@ -31,6 +31,7 @@ import frc.libzodiac.util.Translation2dSupplier;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -180,8 +181,8 @@ public class Zwerve extends SubsystemBase implements BaseDrivetrain {
         }
     }
 
-    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, boolean driveDirectAngle, boolean fieldRelative) {
-        return run(() -> this.drive(driveDirectAngle ? directAngle.get() : angularVelocity.get(), fieldRelative));
+    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, BooleanSupplier driveDirectAngle, BooleanSupplier fieldRelative) {
+        return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get(), fieldRelative.getAsBoolean()));
     }
 
     public void setMotorBrake(boolean brake) {
