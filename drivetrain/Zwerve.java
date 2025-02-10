@@ -182,7 +182,8 @@ public class Zwerve extends SubsystemBase implements BaseDrivetrain {
     }
 
     public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, BooleanSupplier driveDirectAngle, BooleanSupplier fieldRelative) {
-        return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get(), fieldRelative.getAsBoolean()));
+        return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get(),
+                fieldRelative.getAsBoolean()));
     }
 
     public void setMotorBrake(boolean brake) {
