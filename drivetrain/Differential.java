@@ -65,8 +65,8 @@ public class Differential extends SubsystemBase implements BaseDrivetrain {
         this.rightLeader.factoryDefault();
         this.rightFollower.factoryDefault();
 
-        this.leftLeader.setPid(config.pidController);
-        this.rightLeader.setPid(config.pidController);
+        this.leftLeader.setPID(config.pidController);
+        this.rightLeader.setPID(config.pidController);
 
         // We need to invert one side of the drivetrain so that positive voltages
         // result in both sides moving forward. Depending on how your robot's
@@ -119,7 +119,8 @@ public class Differential extends SubsystemBase implements BaseDrivetrain {
         this.rightLeader.velocity(speeds.rightMetersPerSecond * this.GEAR_RATIO / this.WHEEL_RADIUS);
     }
 
-    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, BooleanSupplier driveDirectAngle) {
+    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity,
+                                   BooleanSupplier driveDirectAngle) {
         return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get()));
     }
 
