@@ -24,8 +24,8 @@ public final class TalonSRXMotor implements ZMotor {
         this.motor.configFactoryDefault();
     }
 
-    public void setPid(PIDController pid) {
-        this.setPid(pid.getP(), pid.getI(), pid.getD());
+    public void setPID(PIDController pid) {
+        this.setPID(pid.getP(), pid.getI(), pid.getD());
     }
 
     /**
@@ -35,7 +35,7 @@ public final class TalonSRXMotor implements ZMotor {
      * @param kI PID integral term factor
      * @param kD PID derivative term factor
      */
-    public void setPid(double kP, double kI, double kD) {
+    public void setPID(double kP, double kI, double kD) {
         this.motor.config_kP(0, kP);
         this.motor.config_kI(0, kI);
         this.motor.config_kD(0, kD);
@@ -97,7 +97,8 @@ public final class TalonSRXMotor implements ZMotor {
         this.motor.set(TalonSRXControlMode.Current, amp);
     }
 
-    public void setMotionMagicConfig(double kP, double kI, double kD, double kF, double cruiseVelocity, double acceleration, int sCurveStrength) {
+    public void setMotionMagicConfig(double kP, double kI, double kD, double kF, double cruiseVelocity,
+                                     double acceleration, int sCurveStrength) {
         this.motor.config_kP(0, kP);
         this.motor.config_kI(0, kI);
         this.motor.config_kD(0, kD);

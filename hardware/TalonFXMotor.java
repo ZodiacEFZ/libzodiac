@@ -115,8 +115,8 @@ public final class TalonFXMotor implements ZMotor {
         return this.motor;
     }
 
-    public void setPid(PIDController pid) {
-        this.setPid(pid.getP(), pid.getI(), pid.getD());
+    public void setPID(PIDController pid) {
+        this.setPID(pid.getP(), pid.getI(), pid.getD());
     }
 
     /**
@@ -126,7 +126,7 @@ public final class TalonFXMotor implements ZMotor {
      * @param kI integral control coefficient
      * @param kD derivative control coefficient
      */
-    public void setPid(double kP, double kI, double kD) {
+    public void setPID(double kP, double kI, double kD) {
         var slot0Configs = new Slot0Configs();
         slot0Configs.kP = kP;
         slot0Configs.kI = kI;
