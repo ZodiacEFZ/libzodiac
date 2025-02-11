@@ -217,14 +217,14 @@ public class Zwerve extends SubsystemBase implements BaseDrivetrain {
 
     public Collection<ParentDevice> getMotors() {
         Collection<ParentDevice> motors = new HashSet<>();
-        motors.add(this.frontLeft.getAngleMotor().getMotor());
-        motors.add(this.frontLeft.getDriveMotor().getMotor());
-        motors.add(this.frontRight.getAngleMotor().getMotor());
-        motors.add(this.frontRight.getDriveMotor().getMotor());
-        motors.add(this.rearLeft.getAngleMotor().getMotor());
-        motors.add(this.rearLeft.getDriveMotor().getMotor());
-        motors.add(this.rearRight.getAngleMotor().getMotor());
-        motors.add(this.rearRight.getDriveMotor().getMotor());
+        motors.add(this.frontLeft.getAngleMotor().getRawEntry());
+        motors.add(this.frontLeft.getDriveMotor().getRawEntry());
+        motors.add(this.frontRight.getAngleMotor().getRawEntry());
+        motors.add(this.frontRight.getDriveMotor().getRawEntry());
+        motors.add(this.rearLeft.getAngleMotor().getRawEntry());
+        motors.add(this.rearLeft.getDriveMotor().getRawEntry());
+        motors.add(this.rearRight.getAngleMotor().getRawEntry());
+        motors.add(this.rearRight.getDriveMotor().getRawEntry());
         return motors;
     }
 
