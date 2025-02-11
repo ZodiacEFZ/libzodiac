@@ -70,7 +70,7 @@ public final class TalonFXMotor implements ZMotor {
     }
 
     @Override
-    public void angle(double rad) {
+    public void position(double rad) {
         this.motor.setControl(new PositionDutyCycle(rad / TALONFX_UNIT));
     }
 

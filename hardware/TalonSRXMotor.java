@@ -83,7 +83,7 @@ public final class TalonSRXMotor implements ZMotor {
      * properly set.
      */
     @Override
-    public void angle(double rad) {
+    public void position(double rad) {
         this.motor.set(TalonSRXControlMode.Position, rad * this.unit);
     }
 

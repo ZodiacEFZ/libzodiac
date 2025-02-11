@@ -36,14 +36,14 @@ public interface ZMotor {
     }
 
     /**
-     * Control the motor to turn to a specific angle.
+     * Control the motor to turn to a specific position.
      *
      * @param rad the angle in radian
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
-     * @apiNote Zero position of the angle is implementation defined.
+     * @apiNote Zero position is implementation defined.
      */
-    default void angle(double rad) {
+    default void position(double rad) {
         throw new UnsupportedOperationException("the motor does not support turning by angle");
     }
 

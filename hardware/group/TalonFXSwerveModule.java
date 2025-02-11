@@ -80,7 +80,7 @@ public class TalonFXSwerveModule implements Sendable, ZwerveModule {
 
         this.lastAngle = (Math.abs(
                 optimizedDesiredState.speedMetersPerSecond) < 0.03) ? this.lastAngle : optimizedDesiredState.angle;
-        this.angle.angle(this.lastAngle.getRadians() * this.ANGLE_GEAR_RATIO);
+        this.angle.position(this.lastAngle.getRadians() * this.ANGLE_GEAR_RATIO);
     }
 
     private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d angle) {
