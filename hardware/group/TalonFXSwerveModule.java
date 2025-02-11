@@ -5,11 +5,12 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import frc.libzodiac.api.ZwerveModule;
 import frc.libzodiac.drivetrain.Zwerve;
 import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonFXMotor;
 
-public class TalonFXSwerveModule implements Sendable {
+public class TalonFXSwerveModule implements Sendable, ZwerveModule {
     private final double ANGLE_GEAR_RATIO;
     private final double DRIVE_GEAR_RATIO;
     private final double WHEEL_RADIUS;
@@ -49,25 +50,27 @@ public class TalonFXSwerveModule implements Sendable {
         return this.encoder.getRotation2d();
     }
 
-    /**
-     * Returns the current state of the module.
-     *
-     * @return The current state of the module.
-     */
+    @Override
     public SwerveModuleState getState() {
         return new SwerveModuleState(this.drive.getVelocity() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS,
                 this.getAngle());
     }
 
-    /**
-     * Sets the desired state for the module.
-     *
-     * @param desiredState Desired state with speed and angle.
-     */
-    public void setDesiredState(SwerveModuleState desiredState) {
+    @Override
+    public void shutdown() {
+        this.drive.shutdown();
+    }
+
+    @Override
+    public void brake() {
+        this.drive.brake();
+    }
+
+    @Override
+    public void setDesiredState(SwerveModuleState desired) {
         var currentAngle = this.getAngle();
         // Optimize the reference state to avoid spinning further than 90 degrees
-        var optimizedDesiredState = optimize(desiredState, currentAngle);
+        var optimizedDesiredState = optimize(desired, currentAngle);
         // Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
         // direction of travel that can occur when modules change directions. This results in smoother
         // driving.
@@ -93,11 +96,7 @@ public class TalonFXSwerveModule implements Sendable {
         return new SwerveModuleState(targetSpeed, targetAngle);
     }
 
-    /**
-     * Returns the current position of the module.
-     *
-     * @return The current position of the module.
-     */
+    @Override
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(this.drive.getPosition() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS,
                 this.getAngle());
@@ -137,7 +136,8 @@ public class TalonFXSwerveModule implements Sendable {
         final boolean angleReversed;
         final boolean driveReversed;
 
-        public Config(int angle, int drive, int encoder, int encoderZero, boolean angleReversed, boolean driveReversed) {
+        public Config(int angle, int drive, int encoder, int encoderZero, boolean angleReversed,
+                      boolean driveReversed) {
             this.angle = angle;
             this.drive = drive;
             this.encoder = encoder;
