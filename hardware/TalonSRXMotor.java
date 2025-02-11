@@ -129,7 +129,7 @@ public final class TalonSRXMotor implements ZMotor {
         return this.motor.getSelectedSensorPosition() / this.unit;
     }
 
-    public void setPosition(double rad) {
+    public void asPosition(double rad) {
         this.motor.setSelectedSensorPosition(rad * this.unit);
     }
 
