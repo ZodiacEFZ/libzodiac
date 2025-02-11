@@ -10,6 +10,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import frc.libzodiac.api.ZMotor;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,7 +19,7 @@ import java.util.stream.IntStream;
 /**
  * <i>Talon FX/i> motor, such as Falcon 500 and Kraken X60/X44.
  */
-public final class TalonFXMotor implements BaseMotor {
+public final class TalonFXMotor implements ZMotor {
     public static final double TALONFX_UNIT = 2 * Math.PI;
 
     private final TalonFX motor;

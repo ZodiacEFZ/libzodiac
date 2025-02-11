@@ -3,11 +3,12 @@ package frc.libzodiac.hardware;
 import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.math.controller.PIDController;
+import frc.libzodiac.api.ZMotor;
 
 /**
  * Motors powered by <i>Talon SRX</i>, such as 775 Pro.
  */
-public final class TalonSRXMotor implements BaseMotor {
+public final class TalonSRXMotor implements ZMotor {
     private final TalonSRX motor;
     /**
      * Unit of the sensor wired to the <i>TalonSRX</i> encoder, represents how many
