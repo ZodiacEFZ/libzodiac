@@ -1,6 +1,3 @@
 [submodule "hardware/limelight"]
 	path = hardware/limelight
 	url = https://github.com/ZodiacEFZ/limelightlib-wpijava.git
-[submodule "Elastic"]
-	path = ui/elastic
-	url = https://github.com/ZodiacEFZ/elastic-dashboard.git
