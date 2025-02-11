@@ -24,8 +24,8 @@ public class TalonFXSwerveModule implements Sendable, ZwerveModule {
         this.angle = new TalonFXMotor(config.angle);
         this.angle.factoryDefault();
         this.drive.factoryDefault();
-        this.angle.setPid(swerveConfig.anglePid);
-        this.drive.setPid(swerveConfig.drivePid);
+        this.angle.setPID(swerveConfig.anglePid);
+        this.drive.setPID(swerveConfig.drivePid);
         this.angle.setInverted(config.angleReversed);
         this.drive.setInverted(config.driveReversed);
         this.encoder = new MagEncoder(config.encoder, config.encoderZero);
