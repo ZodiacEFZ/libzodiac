@@ -34,6 +34,7 @@ public class Differential extends SubsystemBase implements BaseDrivetrain {
     private final TalonSRXMotor leftFollower;
     private final TalonSRXMotor rightLeader;
     private final TalonSRXMotor rightFollower;
+
     private final Pigeon2 gyro;
 
     private final PIDController headingController;
@@ -71,15 +72,17 @@ public class Differential extends SubsystemBase implements BaseDrivetrain {
         // We need to invert one side of the drivetrain so that positive voltages
         // result in both sides moving forward. Depending on how your robot's
         // gearbox is constructed, you might have to invert the left side instead.
-        this.leftLeader.setInverted(false);
-        this.rightLeader.setInverted(true);
-        this.leftFollower.follow(this.leftLeader);
-        this.rightFollower.follow(this.rightLeader);
-
-        this.gyro.reset();
-
         this.leftLeader.resetPosition();
         this.rightLeader.resetPosition();
+        this.leftLeader.setInverted(config.leftLeaderInverted);
+        this.rightLeader.setInverted(config.rightLeaderInverted);
+        this.leftFollower.follow(this.leftLeader, config.leftFollowerInverted != config.leftLeaderInverted);
+        this.rightFollower.follow(this.rightLeader, config.rightFollowerInverted != config.rightLeaderInverted);
+
+        this.leftLeader.setPhase(config.leftEncoderPhase);
+        this.rightLeader.setPhase(config.rightEncoderPhase);
+
+        this.gyro.reset();
 
         var wheelPositions = this.getWheelPositions();
         this.poseEstimator = new DifferentialDrivePoseEstimator(this.kinematics, this.getYaw(),
@@ -115,6 +118,11 @@ public class Differential extends SubsystemBase implements BaseDrivetrain {
      * @param speeds The desired wheel speeds.
      */
     public void setSpeeds(DifferentialDriveWheelSpeeds speeds) {
+        SmartDashboard.putNumber("Left Speed", speeds.leftMetersPerSecond);
+        SmartDashboard.putNumber("Right Speed",
+                speeds.leftMetersPerSecond * this.GEAR_RATIO / this.WHEEL_RADIUS * 4096 / 2 / Math.PI / 10);
+        SmartDashboard.putNumber("Left Speed Encoder", this.leftLeader.getVelocity());
+        SmartDashboard.putNumber("Right Speed Encoder", this.rightLeader.getVelocity());
         this.leftLeader.velocity(speeds.leftMetersPerSecond * this.GEAR_RATIO / this.WHEEL_RADIUS);
         this.rightLeader.velocity(speeds.rightMetersPerSecond * this.GEAR_RATIO / this.WHEEL_RADIUS);
     }
@@ -140,7 +148,7 @@ public class Differential extends SubsystemBase implements BaseDrivetrain {
         builder.addDoubleProperty("Heading", () -> -this.getYaw().getDegrees(), null);
         builder.addStringProperty("Pose", () -> this.getPose().getTranslation().toString(), null);
 
-        SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading));
+        SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading).ignoringDisable(true));
     }
 
     public boolean getDirectAngle() {
@@ -161,14 +169,10 @@ public class Differential extends SubsystemBase implements BaseDrivetrain {
     public void setMotorBrake(boolean brake) {
         if (brake) {
             this.leftLeader.brake();
-            this.leftFollower.brake();
             this.rightLeader.brake();
-            this.rightFollower.brake();
         } else {
             this.leftLeader.shutdown();
-            this.leftFollower.shutdown();
             this.rightLeader.shutdown();
-            this.rightFollower.shutdown();
         }
     }
 
@@ -252,6 +256,11 @@ public class Differential extends SubsystemBase implements BaseDrivetrain {
         return null;
     }
 
+    @Override
+    public boolean isSwerve() {
+        return false;
+    }
+
     private DifferentialDriveWheelSpeeds getWheelSpeeds() {
         return new DifferentialDriveWheelSpeeds(this.leftLeader.getVelocity() * this.WHEEL_RADIUS / this.GEAR_RATIO,
                 this.rightLeader.getVelocity() * this.WHEEL_RADIUS / this.GEAR_RATIO);
@@ -267,6 +276,12 @@ public class Differential extends SubsystemBase implements BaseDrivetrain {
         public int leftFollower;
         public int rightLeader;
         public int rightFollower;
+        public boolean leftLeaderInverted;
+        public boolean leftFollowerInverted;
+        public boolean rightLeaderInverted;
+        public boolean rightFollowerInverted;
+        public boolean leftEncoderPhase;
+        public boolean rightEncoderPhase;
         public int gyro;
         public PIDController pidController;
         public PIDController headingController;

@@ -1,6 +1,7 @@
 package frc.libzodiac.hardware;
 
 import com.ctre.phoenix.motorcontrol.*;
+import com.ctre.phoenix.motorcontrol.can.SlotConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.math.controller.PIDController;
 import frc.libzodiac.api.ZMotor;
@@ -22,6 +23,10 @@ public final class TalonSRXMotor implements ZMotor {
 
     public void factoryDefault() {
         this.motor.configFactoryDefault();
+    }
+
+    public void setSlotConfig(SlotConfiguration config) {
+        this.motor.configureSlot(config);
     }
 
     public void setPID(PIDController pid) {
@@ -89,7 +94,7 @@ public final class TalonSRXMotor implements ZMotor {
 
     @Override
     public void velocity(double radPerSec) {
-        this.motor.set(TalonSRXControlMode.Velocity, radPerSec * this.unit);
+        this.motor.set(TalonSRXControlMode.Velocity, radPerSec * this.unit / 10); // units per 100ms
     }
 
     @Override
@@ -156,6 +161,10 @@ public final class TalonSRXMotor implements ZMotor {
     }
 
     public double getVelocity() {
-        return this.motor.getSelectedSensorVelocity() / this.unit;
+        return this.motor.getSelectedSensorVelocity() / this.unit * 10;
+    }
+
+    public void setPhase(boolean phase) {
+        this.motor.setSensorPhase(phase);
     }
 }

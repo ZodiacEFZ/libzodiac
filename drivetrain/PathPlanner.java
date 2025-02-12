@@ -31,7 +31,7 @@ public class PathPlanner {
     private static PathPlanner instance;
     private final BaseDrivetrain drivetrain;
     private final SwerveSetpointGenerator swerveSetpointGenerator;
-    private SwerveSetpoint previousSetpoint;
+    private SwerveSetpoint previousSetpoint = null;
     private RobotConfig config;
 
     private PathPlanner(BaseDrivetrain drivetrain) {
@@ -41,9 +41,14 @@ public class PathPlanner {
         }
 
         this.drivetrain = drivetrain;
-        this.swerveSetpointGenerator = new SwerveSetpointGenerator(config, this.drivetrain.getMaxAngularVelocity());
-        this.previousSetpoint = new SwerveSetpoint(this.drivetrain.getRobotRelativeSpeeds(),
-                this.drivetrain.getModuleStates(), DriveFeedforwards.zeros(config.numModules));
+
+        if (this.drivetrain.isSwerve()) {
+            this.swerveSetpointGenerator = new SwerveSetpointGenerator(config, this.drivetrain.getMaxAngularVelocity());
+            this.previousSetpoint = new SwerveSetpoint(this.drivetrain.getRobotRelativeSpeeds(),
+                    this.drivetrain.getModuleStates(), DriveFeedforwards.zeros(config.numModules));
+        } else {
+            this.swerveSetpointGenerator = null;
+        }
 
         AutoBuilder.configure(this.drivetrain::getPose, // Robot pose supplier
                 this.drivetrain::setPose,
@@ -67,6 +72,12 @@ public class PathPlanner {
         if (instance == null) {
             instance = new PathPlanner(drivetrain);
         }
+        instance.warmup();
+    }
+
+    public void warmup() {
+        FollowPathCommand.warmupCommand().schedule();
+        PathfindingCommand.warmupCommand().schedule();
     }
 
     public static PathPlanner getInstance() {
@@ -81,7 +92,7 @@ public class PathPlanner {
      * @return SwerveModuleState[] The desired swerve module states.
      */
     public static SwerveModuleState[] generateSwerveSetpoint(ChassisSpeeds speeds) {
-        if (!SWERVE_SETPOINT_GENERATOR_ENABLED) {
+        if (!SWERVE_SETPOINT_GENERATOR_ENABLED || instance == null || instance.swerveSetpointGenerator == null) {
             return null;
         }
 
@@ -105,11 +116,6 @@ public class PathPlanner {
 
     public Trigger getPointTowardsZoneTrigger(String name) {
         return new PointTowardsZoneTrigger(name);
-    }
-
-    public void warmup() {
-        FollowPathCommand.warmupCommand().schedule();
-        PathfindingCommand.warmupCommand().schedule();
     }
 
     public PathPlannerPath createPath(List<Pose2d> poses, GoalEndState goalEndState) {

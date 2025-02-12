@@ -304,6 +304,11 @@ public class Zwerve extends SubsystemBase implements BaseDrivetrain {
                 this.rearRight.getState()};
     }
 
+    @Override
+    public boolean isSwerve() {
+        return true;
+    }
+
     /**
      * Sets the swerve module states.
      *

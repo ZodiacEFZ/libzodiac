@@ -32,4 +32,6 @@ public interface BaseDrivetrain extends Sendable {
     double getMaxAngularVelocity();
 
     SwerveModuleState[] getModuleStates();
+
+    boolean isSwerve();
 }
