@@ -134,7 +134,8 @@ public final class TalonSRXMotor implements ZMotor {
         return this.motor.getSelectedSensorPosition() / this.unit;
     }
 
-    public void asPosition(double rad) {
+    public void setRelativeEncoderPosition(double rad) {
+        this.motor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
         this.motor.setSelectedSensorPosition(rad * this.unit);
     }
 

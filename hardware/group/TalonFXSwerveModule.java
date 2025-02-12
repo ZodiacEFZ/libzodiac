@@ -43,7 +43,7 @@ public class TalonFXSwerveModule implements Sendable, ZwerveModule {
      * Zeroes all the SwerveModule encoders.
      */
     public void resetEncoder() {
-        this.angle.asPosition(this.getAngleEncoder().getRadians() * this.ANGLE_GEAR_RATIO);
+        this.angle.setRelativeEncoderPosition(this.getAngleEncoder().getRadians() * this.ANGLE_GEAR_RATIO);
     }
 
     private Rotation2d getAngleEncoder() {

@@ -94,7 +94,7 @@ public final class TalonFXMotor implements ZMotor {
         return this.motor.getPosition().getValue().in(Units.Radians);
     }
 
-    public void asPosition(double rad) {
+    public void setRelativeEncoderPosition(double rad) {
         this.motor.setPosition(rad / TALONFX_UNIT);
     }
 
