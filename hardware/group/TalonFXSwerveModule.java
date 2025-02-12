@@ -51,12 +51,6 @@ public class TalonFXSwerveModule implements Sendable, SwerveModuleBase {
     }
 
     @Override
-    public SwerveModuleState getState() {
-        return new SwerveModuleState(this.drive.getVelocity() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS,
-                this.getAngle());
-    }
-
-    @Override
     public void shutdown() {
         this.drive.shutdown();
     }
@@ -83,6 +77,18 @@ public class TalonFXSwerveModule implements Sendable, SwerveModuleBase {
         this.angle.position(this.lastAngle.getRadians() * this.ANGLE_GEAR_RATIO);
     }
 
+    @Override
+    public SwerveModuleState getState() {
+        return new SwerveModuleState(this.drive.getVelocity() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS,
+                this.getAngle());
+    }
+
+    @Override
+    public SwerveModulePosition getPosition() {
+        return new SwerveModulePosition(this.drive.getPosition() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS,
+                this.getAngle());
+    }
+
     private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d angle) {
         var currentAngle = new Rotation2d(angle.getCos(), angle.getSin());
         var desiredAngle = new Rotation2d(desiredState.angle.getCos(), desiredState.angle.getSin());
@@ -94,12 +100,6 @@ public class TalonFXSwerveModule implements Sendable, SwerveModuleBase {
             targetAngle = targetAngle.minus(new Rotation2d(Math.PI));
         }
         return new SwerveModuleState(targetSpeed, targetAngle);
-    }
-
-    @Override
-    public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(this.drive.getPosition() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS,
-                this.getAngle());
     }
 
     public void setMotorBrake(boolean brake) {
