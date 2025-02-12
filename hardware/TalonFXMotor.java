@@ -1,10 +1,7 @@
 package frc.libzodiac.hardware;
 
 import com.ctre.phoenix6.Orchestra;
-import com.ctre.phoenix6.configs.AudioConfigs;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -43,8 +40,7 @@ public final class TalonFXMotor implements ZMotor {
     public void setInverted(boolean inverted) {
         MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs();
         this.motor.getConfigurator().refresh(motorOutputConfigs);
-        motorOutputConfigs.Inverted = inverted ? InvertedValue.Clockwise_Positive :
-                InvertedValue.CounterClockwise_Positive;
+        motorOutputConfigs.Inverted = inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
         this.motor.getConfigurator().apply(motorOutputConfigs);
     }
 
@@ -148,6 +144,86 @@ public final class TalonFXMotor implements ZMotor {
 
     public void setControl(ControlRequest request) {
         this.motor.setControl(request);
+    }
+
+    public void applyConfiguration(TalonFXConfiguration configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(MotorOutputConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(CurrentLimitsConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(VoltageConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(TorqueCurrentConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(FeedbackConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(DifferentialSensorsConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(DifferentialConstantsConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(OpenLoopRampsConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(ClosedLoopRampsConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(HardwareLimitSwitchConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(AudioConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(SoftwareLimitSwitchConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(MotionMagicConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(CustomParamsConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(ClosedLoopGeneralConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(Slot0Configs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(Slot1Configs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(Slot2Configs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void applyConfiguration(SlotConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
     }
 
     public static class MusicPlayer implements Sendable {
