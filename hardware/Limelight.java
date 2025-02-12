@@ -12,8 +12,6 @@ import java.util.ArrayList;
 
 public class Limelight {
     private static final ArrayList<Limelight> limelights = new ArrayList<>();
-    // TODO
-    // Currently multiple limelights are not supported, use one limelight only
     private final String name;
     private final Pigeon2 gyro;
     private final PoseEstimator<?> poseEstimator;
