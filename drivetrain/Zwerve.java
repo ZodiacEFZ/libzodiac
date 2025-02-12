@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.libzodiac.api.DrivetrainBase;
 import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.group.TalonFXSwerveModule;
 import frc.libzodiac.util.Maths;
@@ -35,7 +36,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class Zwerve extends SubsystemBase implements BaseDrivetrain {
+public class Zwerve extends SubsystemBase implements DrivetrainBase {
     // Distance between centers of right and left wheels on robot
     public final double ROBOT_WIDTH;
     // Distance between front and back wheels on robot

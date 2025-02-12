@@ -1,4 +1,4 @@
-package frc.libzodiac.drivetrain;
+package frc.libzodiac.api;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.controllers.PathFollowingController;
@@ -10,7 +10,7 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
-public interface BaseDrivetrain extends Sendable {
+public interface DrivetrainBase extends Sendable {
     PoseEstimator<?> getPoseEstimator();
 
     Pigeon2 getGyro();

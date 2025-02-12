@@ -5,12 +5,12 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import frc.libzodiac.api.ZwerveModule;
+import frc.libzodiac.api.SwerveModuleBase;
 import frc.libzodiac.drivetrain.Zwerve;
 import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonFXMotor;
 
-public class TalonFXSwerveModule implements Sendable, ZwerveModule {
+public class TalonFXSwerveModule implements Sendable, SwerveModuleBase {
     private final double ANGLE_GEAR_RATIO;
     private final double DRIVE_GEAR_RATIO;
     private final double WHEEL_RADIUS;
