@@ -47,7 +47,7 @@ public interface SimpleSendable extends Sendable {
                 this.initObjectProperty(builder, field);
             }
         }
-        this.optSendableInit();
+        this.optSendableInit(builder);
     }
 
     /**
@@ -176,7 +176,7 @@ public interface SimpleSendable extends Sendable {
      * Optional initialization where complex entries may be added. Executed after all the <code>Properties</code> are
      * initialized.
      */
-    default void optSendableInit() {
+    default void optSendableInit(SendableBuilder builder) {
     }
 
     /**
