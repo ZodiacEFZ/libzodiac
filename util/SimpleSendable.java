@@ -11,8 +11,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.function.*;
 
-// TODO: test this function in runtime
-
 /**
  * Provides simple, declarative way to implement <code>Sendable</code>.
  */
@@ -31,7 +29,7 @@ public interface SimpleSendable extends Sendable {
             if (!field.isAnnotationPresent(Property.class)) {
                 continue;
             }
-            final var fieldType = field.getDeclaringClass().getName();
+            final var fieldType = field.getType().getName();
             if (fieldType.equals(String.class.getName())) {
                 this.initDoubleProperty(builder, field);
             } else if (fieldType.equals(double.class.getName()) || fieldType.equals(Double.class.getName())) {
@@ -74,7 +72,8 @@ public interface SimpleSendable extends Sendable {
             } catch (IllegalAccessException ignored) {
             }
         };
-        builder.addDoubleProperty(property.name(), getter, setter);
+        final var name = property.name().isEmpty() ? field.getName() : property.name();
+        builder.addDoubleProperty(name, getter, setter);
     }
 
     private void initStringProperty(SendableBuilder builder, Field field) {
@@ -92,7 +91,8 @@ public interface SimpleSendable extends Sendable {
             } catch (IllegalAccessException ignored) {
             }
         };
-        builder.addStringProperty(property.name(), getter, setter);
+        final var name = property.name().isEmpty() ? field.getName() : property.name();
+        builder.addStringProperty(name, getter, setter);
     }
 
     private void initBooleanProperty(SendableBuilder builder, Field field) {
@@ -110,7 +110,8 @@ public interface SimpleSendable extends Sendable {
             } catch (IllegalAccessException ignored) {
             }
         };
-        builder.addBooleanProperty(property.name(), getter, setter);
+        final var name = property.name().isEmpty() ? field.getName() : property.name();
+        builder.addBooleanProperty(name, getter, setter);
     }
 
     private void initFloatProperty(SendableBuilder builder, Field field) {
@@ -128,7 +129,8 @@ public interface SimpleSendable extends Sendable {
             } catch (IllegalAccessException ignored) {
             }
         };
-        builder.addFloatProperty(property.name(), getter, setter);
+        final var name = property.name().isEmpty() ? field.getName() : property.name();
+        builder.addFloatProperty(name, getter, setter);
     }
 
     private void initIntegerProperty(SendableBuilder builder, Field field) {
@@ -146,7 +148,8 @@ public interface SimpleSendable extends Sendable {
             } catch (IllegalAccessException ignored) {
             }
         };
-        builder.addIntegerProperty(property.name(), getter, setter);
+        final var name = property.name().isEmpty() ? field.getName() : property.name();
+        builder.addIntegerProperty(name, getter, setter);
     }
 
     private void initObjectProperty(SendableBuilder builder, Field field) {
@@ -165,7 +168,8 @@ public interface SimpleSendable extends Sendable {
                      InvocationTargetException ignored) {
             }
         };
-        builder.addStringProperty(property.name(), getter, setter);
+        final var name = property.name().isEmpty() ? field.getName() : property.name();
+        builder.addStringProperty(name, getter, setter);
     }
 
     /**
@@ -187,7 +191,7 @@ public interface SimpleSendable extends Sendable {
          *
          * @return the name
          */
-        String name();
+        String name() default "";
 
         /**
          * Allowed ways to be accessed with NetworkTable. <code>Out</code> by default.
