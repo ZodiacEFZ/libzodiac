@@ -124,16 +124,37 @@ public final class TalonFXMotor implements Motor {
         this.motor.getConfigurator().apply(slot0Configs);
     }
 
-    public void MotionMagicPosition(double rad) {
-        this.motor.setControl(new MotionMagicVoltage(rad / TALONFX_UNIT));
+    public void MotionMagicPosition(Angle position) {
+        this.motor.setControl(new MotionMagicVoltage(position));
     }
 
-    public void MotionMagicVelocity(double radPerSec) {
-        this.motor.setControl(new MotionMagicVelocityVoltage(radPerSec / TALONFX_UNIT));
+    public void MotionMagicPosition(Angle position, Voltage feedforward) {
+        this.motor.setControl(new MotionMagicVoltage(position).withFeedForward(feedforward));
     }
 
-    public void MotionMagicExpo(double rad) {
-        this.motor.setControl(new MotionMagicExpoVoltage(rad / TALONFX_UNIT));
+    public void MotionMagicVelocity(AngularVelocity angularVelocity) {
+        this.motor.setControl(new MotionMagicVelocityVoltage(angularVelocity));
+    }
+
+    public void MotionMagicVelocity(AngularVelocity angularVelocity, AngularAcceleration acceleration) {
+        this.motor.setControl(new MotionMagicVelocityVoltage(angularVelocity));
+    }
+
+    public void MotionMagicVelocity(AngularVelocity angularVelocity, Voltage feedforward) {
+        this.motor.setControl(new MotionMagicVelocityVoltage(angularVelocity).withFeedForward(feedforward));
+    }
+
+    public void MotionMagicVelocity(AngularVelocity angularVelocity, AngularAcceleration acceleration, Voltage feedforward) {
+        this.motor.setControl(new MotionMagicVelocityVoltage(angularVelocity).withAcceleration(acceleration)
+                .withFeedForward(feedforward));
+    }
+
+    public void MotionMagicExpo(Angle position) {
+        this.motor.setControl(new MotionMagicExpoVoltage(position));
+    }
+
+    public void MotionMagicExpo(Angle position, Voltage feedforward) {
+        this.motor.setControl(new MotionMagicExpoVoltage(position).withFeedForward(feedforward));
     }
 
     public void setControl(ControlRequest request) {

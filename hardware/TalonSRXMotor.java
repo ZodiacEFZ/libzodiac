@@ -121,24 +121,28 @@ public final class TalonSRXMotor implements Motor {
         this.motor.set(TalonSRXControlMode.Current, current.in(Units.Amps));
     }
 
-    public void setMotionMagicConfig(double kP, double kI, double kD, double kF, double cruiseVelocity,
-                                     double acceleration, int sCurveStrength) {
+    public void setMotionMagicConfig(double kP, double kI, double kD, double kF, AngularVelocity cruiseVelocity, AngularAcceleration acceleration, int sCurveStrength) {
         this.motor.config_kP(0, kP);
         this.motor.config_kI(0, kI);
         this.motor.config_kD(0, kD);
         this.motor.config_kF(0, kF);
 
-        this.motor.configMotionCruiseVelocity(cruiseVelocity * this.unit);
-        this.motor.configMotionAcceleration(acceleration * this.unit);
+        this.motor.configMotionCruiseVelocity(cruiseVelocity.in(this.velocityUnit()));
+        this.motor.configMotionAcceleration(acceleration.in(this.accelerationUnit()));
         this.motor.configMotionSCurveStrength(sCurveStrength);
     }
 
-    public void MotionMagic(double rad) {
-        this.motor.set(TalonSRXControlMode.MotionMagic, rad * this.unit);
+    private AngularAccelerationUnit accelerationUnit() {
+        return this.velocityUnit().per(Units.Seconds);
     }
 
-    public void MotionMagic(double rad, double feedforward) {
-        this.motor.set(TalonSRXControlMode.MotionMagic, rad * this.unit, DemandType.ArbitraryFeedForward, feedforward);
+    public void MotionMagic(Angle position) {
+        this.motor.set(TalonSRXControlMode.MotionMagic, position.in(this.positionUnit()));
+    }
+
+    public void MotionMagic(Angle position, double feedforward) {
+        this.motor.set(TalonSRXControlMode.MotionMagic, position.in(this.positionUnit()),
+                DemandType.ArbitraryFeedForward, feedforward);
     }
 
     public void set(TalonSRXControlMode mode, double value) {
