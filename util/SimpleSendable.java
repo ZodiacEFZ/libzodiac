@@ -44,6 +44,8 @@ public interface SimpleSendable extends Sendable {
             if (!field.isAnnotationPresent(Property.class)) {
                 continue;
             }
+            // bypass visibility control
+            field.setAccessible(true);
             final var fieldType = field.getType().getName();
             if (fieldType.equals(String.class.getName())) {
                 this.initDoubleProperty(builder, field);
@@ -121,6 +123,7 @@ public interface SimpleSendable extends Sendable {
             } catch (IllegalAccessException ignored) {
             }
         };
+        System.err.println("here");
         final var name = property.name().isEmpty() ? field.getName() : property.name();
         builder.addBooleanProperty(name, getter, setter);
     }
