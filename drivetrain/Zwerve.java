@@ -28,6 +28,7 @@ import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.group.TalonFXSwerveModule;
 import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
+import frc.libzodiac.util.SimpleSendable;
 import frc.libzodiac.util.Translation2dSupplier;
 
 import java.util.Collection;
@@ -36,7 +37,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class Zwerve extends SubsystemBase implements Drivetrain {
+public class Zwerve extends SubsystemBase implements Drivetrain, SimpleSendable {
     // Distance between centers of right and left wheels on robot
     public final double ROBOT_WIDTH;
     // Distance between front and back wheels on robot
@@ -56,7 +57,9 @@ public class Zwerve extends SubsystemBase implements Drivetrain {
     private final SwerveDriveKinematics kinematics;
     private final Field2d field = new Field2d();
     private final SwerveDrivePoseEstimator poseEstimator;
+    @Property(access = Property.AccessType.Both)
     private boolean fieldCentric = true;
+    @Property(access = Property.AccessType.Both)
     private boolean directAngle = true;
     private Rotation2d targetHeading = new Rotation2d();
 
@@ -128,18 +131,15 @@ public class Zwerve extends SubsystemBase implements Drivetrain {
 
     @Override
     public void initSendable(SendableBuilder builder) {
+        this.simpleSendableInit(builder);
         builder.setSmartDashboardType("Swerve Drivetrain");
         builder.setActuator(true);
-        builder.addBooleanProperty("Field Centric", this::getFieldCentric, this::setFieldCentric);
-        builder.addBooleanProperty("Direct Angle", this::getDirectAngle, this::setDirectAngle);
         builder.addDoubleProperty("Heading", () -> -this.getYaw().getDegrees(), null);
         builder.addStringProperty("Pose", () -> this.getPose().getTranslation().toString(), null);
-
         SmartDashboard.putData("Front Left Module", this.frontLeft);
         SmartDashboard.putData("Front Right Module", this.frontRight);
         SmartDashboard.putData("Rear Left Module", this.rearLeft);
         SmartDashboard.putData("Rear Right Module", this.rearRight);
-
         SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading));
     }
 
@@ -305,11 +305,6 @@ public class Zwerve extends SubsystemBase implements Drivetrain {
                 this.rearRight.getState()};
     }
 
-    @Override
-    public boolean isSwerve() {
-        return true;
-    }
-
     /**
      * Sets the swerve module states.
      *
@@ -320,6 +315,11 @@ public class Zwerve extends SubsystemBase implements Drivetrain {
         this.frontRight.setDesiredState(desiredStates[1]);
         this.rearLeft.setDesiredState(desiredStates[2]);
         this.rearRight.setDesiredState(desiredStates[3]);
+    }
+
+    @Override
+    public boolean isSwerve() {
+        return true;
     }
 
     public static class Config {

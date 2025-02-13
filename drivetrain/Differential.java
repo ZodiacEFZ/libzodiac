@@ -20,12 +20,13 @@ import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.TalonSRXMotor;
 import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
+import frc.libzodiac.util.SimpleSendable;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class Differential extends SubsystemBase implements Drivetrain {
+public class Differential extends SubsystemBase implements Drivetrain, SimpleSendable {
     public final double MAX_SPEED;
     public final double MAX_ANGULAR_VELOCITY;
     private final double GEAR_RATIO;
@@ -42,6 +43,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
     private final DifferentialDriveKinematics kinematics;
     private final Field2d field = new Field2d();
     private final DifferentialDrivePoseEstimator poseEstimator;
+    @Property(access = Property.AccessType.Both)
     private boolean directAngle = true;
     private Rotation2d targetHeading = new Rotation2d();
 
@@ -143,17 +145,25 @@ public class Differential extends SubsystemBase implements Drivetrain {
 
     @Override
     public void initSendable(SendableBuilder builder) {
+        this.simpleSendableInit(builder);
         builder.setSmartDashboardType("Differential Drivetrain");
         builder.setActuator(true);
-        builder.addBooleanProperty("Direct Angle", this::getDirectAngle, this::setDirectAngle);
         builder.addDoubleProperty("Heading", () -> -this.getYaw().getDegrees(), null);
         builder.addStringProperty("Pose", () -> this.getPose().getTranslation().toString(), null);
-
         SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading).ignoringDisable(true));
+    }
+
+    @Override
+    public String title() {
+        return "Differential Drivetrain";
     }
 
     public boolean getDirectAngle() {
         return this.directAngle;
+    }
+
+    public void setDirectAngle(boolean directAngle) {
+        this.directAngle = directAngle;
     }
 
     /**
@@ -161,10 +171,6 @@ public class Differential extends SubsystemBase implements Drivetrain {
      */
     public void zeroHeading() {
         this.gyro.reset();
-    }
-
-    public void setDirectAngle(boolean directAngle) {
-        this.directAngle = directAngle;
     }
 
     public void setMotorBrake(boolean brake) {
