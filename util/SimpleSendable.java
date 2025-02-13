@@ -5,6 +5,7 @@ import edu.wpi.first.util.function.FloatConsumer;
 import edu.wpi.first.util.function.FloatSupplier;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.lang.annotation.*;
 import java.lang.reflect.Field;
@@ -13,10 +14,23 @@ import java.util.function.*;
 
 /**
  * Provides simple, declarative way to implement <code>Sendable</code>.
+ * <br/>
+ * <b>Note</b> {@link SubsystemBase} implements {@link Sendable}, which conflicts with
+ * this. Override <code>initSendable</code> manually and call <code>simpleSendableInit</code> method provided as a
+ * workaround.
  */
 public interface SimpleSendable extends Sendable {
     @Override
     default void initSendable(SendableBuilder builder) {
+        this.simpleSendableInit(builder);
+    }
+
+    /**
+     * Initialize this {@link Sendable} object, retrieving {@link Property} annotations on fields.
+     *
+     * @param builder {@link SendableBuilder} passed on initialization
+     */
+    default void simpleSendableInit(SendableBuilder builder) {
         builder.setSmartDashboardType(this.title());
         final var childClassName = this.getClass().getName();
         Class<?> childClass;
@@ -25,7 +39,8 @@ public interface SimpleSendable extends Sendable {
         } catch (ClassNotFoundException ignored) {
             return;
         }
-        for (final var field : childClass.getFields()) {
+        // use `getDeclaredFields` instead of `getFields` in order to attain private fields
+        for (final var field : childClass.getDeclaredFields()) {
             if (!field.isAnnotationPresent(Property.class)) {
                 continue;
             }
@@ -38,16 +53,12 @@ public interface SimpleSendable extends Sendable {
                 this.initBooleanProperty(builder, field);
             } else if (fieldType.equals(float.class.getName()) || fieldType.equals(Float.class.getName())) {
                 this.initFloatProperty(builder, field);
-            } else if (fieldType.equals(short.class.getName()) || fieldType.equals(
-                    Short.class.getName()) || fieldType.equals(int.class.getName()) || fieldType.equals(
-                    Integer.class.getName()) || fieldType.equals(long.class.getName()) || fieldType.equals(
-                    Long.class.getName())) {
+            } else if (fieldType.equals(short.class.getName()) || fieldType.equals(Short.class.getName()) || fieldType.equals(int.class.getName()) || fieldType.equals(Integer.class.getName()) || fieldType.equals(long.class.getName()) || fieldType.equals(Long.class.getName())) {
                 this.initIntegerProperty(builder, field);
             } else {
                 this.initObjectProperty(builder, field);
             }
         }
-        this.optSendableInit(builder);
     }
 
     /**
@@ -173,13 +184,6 @@ public interface SimpleSendable extends Sendable {
     }
 
     /**
-     * Optional initialization where complex entries may be added. Executed after all the <code>Properties</code> are
-     * initialized.
-     */
-    default void optSendableInit(SendableBuilder builder) {
-    }
-
-    /**
      * Annotates a field that is going to be sent to the NetworkTable.
      */
     @Target(ElementType.FIELD)
@@ -187,7 +191,8 @@ public interface SimpleSendable extends Sendable {
     @Documented
     @interface Property {
         /**
-         * Name of its NetworkTable entry.
+         * Name of its NetworkTable entry. Empty by default.
+         * If the name is empty, field name is automatically used as fallback.
          *
          * @return the name
          */
@@ -196,7 +201,7 @@ public interface SimpleSendable extends Sendable {
         /**
          * Allowed ways to be accessed with NetworkTable. <code>Out</code> by default.
          *
-         * @return the permission, see <code>AccessType</code>
+         * @return the permission, see {@link AccessType}
          */
         AccessType access() default AccessType.Out;
 
