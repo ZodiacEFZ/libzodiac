@@ -29,6 +29,8 @@ public class TalonFXSwerveModule implements Sendable, SwerveModule {
         this.drive.setInverted(config.driveReversed);
         this.angle.setSensorToMechanismRatio(swerveConfig.ANGLE_GEAR_RATIO);
         this.drive.setSensorToMechanismRatio(swerveConfig.DRIVE_GEAR_RATIO);
+        this.angle.setContinuous(true);
+
         this.encoder = new MagEncoder(config.encoder, config.encoderZero);
         this.lastAngle = this.getAngle();
 
@@ -90,16 +92,13 @@ public class TalonFXSwerveModule implements Sendable, SwerveModule {
     }
 
     private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d angle) {
-        var currentAngle = new Rotation2d(angle.getCos(), angle.getSin());
-        var desiredAngle = new Rotation2d(desiredState.angle.getCos(), desiredState.angle.getSin());
-        var targetSpeed = desiredState.speedMetersPerSecond;
-        var delta = desiredAngle.minus(currentAngle);
-        var targetAngle = angle.plus(delta);
-        if (Math.abs(delta.getRadians()) > Math.PI / 2) {
-            targetSpeed = -targetSpeed;
-            targetAngle = targetAngle.minus(new Rotation2d(Math.PI));
+        var delta = desiredState.angle.minus(angle);
+        if (Math.abs(new Rotation2d(delta.getCos(), delta.getSin()).getRadians()) > Math.PI / 2) {
+            return new SwerveModuleState(-desiredState.speedMetersPerSecond,
+                    desiredState.angle.plus(new Rotation2d(Math.PI)));
+        } else {
+            return desiredState;
         }
-        return new SwerveModuleState(targetSpeed, targetAngle);
     }
 
     public void setMotorBrake(boolean brake) {

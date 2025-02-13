@@ -33,7 +33,26 @@ public final class TalonFXMotor implements Motor {
     }
 
     public void setAllowMusicDurDisable(boolean allowMusicDurDisable) {
-        this.motor.getConfigurator().apply(new AudioConfigs().withAllowMusicDurDisable(allowMusicDurDisable));
+        AudioConfigs audioConfigs = new AudioConfigs();
+        this.motor.getConfigurator().refresh(audioConfigs);
+        this.motor.getConfigurator().apply(audioConfigs.withAllowMusicDurDisable(allowMusicDurDisable));
+    }
+
+    public void setSensorToMechanismRatio(double ratio) {
+        FeedbackConfigs feedbackConfigs = new FeedbackConfigs();
+        this.motor.getConfigurator().refresh(feedbackConfigs);
+        this.motor.getConfigurator().apply(feedbackConfigs.withSensorToMechanismRatio(ratio));
+    }
+
+    /**
+     * Set the motor to be continuous or not.
+     * {@link TalonFXMotor#setSensorToMechanismRatio(double)} must be called before this method.
+     *
+     * @param continuous whether the motor is continuous or not.
+     */
+    public void setContinuous(boolean continuous) {
+        // ContinuousWarp is the only field in ClosedLoopGeneralConfigs so we don't need to use refresh to get the current value.
+        this.motor.getConfigurator().apply(new ClosedLoopGeneralConfigs().withContinuousWrap(continuous));
     }
 
     public void setInverted(boolean inverted) {
@@ -159,12 +178,6 @@ public final class TalonFXMotor implements Motor {
 
     public void setControl(ControlRequest request) {
         this.motor.setControl(request);
-    }
-
-    public void setSensorToMechanismRatio(double ratio) {
-        FeedbackConfigs feedbackConfigs = new FeedbackConfigs();
-        this.motor.getConfigurator().refresh(feedbackConfigs);
-        this.motor.getConfigurator().apply(feedbackConfigs.withSensorToMechanismRatio(ratio));
     }
 
     public void applyConfiguration(TalonFXConfiguration configs) {
