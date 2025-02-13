@@ -259,11 +259,11 @@ public final class TalonFXMotor implements Motor {
         }
 
         public void addInstrument(TalonFXMotor... motor) {
-            this.addInstrument(Arrays.stream(motor).map((m) -> m.motor).toArray(ParentDevice[]::new));
+            this.instruments.addAll(Arrays.stream(motor).map((m) -> m.motor).toList());
         }
 
-        public void addInstrument(ParentDevice... instruments) {
-            this.instruments.addAll(Arrays.asList(instruments));
+        public void addInstrument(Collection<TalonFXMotor> instruments) {
+            this.instruments.addAll(instruments.stream().map((m) -> m.motor).toList());
         }
 
         public void clearInstruments() {
@@ -281,10 +281,6 @@ public final class TalonFXMotor implements Motor {
             var instrumentsList = instruments.stream().toList();
             IntStream.range(0, instrumentsList.size())
                     .forEach(i -> this.orchestra.addInstrument(instrumentsList.get(i), i % this.track));
-        }
-
-        public void addInstrument(Collection<ParentDevice> instruments) {
-            this.instruments.addAll(instruments);
         }
 
         @Override

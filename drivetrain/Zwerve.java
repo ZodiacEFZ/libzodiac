@@ -1,7 +1,6 @@
 package frc.libzodiac.drivetrain;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
-import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -25,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.libzodiac.api.Drivetrain;
 import frc.libzodiac.hardware.Limelight;
+import frc.libzodiac.hardware.TalonFXMotor;
 import frc.libzodiac.hardware.group.TalonFXSwerveModule;
 import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
@@ -216,16 +216,16 @@ public class Zwerve extends SubsystemBase implements Drivetrain, SimpleSendable 
         this.directAngle = !this.directAngle;
     }
 
-    public Collection<ParentDevice> getMotors() {
-        Collection<ParentDevice> motors = new HashSet<>();
-        motors.add(this.frontLeft.getAngleMotor().getRawEntry());
-        motors.add(this.frontLeft.getDriveMotor().getRawEntry());
-        motors.add(this.frontRight.getAngleMotor().getRawEntry());
-        motors.add(this.frontRight.getDriveMotor().getRawEntry());
-        motors.add(this.rearLeft.getAngleMotor().getRawEntry());
-        motors.add(this.rearLeft.getDriveMotor().getRawEntry());
-        motors.add(this.rearRight.getAngleMotor().getRawEntry());
-        motors.add(this.rearRight.getDriveMotor().getRawEntry());
+    public Collection<TalonFXMotor> getTalonFXMotors() {
+        Collection<TalonFXMotor> motors = new HashSet<>();
+        motors.add(this.frontLeft.getAngleMotor());
+        motors.add(this.frontLeft.getDriveMotor());
+        motors.add(this.frontRight.getAngleMotor());
+        motors.add(this.frontRight.getDriveMotor());
+        motors.add(this.rearLeft.getAngleMotor());
+        motors.add(this.rearLeft.getDriveMotor());
+        motors.add(this.rearRight.getAngleMotor());
+        motors.add(this.rearRight.getDriveMotor());
         return motors;
     }
 
