@@ -3,6 +3,7 @@ package frc.libzodiac.hardware.group;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import frc.libzodiac.api.SwerveModule;
@@ -11,8 +12,6 @@ import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonFXMotor;
 
 public class TalonFXSwerveModule implements Sendable, SwerveModule {
-    private final double ANGLE_GEAR_RATIO;
-    private final double DRIVE_GEAR_RATIO;
     private final double WHEEL_RADIUS;
     private final TalonFXMotor angle;
     private final TalonFXMotor drive;
@@ -28,25 +27,26 @@ public class TalonFXSwerveModule implements Sendable, SwerveModule {
         this.drive.setPID(swerveConfig.drivePid);
         this.angle.setInverted(config.angleReversed);
         this.drive.setInverted(config.driveReversed);
+        this.angle.setSensorToMechanismRatio(swerveConfig.ANGLE_GEAR_RATIO);
+        this.drive.setSensorToMechanismRatio(swerveConfig.DRIVE_GEAR_RATIO);
         this.encoder = new MagEncoder(config.encoder, config.encoderZero);
         this.lastAngle = this.getAngle();
-        this.ANGLE_GEAR_RATIO = swerveConfig.ANGLE_GEAR_RATIO;
-        this.DRIVE_GEAR_RATIO = swerveConfig.DRIVE_GEAR_RATIO;
+
         this.WHEEL_RADIUS = swerveConfig.WHEEL_RADIUS;
     }
 
     private Rotation2d getAngle() {
-        return new Rotation2d(this.angle.getPosition() / this.ANGLE_GEAR_RATIO);
+        return new Rotation2d(this.angle.getPosition());
     }
 
     /**
      * Zeroes all the SwerveModule encoders.
      */
     public void resetEncoder() {
-        this.angle.setRelativeEncoderPosition(this.getAngleEncoder().getRadians() * this.ANGLE_GEAR_RATIO);
+        this.angle.setRelativeEncoderPosition(this.getAngleFromEncoder().getMeasure());
     }
 
-    private Rotation2d getAngleEncoder() {
+    private Rotation2d getAngleFromEncoder() {
         return this.encoder.getRotation2d();
     }
 
@@ -70,22 +70,22 @@ public class TalonFXSwerveModule implements Sendable, SwerveModule {
         // driving.
         optimizedDesiredState.cosineScale(currentAngle);
 
-        this.drive.velocity(optimizedDesiredState.speedMetersPerSecond / this.WHEEL_RADIUS * this.DRIVE_GEAR_RATIO);
+        this.drive.velocity(Units.RadiansPerSecond.of(optimizedDesiredState.speedMetersPerSecond / this.WHEEL_RADIUS));
 
         this.lastAngle = (Math.abs(
                 optimizedDesiredState.speedMetersPerSecond) < 0.03) ? this.lastAngle : optimizedDesiredState.angle;
-        this.angle.position(this.lastAngle.getRadians() * this.ANGLE_GEAR_RATIO);
+        this.angle.position(this.lastAngle.getMeasure());
     }
 
     @Override
     public SwerveModuleState getState() {
-        return new SwerveModuleState(this.drive.getVelocity() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS,
+        return new SwerveModuleState(this.drive.getVelocity().in(Units.RadiansPerSecond) * this.WHEEL_RADIUS,
                 this.getAngle());
     }
 
     @Override
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(this.drive.getPosition() / this.DRIVE_GEAR_RATIO * this.WHEEL_RADIUS,
+        return new SwerveModulePosition(this.drive.getPosition().in(Units.Radians) * this.WHEEL_RADIUS,
                 this.getAngle());
     }
 
@@ -117,7 +117,8 @@ public class TalonFXSwerveModule implements Sendable, SwerveModule {
             var angle = this.getAngle();
             return new Rotation2d(angle.getCos(), angle.getSin()).getRadians();
         }, null);
-        builder.addDoubleProperty("Speed", this.drive::getVelocity, null);
+        builder.addDoubleProperty("Speed",
+                () -> this.drive.getVelocity().in(Units.RadiansPerSecond) * this.WHEEL_RADIUS, null);
     }
 
     public TalonFXMotor getAngleMotor() {
@@ -136,8 +137,7 @@ public class TalonFXSwerveModule implements Sendable, SwerveModule {
         final boolean angleReversed;
         final boolean driveReversed;
 
-        public Config(int angle, int drive, int encoder, int encoderZero, boolean angleReversed,
-                      boolean driveReversed) {
+        public Config(int angle, int drive, int encoder, int encoderZero, boolean angleReversed, boolean driveReversed) {
             this.angle = angle;
             this.drive = drive;
             this.encoder = encoder;

@@ -1,5 +1,10 @@
 package frc.libzodiac.api;
 
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
+
 /**
  * Defines a large collection of APIs to operate various motors so that motors
  * can be controlled under a unified generic way.
@@ -27,56 +32,56 @@ public interface Motor {
     /**
      * Control the motor by percent power output.
      *
-     * @param ratio the percent power in [-1,1]
+     * @param percent the percent power in [-1,1]
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
      */
-    default void power(double ratio) {
+    default void power(double percent) {
         throw new UnsupportedOperationException("the motor does not support output by percent power");
     }
 
     /**
      * Control the motor to turn to a specific position.
      *
-     * @param rad the angle in radian
+     * @param position the target position
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
      * @apiNote Zero position is implementation defined.
      */
-    default void position(double rad) {
-        throw new UnsupportedOperationException("the motor does not support turning by angle");
+    default void position(Angle position) {
+        throw new UnsupportedOperationException("the motor does not support turning by position");
     }
 
     /**
      * Control the motor by its output angular velocity.
      *
-     * @param rads the velocity in rad/s
+     * @param angularVelocity the angular velocity
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
      */
-    default void velocity(double rads) {
-        throw new UnsupportedOperationException("the motor does not support output by velocity");
+    default void velocity(AngularVelocity angularVelocity) {
+        throw new UnsupportedOperationException("the motor does not support output by angular velocity");
     }
 
     /**
      * Control the motor by its output voltage.
      *
-     * @param volt the voltage in V
+     * @param voltage the voltage
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
      */
-    default void voltage(double volt) {
+    default void voltage(Voltage voltage) {
         throw new UnsupportedOperationException("the motor does not support output by voltage");
     }
 
     /**
      * Control the motor by its output current.
      *
-     * @param amp the current in A
+     * @param current the current
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
      */
-    default void current(double amp) {
+    default void current(Current current) {
         throw new UnsupportedOperationException("the motor does not support output by current");
     }
 }

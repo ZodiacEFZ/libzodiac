@@ -8,6 +8,7 @@ import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,7 +30,6 @@ import java.util.function.Supplier;
 public class Differential extends SubsystemBase implements Drivetrain, SimpleSendable {
     public final double MAX_SPEED;
     public final double MAX_ANGULAR_VELOCITY;
-    private final double GEAR_RATIO;
     private final double WHEEL_RADIUS; // meters
 
     private final TalonSRXMotor leftLeader;
@@ -54,7 +54,6 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
     public Differential(Config config, Pose2d initialPose) {
         this.MAX_SPEED = config.MAX_SPEED;
         this.MAX_ANGULAR_VELOCITY = config.MAX_ANGULAR_VELOCITY;
-        this.GEAR_RATIO = config.GEAR_RATIO;
         this.WHEEL_RADIUS = config.WHEEL_RADIUS;
         this.leftLeader = new TalonSRXMotor(config.leftLeader);
         this.leftFollower = new TalonSRXMotor(config.leftFollower);
@@ -85,6 +84,9 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
         this.leftLeader.setPhase(config.leftEncoderPhase);
         this.rightLeader.setPhase(config.rightEncoderPhase);
 
+        this.leftLeader.setSensorToMechanismRatio(config.GEAR_RATIO);
+        this.rightLeader.setSensorToMechanismRatio(config.GEAR_RATIO);
+
         this.gyro.reset();
 
         var wheelPositions = this.getWheelPositions();
@@ -93,8 +95,8 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
     }
 
     private DifferentialDriveWheelPositions getWheelPositions() {
-        return new DifferentialDriveWheelPositions(this.leftLeader.getPosition() * this.WHEEL_RADIUS,
-                this.rightLeader.getPosition() * this.WHEEL_RADIUS);
+        return new DifferentialDriveWheelPositions(this.leftLeader.getPosition().in(Units.Radians) * this.WHEEL_RADIUS,
+                this.rightLeader.getPosition().in(Units.Radians) * this.WHEEL_RADIUS);
     }
 
     public Rotation2d getYaw() {
@@ -121,17 +123,13 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
      * @param speeds The desired wheel speeds.
      */
     public void setSpeeds(DifferentialDriveWheelSpeeds speeds) {
-        SmartDashboard.putNumber("Left Speed", speeds.leftMetersPerSecond);
-        SmartDashboard.putNumber("Right Speed",
-                speeds.leftMetersPerSecond * this.GEAR_RATIO / this.WHEEL_RADIUS * 4096 / 2 / Math.PI / 10);
-        SmartDashboard.putNumber("Left Speed Encoder", this.leftLeader.getVelocity());
-        SmartDashboard.putNumber("Right Speed Encoder", this.rightLeader.getVelocity());
-        this.leftLeader.velocity(speeds.leftMetersPerSecond * this.GEAR_RATIO / this.WHEEL_RADIUS);
-        this.rightLeader.velocity(speeds.rightMetersPerSecond * this.GEAR_RATIO / this.WHEEL_RADIUS);
+        this.leftLeader.velocity(
+                Units.RadiansPerSecond.of(speeds.leftMetersPerSecond / this.WHEEL_RADIUS));
+        this.rightLeader.velocity(
+                Units.RadiansPerSecond.of(speeds.rightMetersPerSecond / this.WHEEL_RADIUS));
     }
 
-    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity,
-                                   BooleanSupplier driveDirectAngle) {
+    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, BooleanSupplier driveDirectAngle) {
         return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get()));
     }
 
@@ -153,6 +151,13 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
         SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading).ignoringDisable(true));
     }
 
+    /**
+     * Zeroes the heading of the robot.
+     */
+    public void zeroHeading() {
+        this.gyro.reset();
+    }
+
     @Override
     public String title() {
         return "Differential Drivetrain";
@@ -164,13 +169,6 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
 
     public void setDirectAngle(boolean directAngle) {
         this.directAngle = directAngle;
-    }
-
-    /**
-     * Zeroes the heading of the robot.
-     */
-    public void zeroHeading() {
-        this.gyro.reset();
     }
 
     public void setMotorBrake(boolean brake) {
@@ -269,8 +267,9 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
     }
 
     private DifferentialDriveWheelSpeeds getWheelSpeeds() {
-        return new DifferentialDriveWheelSpeeds(this.leftLeader.getVelocity() * this.WHEEL_RADIUS / this.GEAR_RATIO,
-                this.rightLeader.getVelocity() * this.WHEEL_RADIUS / this.GEAR_RATIO);
+        return new DifferentialDriveWheelSpeeds(
+                this.leftLeader.getVelocity().in(Units.RadiansPerSecond) * this.WHEEL_RADIUS,
+                this.rightLeader.getVelocity().in(Units.RadiansPerSecond) * this.WHEEL_RADIUS);
     }
 
     public static class Config {

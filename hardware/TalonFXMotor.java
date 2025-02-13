@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.*;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import frc.libzodiac.api.Motor;
@@ -20,8 +21,6 @@ import java.util.stream.IntStream;
  * <i>Talon FX/i> motor, such as Falcon 500 and Kraken X60/X44.
  */
 public final class TalonFXMotor implements Motor {
-    public static final double TALONFX_UNIT = 2 * Math.PI;
-
     private final TalonFX motor;
 
     public TalonFXMotor(int can_id) {
@@ -40,8 +39,8 @@ public final class TalonFXMotor implements Motor {
     public void setInverted(boolean inverted) {
         MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs();
         this.motor.getConfigurator().refresh(motorOutputConfigs);
-        motorOutputConfigs.Inverted = inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
-        this.motor.getConfigurator().apply(motorOutputConfigs);
+        this.motor.getConfigurator().apply(motorOutputConfigs.withInverted(
+                inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive));
     }
 
     public void invert() {
@@ -70,45 +69,40 @@ public final class TalonFXMotor implements Motor {
     }
 
     @Override
-    public void position(double rad) {
-        this.motor.setControl(new PositionDutyCycle(rad / TALONFX_UNIT));
+    public void position(Angle position) {
+        this.motor.setControl(new PositionDutyCycle(position));
     }
 
     @Override
-    public void velocity(double radPerSec) {
+    public void velocity(AngularVelocity angularVelocity) {
         // Our practice suggest that `VelocityVoltage` api produces a somehow more
         // stable output than `VelocityDutyCycle`.
-        this.motor.setControl(new VelocityVoltage(radPerSec / TALONFX_UNIT));
+        this.motor.setControl(new VelocityVoltage(angularVelocity));
     }
 
     @Override
-    public void voltage(double volt) {
-        this.motor.setControl(new VoltageOut(volt));
+    public void voltage(Voltage voltage) {
+        this.motor.setControl(new VoltageOut(voltage.in(Units.Volts)));
     }
 
-    public void frequency(double hz) {
-        this.motor.setControl(new MusicTone(hz).withUpdateFreqHz(50));
+    public void frequency(Frequency frequency) {
+        this.motor.setControl(new MusicTone(frequency.in(Units.Hertz)).withUpdateFreqHz(50));
     }
 
-    public double getPosition() {
-        return this.motor.getPosition().getValue().in(Units.Radians);
+    public Angle getPosition() {
+        return this.motor.getPosition().getValue();
     }
 
-    public void setRelativeEncoderPosition(double rad) {
-        this.motor.setPosition(rad / TALONFX_UNIT);
+    public void setRelativeEncoderPosition(Angle position) {
+        this.motor.setPosition(position);
     }
 
-    public double getVelocity() {
-        return this.motor.getVelocity().getValue().in(Units.RadiansPerSecond);
+    public void resetRelativeEncoderPosition() {
+        this.motor.setPosition(0);
     }
 
-    /**
-     * Attain an access point to the internal motor API.
-     *
-     * @return the entry point
-     */
-    public TalonFX getRawEntry() {
-        return this.motor;
+    public AngularVelocity getVelocity() {
+        return this.motor.getVelocity().getValue();
     }
 
     public void setPID(PIDController pid) {
@@ -144,6 +138,12 @@ public final class TalonFXMotor implements Motor {
 
     public void setControl(ControlRequest request) {
         this.motor.setControl(request);
+    }
+
+    public void setSensorToMechanismRatio(double ratio) {
+        FeedbackConfigs feedbackConfigs = new FeedbackConfigs();
+        this.motor.getConfigurator().refresh(feedbackConfigs);
+        this.motor.getConfigurator().apply(feedbackConfigs.withSensorToMechanismRatio(ratio));
     }
 
     public void applyConfiguration(TalonFXConfiguration configs) {
@@ -238,7 +238,7 @@ public final class TalonFXMotor implements Motor {
         }
 
         public void addInstrument(TalonFXMotor... motor) {
-            this.addInstrument(Arrays.stream(motor).map(TalonFXMotor::getRawEntry).toArray(ParentDevice[]::new));
+            this.addInstrument(Arrays.stream(motor).map((m) -> m.motor).toArray(ParentDevice[]::new));
         }
 
         public void addInstrument(ParentDevice... instruments) {

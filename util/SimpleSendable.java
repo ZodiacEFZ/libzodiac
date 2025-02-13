@@ -55,7 +55,10 @@ public interface SimpleSendable extends Sendable {
                 this.initBooleanProperty(builder, field);
             } else if (fieldType.equals(float.class.getName()) || fieldType.equals(Float.class.getName())) {
                 this.initFloatProperty(builder, field);
-            } else if (fieldType.equals(short.class.getName()) || fieldType.equals(Short.class.getName()) || fieldType.equals(int.class.getName()) || fieldType.equals(Integer.class.getName()) || fieldType.equals(long.class.getName()) || fieldType.equals(Long.class.getName())) {
+            } else if (fieldType.equals(short.class.getName()) || fieldType.equals(
+                    Short.class.getName()) || fieldType.equals(int.class.getName()) || fieldType.equals(
+                    Integer.class.getName()) || fieldType.equals(long.class.getName()) || fieldType.equals(
+                    Long.class.getName())) {
                 this.initIntegerProperty(builder, field);
             } else {
                 this.initObjectProperty(builder, field);
