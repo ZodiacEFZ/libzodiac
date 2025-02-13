@@ -68,7 +68,9 @@ public interface SimpleSendable extends Sendable {
      *
      * @return the name
      */
-    String title();
+    default String title() {
+        return this.getClass().getName();
+    }
 
     private void initDoubleProperty(SendableBuilder builder, Field field) {
         final var property = field.getAnnotation(Property.class);
