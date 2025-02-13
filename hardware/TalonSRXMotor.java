@@ -4,12 +4,12 @@ import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.SlotConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.math.controller.PIDController;
-import frc.libzodiac.api.MotorBase;
+import frc.libzodiac.api.Motor;
 
 /**
  * Motors powered by <i>Talon SRX</i>, such as 775 Pro.
  */
-public final class TalonSRXMotor implements MotorBase {
+public final class TalonSRXMotor implements Motor {
     private final TalonSRX motor;
     /**
      * Unit of the sensor wired to the <i>TalonSRX</i> encoder, represents how many

@@ -10,7 +10,7 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
-public interface DrivetrainBase extends Sendable {
+public interface Drivetrain extends Sendable {
     PoseEstimator<?> getPoseEstimator();
 
     Pigeon2 getGyro();

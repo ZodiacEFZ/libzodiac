@@ -3,7 +3,7 @@ package frc.libzodiac.api;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
-public interface SwerveModuleBase {
+public interface SwerveModule {
 
     void shutdown();
 

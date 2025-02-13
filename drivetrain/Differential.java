@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.libzodiac.api.DrivetrainBase;
+import frc.libzodiac.api.Drivetrain;
 import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.TalonSRXMotor;
 import frc.libzodiac.util.Maths;
@@ -25,7 +25,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class Differential extends SubsystemBase implements DrivetrainBase {
+public class Differential extends SubsystemBase implements Drivetrain {
     public final double MAX_SPEED;
     public final double MAX_ANGULAR_VELOCITY;
     private final double GEAR_RATIO;

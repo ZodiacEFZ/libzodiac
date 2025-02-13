@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.libzodiac.api.DrivetrainBase;
+import frc.libzodiac.api.Drivetrain;
 
 import java.util.List;
 
@@ -30,12 +30,12 @@ public class PathPlanner {
     // Load the RobotConfig from the GUI settings. You should probably
     // store this in your Constants file
     private static PathPlanner instance;
-    private final DrivetrainBase drivetrain;
+    private final Drivetrain drivetrain;
     private final SwerveSetpointGenerator swerveSetpointGenerator;
     private SwerveSetpoint previousSetpoint = null;
     private RobotConfig config;
 
-    private PathPlanner(DrivetrainBase drivetrain) {
+    private PathPlanner(Drivetrain drivetrain) {
         try {
             config = RobotConfig.fromGUISettings();
         } catch (Exception ignored) {
@@ -69,7 +69,7 @@ public class PathPlanner {
         );
     }
 
-    public static void initInstance(DrivetrainBase drivetrain) {
+    public static void initInstance(Drivetrain drivetrain) {
         if (instance == null) {
             instance = new PathPlanner(drivetrain);
         }
