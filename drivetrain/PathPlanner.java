@@ -60,7 +60,7 @@ public class PathPlanner {
                 this.drivetrain.getPathFollowingController(), // The path following controller
                 config, // The robot configuration
                 () -> DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red,
-                this.drivetrain.getSubsystem() // Reference to this subsystem to set requirements
+                this.drivetrain // Reference to this subsystem to set requirements
         );
     }
 

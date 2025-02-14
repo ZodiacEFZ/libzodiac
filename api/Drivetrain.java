@@ -22,10 +22,6 @@ public interface Drivetrain extends Subsystem {
 
     void driveRobotRelative(ChassisSpeeds chassisSpeeds);
 
-    default Subsystem getSubsystem() {
-        return this;
-    }
-
     PathFollowingController getPathFollowingController();
 
     Field2d getField();
