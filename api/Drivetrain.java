@@ -9,7 +9,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
-public interface Drivetrain {
+public interface Drivetrain extends Subsystem {
     PoseEstimator<?> getPoseEstimator();
 
     Pigeon2 getGyro();
@@ -22,7 +22,9 @@ public interface Drivetrain {
 
     void driveRobotRelative(ChassisSpeeds chassisSpeeds);
 
-    Subsystem getSubsystemBase();
+    default Subsystem getSubsystem() {
+        return this;
+    }
 
     PathFollowingController getPathFollowingController();
 

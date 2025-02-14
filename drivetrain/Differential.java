@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.libzodiac.api.Drivetrain;
 import frc.libzodiac.hardware.Limelight;
@@ -123,10 +122,8 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
      * @param speeds The desired wheel speeds.
      */
     public void setSpeeds(DifferentialDriveWheelSpeeds speeds) {
-        this.leftLeader.velocity(
-                Units.RadiansPerSecond.of(speeds.leftMetersPerSecond / this.WHEEL_RADIUS));
-        this.rightLeader.velocity(
-                Units.RadiansPerSecond.of(speeds.rightMetersPerSecond / this.WHEEL_RADIUS));
+        this.leftLeader.velocity(Units.RadiansPerSecond.of(speeds.leftMetersPerSecond / this.WHEEL_RADIUS));
+        this.rightLeader.velocity(Units.RadiansPerSecond.of(speeds.rightMetersPerSecond / this.WHEEL_RADIUS));
     }
 
     public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, BooleanSupplier driveDirectAngle) {
@@ -237,13 +234,8 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
     }
 
     @Override
-    public Subsystem getSubsystemBase() {
-        return this;
-    }
-
-    @Override
     public PPLTVController getPathFollowingController() {
-        return new PPLTVController(0.02);
+        return new PPLTVController(0.02, this.MAX_SPEED);
     }
 
     @Override

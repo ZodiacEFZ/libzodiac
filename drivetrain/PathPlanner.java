@@ -59,13 +59,8 @@ public class PathPlanner {
                 // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also, optionally outputs individual module feedforwards
                 this.drivetrain.getPathFollowingController(), // The path following controller
                 config, // The robot configuration
-                () -> {
-                    // Boolean supplier that controls when the path will be mirrored for the red alliance
-                    // This will flip the path being followed to the red side of the field.
-                    // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-                    var alliance = DriverStation.getAlliance();
-                    return alliance.filter(value -> value == DriverStation.Alliance.Red).isPresent();
-                }, this.drivetrain.getSubsystemBase() // Reference to this subsystem to set requirements
+                () -> DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red,
+                this.drivetrain.getSubsystem() // Reference to this subsystem to set requirements
         );
     }
 
