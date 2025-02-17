@@ -4,8 +4,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import frc.libzodiac.api.SwerveModule;
 import frc.libzodiac.drivetrain.Swerve;
 import frc.libzodiac.hardware.MagEncoder;
@@ -109,16 +107,6 @@ public class TalonFXSwerveModule implements SwerveModule {
         } else {
             this.drive.shutdown();
         }
-    }
-
-    public void initSendable(SendableBuilder builder) {
-        builder.setSmartDashboardType("Swerve Module");
-        builder.addDoubleProperty("Angle", () -> {
-            var angle = this.getAngle();
-            return new Rotation2d(angle.getCos(), angle.getSin()).getRadians();
-        }, null);
-        builder.addDoubleProperty("Speed",
-                () -> this.drive.getVelocity().in(Units.RadiansPerSecond) * this.WHEEL_RADIUS, null);
     }
 
     public TalonFXMotor getAngleMotor() {

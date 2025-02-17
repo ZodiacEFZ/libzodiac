@@ -31,4 +31,6 @@ public interface Drivetrain extends Subsystem {
     SwerveModuleState[] getModuleStates();
 
     boolean isSwerve();
+
+    void brake();
 }

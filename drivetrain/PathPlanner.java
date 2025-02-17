@@ -71,11 +71,6 @@ public class PathPlanner {
         instance.warmup();
     }
 
-    public void warmup() {
-        FollowPathCommand.warmupCommand().schedule();
-        PathfindingCommand.warmupCommand().schedule();
-    }
-
     public static PathPlanner getInstance() {
         return instance;
     }
@@ -100,6 +95,11 @@ public class PathPlanner {
                 0.02 // The loop time of the robot code, in seconds
         );
         return instance.previousSetpoint.moduleStates();
+    }
+
+    public void warmup() {
+        FollowPathCommand.warmupCommand().schedule();
+        PathfindingCommand.warmupCommand().schedule();
     }
 
     public void registerCommand(String name, Command command) {

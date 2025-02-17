@@ -20,21 +20,18 @@ import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.TalonSRXMotor;
 import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
-import frc.libzodiac.util.SimpleSendable;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class Differential extends SubsystemBase implements Drivetrain, SimpleSendable {
+public class Differential extends SubsystemBase implements Drivetrain {
     public final double MAX_SPEED;
     public final double MAX_ANGULAR_VELOCITY;
     private final double WHEEL_RADIUS; // meters
 
     private final TalonSRXMotor leftLeader;
-    private final TalonSRXMotor leftFollower;
     private final TalonSRXMotor rightLeader;
-    private final TalonSRXMotor rightFollower;
 
     private final Pigeon2 gyro;
 
@@ -42,7 +39,6 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
     private final DifferentialDriveKinematics kinematics;
     private final Field2d field = new Field2d();
     private final DifferentialDrivePoseEstimator poseEstimator;
-    @Property(access = Property.AccessType.Both)
     private boolean directAngle = true;
     private Rotation2d targetHeading = new Rotation2d();
 
@@ -55,17 +51,17 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
         this.MAX_ANGULAR_VELOCITY = config.MAX_ANGULAR_VELOCITY;
         this.WHEEL_RADIUS = config.WHEEL_RADIUS;
         this.leftLeader = new TalonSRXMotor(config.leftLeader);
-        this.leftFollower = new TalonSRXMotor(config.leftFollower);
+        TalonSRXMotor leftFollower = new TalonSRXMotor(config.leftFollower);
         this.rightLeader = new TalonSRXMotor(config.rightLeader);
-        this.rightFollower = new TalonSRXMotor(config.rightFollower);
+        TalonSRXMotor rightFollower = new TalonSRXMotor(config.rightFollower);
         this.gyro = new Pigeon2(config.gyro);
         this.headingController = config.headingController;
         this.kinematics = new DifferentialDriveKinematics(config.ROBOT_WIDTH);
 
         this.leftLeader.factoryDefault();
-        this.leftFollower.factoryDefault();
+        leftFollower.factoryDefault();
         this.rightLeader.factoryDefault();
-        this.rightFollower.factoryDefault();
+        rightFollower.factoryDefault();
 
         this.leftLeader.setPID(config.pidController);
         this.rightLeader.setPID(config.pidController);
@@ -77,8 +73,8 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
         this.rightLeader.resetPosition();
         this.leftLeader.setInverted(config.leftLeaderInverted);
         this.rightLeader.setInverted(config.rightLeaderInverted);
-        this.leftFollower.follow(this.leftLeader, config.leftFollowerInverted != config.leftLeaderInverted);
-        this.rightFollower.follow(this.rightLeader, config.rightFollowerInverted != config.rightLeaderInverted);
+        leftFollower.follow(this.leftLeader, config.leftFollowerInverted != config.leftLeaderInverted);
+        rightFollower.follow(this.rightLeader, config.rightFollowerInverted != config.rightLeaderInverted);
 
         this.leftLeader.setPhase(config.leftEncoderPhase);
         this.rightLeader.setPhase(config.rightEncoderPhase);
@@ -140,12 +136,22 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        this.simpleSendableInit(builder);
         builder.setSmartDashboardType("Differential Drivetrain");
         builder.setActuator(true);
+        builder.setSafeState(this::brake);
+        builder.addBooleanProperty("Direct Angle", this::getDirectAngle, this::setDirectAngle);
         builder.addDoubleProperty("Heading", () -> -this.getYaw().getDegrees(), null);
-        builder.addStringProperty("Pose", () -> this.getPose().getTranslation().toString(), null);
+        SmartDashboard.putData("Differential Drive", differentialBuilder -> {
+            differentialBuilder.setSmartDashboardType("DifferentialDrive");
+            differentialBuilder.addDoubleProperty("Left Motor Speed", () -> this.getWheelSpeeds().leftMetersPerSecond, null);
+            differentialBuilder.addDoubleProperty("Right Motor Speed", () -> this.getWheelSpeeds().rightMetersPerSecond, null);
+        });
         SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading).ignoringDisable(true));
+    }
+
+    public void brake() {
+        this.leftLeader.brake();
+        this.rightLeader.brake();
     }
 
     /**
@@ -153,11 +159,6 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
      */
     public void zeroHeading() {
         this.gyro.reset();
-    }
-
-    @Override
-    public String title() {
-        return "Differential Drivetrain";
     }
 
     public boolean getDirectAngle() {

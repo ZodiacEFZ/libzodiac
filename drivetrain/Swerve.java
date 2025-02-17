@@ -27,7 +27,6 @@ import frc.libzodiac.hardware.TalonFXMotor;
 import frc.libzodiac.hardware.group.TalonFXSwerveModule;
 import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
-import frc.libzodiac.util.SimpleSendable;
 import frc.libzodiac.util.Translation2dSupplier;
 
 import java.util.Collection;
@@ -36,7 +35,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class Swerve extends SubsystemBase implements Drivetrain, SimpleSendable {
+public class Swerve extends SubsystemBase implements Drivetrain {
     // Distance between centers of right and left wheels on robot
     public final double ROBOT_WIDTH;
     // Distance between front and back wheels on robot
@@ -56,9 +55,7 @@ public class Swerve extends SubsystemBase implements Drivetrain, SimpleSendable 
     private final SwerveDriveKinematics kinematics;
     private final Field2d field = new Field2d();
     private final SwerveDrivePoseEstimator poseEstimator;
-    @Property(access = Property.AccessType.Both, name = "Field Centric")
     private boolean fieldCentric = true;
-    @Property(access = Property.AccessType.Both, name = "Direct Angle")
     private boolean directAngle = true;
     private Rotation2d targetHeading = new Rotation2d();
 
@@ -130,11 +127,11 @@ public class Swerve extends SubsystemBase implements Drivetrain, SimpleSendable 
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        this.simpleSendableInit(builder);
         builder.setSmartDashboardType("Swerve Drivetrain");
         builder.setActuator(true);
-        builder.addDoubleProperty("Heading", () -> -this.getYaw().getDegrees(), null);
-        builder.addStringProperty("Pose", () -> this.getPose().getTranslation().toString(), null);
+        builder.setSafeState(this::brake);
+        builder.addBooleanProperty("Field Centric", this::getFieldCentric, this::setFieldCentric);
+        builder.addBooleanProperty("Direct Angle", this::getDirectAngle, this::setDirectAngle);
         SmartDashboard.putData("Swerve Drive", swerveBuilder -> {
             swerveBuilder.setSmartDashboardType("SwerveDrive");
 
@@ -153,6 +150,13 @@ public class Swerve extends SubsystemBase implements Drivetrain, SimpleSendable 
             swerveBuilder.addDoubleProperty("Robot Angle", () -> this.getYaw().getRadians(), null);
         });
         SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading));
+    }
+
+    public void brake() {
+        this.frontLeft.brake();
+        this.frontRight.brake();
+        this.rearLeft.brake();
+        this.rearRight.brake();
     }
 
     public boolean getFieldCentric() {
@@ -176,9 +180,7 @@ public class Swerve extends SubsystemBase implements Drivetrain, SimpleSendable 
     }
 
     public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
-        translation = translation.times(this.MAX_SPEED);
-        rotation = rotation * this.MAX_ANGULAR_VELOCITY;
-        return new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
+        return new ChassisSpeeds(translation.getX() * this.MAX_SPEED, translation.getY() * this.MAX_SPEED, rotation * this.MAX_ANGULAR_VELOCITY);
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
@@ -186,7 +188,6 @@ public class Swerve extends SubsystemBase implements Drivetrain, SimpleSendable 
     }
 
     private void drive(ChassisSpeeds chassisSpeeds, boolean fieldRelative) {
-        SmartDashboard.putString("Chassis Speeds", chassisSpeeds.toString());
         if (fieldRelative) {
             this.driveFieldOriented(chassisSpeeds);
         } else {
