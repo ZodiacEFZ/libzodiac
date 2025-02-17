@@ -3,16 +3,22 @@ package frc.libzodiac.util;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public class Maths {
-    public static Translation2d cubeTranslation(Translation2d translation) {
-        return new Translation2d(cube(translation.getNorm()), translation.getAngle());
+    public static Translation2d squareTranslation(Translation2d translation) {
+        if (translation.getNorm() == 0) {
+            return translation;
+        }
+        return new Translation2d(square(translation.getNorm()), translation.getAngle());
     }
 
-    public static double cube(double v) {
-        return v * v * v;
+    public static double square(double v) {
+        return v * Math.abs(v);
     }
 
     public static Translation2d applyDeadband(Translation2d translation, double deadband) {
         var distance = translation.getNorm();
-        return new Translation2d(distance < deadband ? 0 : distance, translation.getAngle());
+        if (distance < deadband) {
+            return new Translation2d();
+        }
+        return new Translation2d(distance, translation.getAngle());
     }
 }

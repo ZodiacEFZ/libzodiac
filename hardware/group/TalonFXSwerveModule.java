@@ -7,34 +7,46 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import frc.libzodiac.api.SwerveModule;
-import frc.libzodiac.drivetrain.Zwerve;
+import frc.libzodiac.drivetrain.Swerve;
 import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonFXMotor;
 
-public class TalonFXSwerveModule implements Sendable, SwerveModule {
+public class TalonFXSwerveModule implements SwerveModule {
     private final double WHEEL_RADIUS;
     private final TalonFXMotor angle;
     private final TalonFXMotor drive;
     private final MagEncoder encoder;
     private Rotation2d lastAngle;
 
-    public TalonFXSwerveModule(Config config, Zwerve.Config swerveConfig) {
+    public TalonFXSwerveModule(Config config, Swerve.Config swerveConfig) {
         this.drive = new TalonFXMotor(config.drive);
         this.angle = new TalonFXMotor(config.angle);
         this.angle.factoryDefault();
         this.drive.factoryDefault();
-        this.angle.setPID(swerveConfig.anglePid);
-        this.drive.setPID(swerveConfig.drivePid);
+        this.angle.setPID(swerveConfig.anglePID);
+        this.drive.setPID(swerveConfig.drivePID);
         this.angle.setInverted(config.angleReversed);
         this.drive.setInverted(config.driveReversed);
         this.angle.setSensorToMechanismRatio(swerveConfig.ANGLE_GEAR_RATIO);
         this.drive.setSensorToMechanismRatio(swerveConfig.DRIVE_GEAR_RATIO);
         this.angle.setContinuous(true);
+        this.angle.setBrake(true);
+        this.drive.setBrake(false);
 
         this.encoder = new MagEncoder(config.encoder, config.encoderZero);
         this.lastAngle = this.getAngle();
 
         this.WHEEL_RADIUS = swerveConfig.WHEEL_RADIUS;
+    }
+
+    private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d angle) {
+        var delta = desiredState.angle.minus(angle);
+        if (Math.abs(new Rotation2d(delta.getCos(), delta.getSin()).getRadians()) > Math.PI / 2) {
+            return new SwerveModuleState(-desiredState.speedMetersPerSecond,
+                    desiredState.angle.plus(new Rotation2d(Math.PI)));
+        } else {
+            return desiredState;
+        }
     }
 
     private Rotation2d getAngle() {
@@ -91,16 +103,6 @@ public class TalonFXSwerveModule implements Sendable, SwerveModule {
                 this.getAngle());
     }
 
-    private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d angle) {
-        var delta = desiredState.angle.minus(angle);
-        if (Math.abs(new Rotation2d(delta.getCos(), delta.getSin()).getRadians()) > Math.PI / 2) {
-            return new SwerveModuleState(-desiredState.speedMetersPerSecond,
-                    desiredState.angle.plus(new Rotation2d(Math.PI)));
-        } else {
-            return desiredState;
-        }
-    }
-
     public void setMotorBrake(boolean brake) {
         if (brake) {
             this.drive.brake();
@@ -109,7 +111,6 @@ public class TalonFXSwerveModule implements Sendable, SwerveModule {
         }
     }
 
-    @Override
     public void initSendable(SendableBuilder builder) {
         builder.setSmartDashboardType("Swerve Module");
         builder.addDoubleProperty("Angle", () -> {

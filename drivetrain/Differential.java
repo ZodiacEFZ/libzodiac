@@ -317,10 +317,10 @@ public class Differential extends SubsystemBase implements Drivetrain, SimpleSen
 
         @Override
         public ChassisSpeeds get() {
-            var velocity = Maths.cube(MathUtil.applyDeadband(this.velocity.getAsDouble(), this.deadband));
+            var velocity = Maths.square(MathUtil.applyDeadband(this.velocity.getAsDouble(), this.deadband));
             var rotation = switch (this.rotationType) {
                 case HEADING -> this.drivetrain.calculateRotation(this.heading);
-                case ROTATION -> Maths.cube(MathUtil.applyDeadband(this.rotation.getAsDouble(), this.deadband));
+                case ROTATION -> Maths.square(MathUtil.applyDeadband(this.rotation.getAsDouble(), this.deadband));
                 case NONE -> 0;
             };
             return this.drivetrain.getChassisSpeeds(velocity, rotation);

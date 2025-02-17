@@ -6,6 +6,7 @@ import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.*;
@@ -70,6 +71,14 @@ public final class TalonFXMotor implements Motor {
             case CounterClockwise_Positive -> InvertedValue.Clockwise_Positive;
         };
         this.motor.getConfigurator().apply(motorOutputConfigs);
+    }
+
+    public void setBrake(boolean brake) {
+        if (brake) {
+            this.motor.setNeutralMode(NeutralModeValue.Brake);
+        } else {
+            this.motor.setNeutralMode(NeutralModeValue.Coast);
+        }
     }
 
     @Override
@@ -286,8 +295,8 @@ public final class TalonFXMotor implements Motor {
         public void loadMusic(String file, int track) {
             this.file = file;
             this.track = track;
-            this.orchestra.loadMusic(file);
             this.setInstrumentAllTracks(this.instruments);
+            this.orchestra.loadMusic(file);
         }
 
         private void setInstrumentAllTracks(Collection<ParentDevice> instruments) {

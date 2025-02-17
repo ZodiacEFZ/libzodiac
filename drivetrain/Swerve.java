@@ -36,7 +36,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class Zwerve extends SubsystemBase implements Drivetrain, SimpleSendable {
+public class Swerve extends SubsystemBase implements Drivetrain, SimpleSendable {
     // Distance between centers of right and left wheels on robot
     public final double ROBOT_WIDTH;
     // Distance between front and back wheels on robot
@@ -56,16 +56,16 @@ public class Zwerve extends SubsystemBase implements Drivetrain, SimpleSendable 
     private final SwerveDriveKinematics kinematics;
     private final Field2d field = new Field2d();
     private final SwerveDrivePoseEstimator poseEstimator;
-    @Property(access = Property.AccessType.Both)
+    @Property(access = Property.AccessType.Both, name = "Field Centric")
     private boolean fieldCentric = true;
-    @Property(access = Property.AccessType.Both)
+    @Property(access = Property.AccessType.Both, name = "Direct Angle")
     private boolean directAngle = true;
     private Rotation2d targetHeading = new Rotation2d();
 
     /**
      * Creates a new DriveSubsystem.
      */
-    public Zwerve(Config config, Pose2d initialPose) {
+    public Swerve(Config config, Pose2d initialPose) {
         this.ROBOT_WIDTH = config.ROBOT_WIDTH;
         this.ROBOT_LENGTH = config.ROBOT_LENGTH;
         this.MAX_SPEED = config.MAX_SPEED;
@@ -135,10 +135,23 @@ public class Zwerve extends SubsystemBase implements Drivetrain, SimpleSendable 
         builder.setActuator(true);
         builder.addDoubleProperty("Heading", () -> -this.getYaw().getDegrees(), null);
         builder.addStringProperty("Pose", () -> this.getPose().getTranslation().toString(), null);
-        SmartDashboard.putData("Front Left Module", this.frontLeft);
-        SmartDashboard.putData("Front Right Module", this.frontRight);
-        SmartDashboard.putData("Rear Left Module", this.rearLeft);
-        SmartDashboard.putData("Rear Right Module", this.rearRight);
+        SmartDashboard.putData("Swerve Drive", swerveBuilder -> {
+            swerveBuilder.setSmartDashboardType("SwerveDrive");
+
+            swerveBuilder.addDoubleProperty("Front Left Angle", () -> this.frontLeft.getState().angle.getRadians(), null);
+            swerveBuilder.addDoubleProperty("Front Left Velocity", () -> this.frontLeft.getState().speedMetersPerSecond, null);
+
+            swerveBuilder.addDoubleProperty("Front Right Angle", () -> this.frontRight.getState().angle.getRadians(), null);
+            swerveBuilder.addDoubleProperty("Front Right Velocity", () -> this.frontRight.getState().speedMetersPerSecond, null);
+
+            swerveBuilder.addDoubleProperty("Back Left Angle", () -> this.rearLeft.getState().angle.getRadians(), null);
+            swerveBuilder.addDoubleProperty("Back Left Velocity", () -> this.rearLeft.getState().speedMetersPerSecond, null);
+
+            swerveBuilder.addDoubleProperty("Back Right Angle", () -> this.rearRight.getState().angle.getRadians(), null);
+            swerveBuilder.addDoubleProperty("Back Right Velocity", () -> this.rearRight.getState().speedMetersPerSecond, null);
+
+            swerveBuilder.addDoubleProperty("Robot Angle", () -> this.getYaw().getRadians(), null);
+        });
         SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading));
     }
 
@@ -207,8 +220,8 @@ public class Zwerve extends SubsystemBase implements Drivetrain, SimpleSendable 
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
         this.targetHeading = headingSupplier.asTranslation()
                 .getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
-        return MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0),
-                -1, 1);
+        return MathUtil.applyDeadband(MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0),
+                -1, 1), 0.05);
     }
 
     public void toggleDirectAngle() {
@@ -338,29 +351,29 @@ public class Zwerve extends SubsystemBase implements Drivetrain, SimpleSendable 
         public double DRIVE_GEAR_RATIO;
         public double WHEEL_RADIUS;
 
-        public PIDController drivePid;
-        public PIDController anglePid;
+        public PIDController drivePID;
+        public PIDController anglePID;
     }
 
     public static class InputStream implements Supplier<ChassisSpeeds> {
-        private final Zwerve drivetrain;
+        private final Swerve drivetrain;
         private final Translation2dSupplier translation;
         private double deadband = 0;
         private RotationType rotationType = RotationType.NONE;
         private Rotation2dSupplier heading;
         private DoubleSupplier rotation;
 
-        public InputStream(Zwerve drivetrain, Translation2dSupplier translation) {
+        public InputStream(Swerve drivetrain, Translation2dSupplier translation) {
             this.drivetrain = drivetrain;
             this.translation = translation;
         }
 
         @Override
         public ChassisSpeeds get() {
-            var translation = Maths.cubeTranslation(Maths.applyDeadband(this.translation.get(), this.deadband));
+            var translation = Maths.squareTranslation(Maths.applyDeadband(this.translation.get(), this.deadband));
             var rotation = switch (this.rotationType) {
                 case HEADING -> this.drivetrain.calculateRotation(this.heading);
-                case ROTATION -> Maths.cube(MathUtil.applyDeadband(this.rotation.getAsDouble(), this.deadband));
+                case ROTATION -> Maths.square(MathUtil.applyDeadband(this.rotation.getAsDouble(), this.deadband));
                 case NONE -> 0;
             };
             return this.drivetrain.calculateChassisSpeeds(translation, rotation);
