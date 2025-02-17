@@ -3,12 +3,16 @@ package frc.libzodiac.hardware;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.AngleUnit;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Angle;
 
 /**
  * The <i>CTRE MagEncoder</i> sensor.
  */
 public final class MagEncoder {
-    private static final double CTRE_MAG_ENCODER_UNIT = 4096 / (2 * Math.PI);
+    private static final AngleUnit CTRE_MAG_ENCODER_UNIT = Units.derive(Units.Rotations).splitInto(4096).named("MagEncoderUnit").symbol("")
+            .make();
 
     private final TalonSRX encoder;
 
@@ -48,10 +52,10 @@ public final class MagEncoder {
     }
 
     public Rotation2d getRotation2d() {
-        return new Rotation2d(this.getRadians());
+        return new Rotation2d(this.get());
     }
 
-    public double getRadians() {
-        return (this.encoder.getSelectedSensorPosition() - this.zero) / CTRE_MAG_ENCODER_UNIT;
+    public Angle get() {
+        return CTRE_MAG_ENCODER_UNIT.of(this.encoder.getSelectedSensorPosition() - this.zero);
     }
 }
