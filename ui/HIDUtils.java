@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.libzodiac.util.Base85;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +44,12 @@ public class HIDUtils {
         }
 
         public HIDRecord(String string) {
+            if (string.startsWith("B85")) {
+                try {
+                    string = Base85.getZ85Decoder().decode(string);
+                } catch (Exception ignored) {
+                }
+            }
             String[] stateStrings = string.split("\\|");
             for (String stateString : stateStrings) {
                 String[] parts = stateString.split(",");
@@ -63,6 +70,10 @@ public class HIDUtils {
         }
 
         public String toString() {
+            return this.toZ85String();
+        }
+
+        public String toRawString() {
             StringBuilder builder = new StringBuilder();
             IntStream.range(0, states.size()).forEachOrdered(i -> {
                 builder.append(states.get(i).toString());
@@ -71,6 +82,10 @@ public class HIDUtils {
                 }
             });
             return builder.toString();
+        }
+
+        public String toZ85String() {
+            return "B85" + Base85.getZ85Encoder().encode(this.toRawString());
         }
     }
 
