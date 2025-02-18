@@ -102,7 +102,7 @@ public final class TalonSRXMotor implements Motor {
     }
 
     private AngleUnit positionUnit() {
-        return Units.derive(this.positionUnit).aggregate(sensorToMechanismRatio).named("TalonSRXEncoderUnit").symbol("")
+        return Units.derive(this.positionUnit).aggregate(this.sensorToMechanismRatio).named("TalonSRXEncoderUnit").symbol("")
                 .make();
     }
 
