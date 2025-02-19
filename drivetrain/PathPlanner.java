@@ -26,7 +26,7 @@ import frc.libzodiac.api.Drivetrain;
 import java.util.List;
 
 public class PathPlanner {
-    private static final boolean SWERVE_SETPOINT_GENERATOR_ENABLED = true;
+    private static final boolean SWERVE_SETPOINT_GENERATOR_ENABLED = false;
     // Load the RobotConfig from the GUI settings. You should probably
     // store this in your Constants file
     private static PathPlanner instance;
@@ -67,8 +67,8 @@ public class PathPlanner {
     public static void initInstance(Drivetrain drivetrain) {
         if (instance == null) {
             instance = new PathPlanner(drivetrain);
+            instance.warmup();
         }
-        instance.warmup();
     }
 
     public static PathPlanner getInstance() {
@@ -97,7 +97,7 @@ public class PathPlanner {
         return instance.previousSetpoint.moduleStates();
     }
 
-    public void warmup() {
+    private void warmup() {
         FollowPathCommand.warmupCommand().schedule();
         PathfindingCommand.warmupCommand().schedule();
     }

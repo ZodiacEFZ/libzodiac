@@ -45,7 +45,7 @@ public class Limelight {
 
         // if our angular velocity is greater than 2 rotations per second, ignore vision updates
         if (poseEstimate.tagCount > 0 && Math.abs(
-                this.gyro.getAngularVelocityZWorld().getValue().in(Units.RadiansPerSecond)) < 4 * Math.PI) {
+                this.gyro.getAngularVelocityZWorld().getValue().in(Units.RadiansPerSecond)) < Math.PI) {
             // TODO: Maybe increase the trust when we get closer
             this.poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
             this.poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds);
