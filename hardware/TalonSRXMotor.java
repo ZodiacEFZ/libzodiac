@@ -177,7 +177,7 @@ public final class TalonSRXMotor implements Motor {
     }
 
     public void follow(TalonSRXMotor master) {
-        this.follow(master, true);
+        this.follow(master, false);
     }
 
     public void follow(TalonSRXMotor master, boolean invert) {
