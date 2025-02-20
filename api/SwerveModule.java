@@ -3,9 +3,18 @@ package frc.libzodiac.api;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
+/**
+ * The swerve module interface.
+ */
 public interface SwerveModule {
+    /**
+     * Stop any output behaviour of the module.
+     */
     void shutdown();
 
+    /**
+     * Brake the module.
+     */
     default void brake() {
         throw new UnsupportedOperationException();
     }

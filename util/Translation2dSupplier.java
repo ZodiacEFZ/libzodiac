@@ -5,7 +5,13 @@ import edu.wpi.first.math.geometry.Translation2d;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+/**
+ * A supplier for a Translation2d.
+ */
 public class Translation2dSupplier implements Supplier<Translation2d> {
+    /**
+     * The x and y value of the Translation2d.
+     */
     final DoubleSupplier x;
     final DoubleSupplier y;
 

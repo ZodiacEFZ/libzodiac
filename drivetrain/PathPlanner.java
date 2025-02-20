@@ -25,24 +25,60 @@ import frc.libzodiac.api.Drivetrain;
 
 import java.util.List;
 
+/**
+ * The PathPlanner used to generate paths and commands.
+ */
 public class PathPlanner {
+    /**
+     * This boolean determines whether the swerve setpoint generator is enabled.
+     * If it is enabled, the setpoint generator will be used to generate swerve
+     * module states from robot-relative chassis speeds. If it is disabled, the
+     * setpoint generator will not be used.
+     */
     private static final boolean SWERVE_SETPOINT_GENERATOR_ENABLED = false;
-    // Load the RobotConfig from the GUI settings. You should probably
-    // store this in your Constants file
+    /**
+     * The instance of the PathPlanner class.
+     */
     private static PathPlanner instance;
+    /**
+     * The drivetrain subsystem.
+     */
     private final Drivetrain drivetrain;
+    /**
+     * The swerve setpoint generator.
+     */
     private final SwerveSetpointGenerator swerveSetpointGenerator;
+    /**
+     * The previous swerve setpoint.
+     */
     private SwerveSetpoint previousSetpoint = null;
+    /**
+     * The robot configuration.
+     */
     private RobotConfig config;
 
+    /**
+     * The constructor for the PathPlanner class.
+     *
+     * @param drivetrain The drivetrain subsystem.
+     */
     private PathPlanner(Drivetrain drivetrain) {
+        /*
+         * Attempt to create a robot configuration from GUI settings.
+         */
         try {
             config = RobotConfig.fromGUISettings();
         } catch (Exception ignored) {
         }
 
+        /*
+         * Initialize the drivetrain subsystem.
+         */
         this.drivetrain = drivetrain;
 
+        /*
+         * If the drivetrain is a swerve drivetrain, create a swerve setpoint generator.
+         */
         if (this.drivetrain.isSwerve()) {
             this.swerveSetpointGenerator = new SwerveSetpointGenerator(config, this.drivetrain.getMaxAngularVelocity());
             this.previousSetpoint = new SwerveSetpoint(this.drivetrain.getRobotRelativeSpeeds(),
@@ -51,6 +87,9 @@ public class PathPlanner {
             this.swerveSetpointGenerator = null;
         }
 
+        /*
+         * Configure the auto builder.
+         */
         AutoBuilder.configure(this.drivetrain::getPose, // Robot pose supplier
                 this.drivetrain::setPose,
                 // Method to reset odometry (will be called if your auto has a starting pose)
@@ -64,6 +103,11 @@ public class PathPlanner {
         );
     }
 
+    /**
+     * Initialize the instance of the PathPlanner class.
+     *
+     * @param drivetrain The drivetrain subsystem.
+     */
     public static void initInstance(Drivetrain drivetrain) {
         if (instance == null) {
             instance = new PathPlanner(drivetrain);
@@ -71,15 +115,19 @@ public class PathPlanner {
         }
     }
 
+    /**
+     * Get the instance of the PathPlanner class.
+     *
+     * @return PathPlanner The instance of the PathPlanner class.
+     */
     public static PathPlanner getInstance() {
         return instance;
     }
 
     /**
-     * This method will take in desired robot-relative chassis speeds,
-     * then generate a swerve setpoint.
+     * Generate a swerve setpoint with the desired chassis speeds.
      *
-     * @param speeds The desired robot-relative speeds.
+     * @param speeds The desired chassis speeds.
      * @return SwerveModuleState[] The desired swerve module states.
      */
     public static SwerveModuleState[] generateSwerveSetpoint(ChassisSpeeds speeds) {
@@ -87,8 +135,6 @@ public class PathPlanner {
             return null;
         }
 
-        // Note: it is important to not discretize speeds before or after
-        // using the setpoint generator, as it will discretize them for you
         instance.previousSetpoint = instance.swerveSetpointGenerator.generateSetpoint(instance.previousSetpoint,
                 // The previous setpoint
                 speeds, // The desired target speeds
@@ -97,27 +143,61 @@ public class PathPlanner {
         return instance.previousSetpoint.moduleStates();
     }
 
+    /**
+     * Warm up PathPlanner.
+     */
     private void warmup() {
         FollowPathCommand.warmupCommand().schedule();
         PathfindingCommand.warmupCommand().schedule();
     }
 
+    /**
+     * Register a command with a name.
+     *
+     * @param name    The name of the command.
+     * @param command The command to register.
+     */
     public void registerCommand(String name, Command command) {
         NamedCommands.registerCommand(name, command);
     }
 
+    /**
+     * Get the event trigger by name.
+     *
+     * @param name The name of the event trigger.
+     * @return The event trigger with the specified name.
+     */
     public Trigger getEventTrigger(String name) {
         return new EventTrigger("shoot note");
     }
 
+    /**
+     * Get the point towards zone trigger by name.
+     *
+     * @param name The name of the point towards zone trigger.
+     * @return The point towards zone trigger with the specified name.
+     */
     public Trigger getPointTowardsZoneTrigger(String name) {
         return new PointTowardsZoneTrigger(name);
     }
 
+    /**
+     * Create a path from a list of poses.
+     *
+     * @param poses The list of poses.
+     * @return The path created from the list of poses.
+     */
     public PathPlannerPath createPath(List<Pose2d> poses, GoalEndState goalEndState) {
         return createPath(poses, goalEndState, false);
     }
 
+    /**
+     * Create a path from a list of poses.
+     *
+     * @param poses  The list of poses.
+     * @param noFlip Whether to prevent the path from being flipped.
+     * @return The path created from the list of poses.
+     */
     public PathPlannerPath createPath(List<Pose2d> poses, GoalEndState goalEndState, boolean noFlip) {
         // Create a list of waypoints from poses. Each pose represents one waypoint.
         // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
@@ -135,6 +215,11 @@ public class PathPlanner {
         return path;
     }
 
+    /**
+     * Build an auto chooser.
+     *
+     * @return The auto chooser.
+     */
     public SendableChooser<Command> buildAutoChooser() {
         return AutoBuilder.buildAutoChooser();
     }

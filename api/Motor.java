@@ -10,17 +10,25 @@ import edu.wpi.first.units.measure.Voltage;
  * can be controlled under a unified generic way.
  */
 public interface Motor {
+    /**
+     * Set the motor to be inverted.
+     *
+     * @param inverted whether the motor should be inverted
+     */
     void setInverted(boolean inverted);
 
+    /**
+     * Invert the motor.
+     */
     void invert();
 
     /**
-     * Stop any output behaviour of this motor.
+     * Stop any output behaviour of the motor.
      */
     void shutdown();
 
     /**
-     * Brake the motor's motion.
+     * Brake the motor.
      *
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
@@ -46,7 +54,6 @@ public interface Motor {
      * @param position the target position
      * @throws UnsupportedOperationException if the motor does not support such type
      *                                       of control
-     * @apiNote Zero position is implementation defined.
      */
     default void position(Angle position) {
         throw new UnsupportedOperationException("the motor does not support turning by position");
