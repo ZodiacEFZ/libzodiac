@@ -81,8 +81,8 @@ public class Differential extends SubsystemBase implements Drivetrain {
      * Construct a differential drive object.
      */
     public Differential(Config config, Pose2d initialPose) {
-        /**
-         * Initialize the constants, motors, gyro, and controllers.
+        /*
+          Initialize the constants, motors, gyro, and controllers.
          */
         this.MAX_SPEED = config.MAX_SPEED;
         this.MAX_ANGULAR_VELOCITY = config.MAX_ANGULAR_VELOCITY;
@@ -95,8 +95,8 @@ public class Differential extends SubsystemBase implements Drivetrain {
         this.headingController = config.headingController;
         this.kinematics = new DifferentialDriveKinematics(config.ROBOT_WIDTH);
 
-        /**
-         * Configure the motors and gyro.
+        /*
+          Configure the motors and gyro.
          */
         this.leftLeader.factoryDefault();
         leftFollower.factoryDefault();
@@ -117,9 +117,6 @@ public class Differential extends SubsystemBase implements Drivetrain {
 
         this.leftLeader.setPhase(config.leftEncoderPhase);
         this.rightLeader.setPhase(config.rightEncoderPhase);
-
-        this.leftLeader.setSensorToMechanismRatio(config.GEAR_RATIO);
-        this.rightLeader.setSensorToMechanismRatio(config.GEAR_RATIO);
 
         this.gyro.reset();
 
@@ -277,8 +274,8 @@ public class Differential extends SubsystemBase implements Drivetrain {
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
         this.targetHeading = headingSupplier.asTranslation()
                 .getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
-        return MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0),
-                -1, 1);
+        return MathUtil.applyDeadband(MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0),
+                -1, 1), 0.05);
     }
 
     /**
@@ -373,10 +370,6 @@ public class Differential extends SubsystemBase implements Drivetrain {
          * The maximum turning speed of the robot in rad/s.
          */
         public double MAX_ANGULAR_VELOCITY;
-        /**
-         * The gear ratio of the robot.
-         */
-        public double GEAR_RATIO;
         /**
          * The radius of the wheels in meters.
          */

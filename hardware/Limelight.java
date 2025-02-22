@@ -1,10 +1,8 @@
 package frc.libzodiac.hardware;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.net.PortForwarder;
-import edu.wpi.first.units.Units;
 import frc.libzodiac.api.Drivetrain;
 import frc.libzodiac.hardware.limelight.LimelightHelpers;
 
@@ -75,13 +73,14 @@ public class Limelight {
                 this.poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
         LimelightHelpers.PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(this.name);
 
+		// FIXME: poseEstimate == null 
         // if our angular velocity is greater than 2 rotations per second, ignore vision updates
-        if (poseEstimate.tagCount > 0 && Math.abs(
-                this.gyro.getAngularVelocityZWorld().getValue().in(Units.RadiansPerSecond)) < Math.PI) {
-            // TODO: Maybe increase the trust when we get closer
-            this.poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
-            this.poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds);
-        }
+//        if (poseEstimate.tagCount > 0 && Math.abs(
+//                this.gyro.getAngularVelocityZWorld().getValue().in(Units.RadiansPerSecond)) < Math.PI) {
+//            // TODO: Maybe increase the trust when we get closer
+//            this.poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
+//            this.poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds);
+//        }
     }
 
     /**
