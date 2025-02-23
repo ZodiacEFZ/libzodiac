@@ -71,6 +71,10 @@ public class Differential extends SubsystemBase implements Drivetrain {
      * Whether the robot should drive directly towards a target angle.
      */
     private boolean directAngle = true;
+    /**
+     * Whether the robot is in slow mode.
+     */
+    private boolean slowMode = false;
 
     /**
      * The target heading of the robot.
@@ -265,6 +269,13 @@ public class Differential extends SubsystemBase implements Drivetrain {
         this.directAngle = !this.directAngle;
     }
 
+	/**
+	 * Toggles slow mode.
+	 */
+	public void toggleSlowMode() {
+		this.slowMode = true;
+	}
+
     /**
      * Calculates the desired rotation of the robot in direct angle mode.
      *
@@ -285,7 +296,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
      * @param rotation Angular velocity in [-1, 1].
      */
     public ChassisSpeeds getChassisSpeeds(double velocity, double rotation) {
-        return new ChassisSpeeds(velocity * this.MAX_SPEED, 0, rotation * this.MAX_ANGULAR_VELOCITY);
+        return new ChassisSpeeds(velocity * (this.slowMode ? this.MAX_SPEED / 5 : this.MAX_SPEED), 0, rotation * this.MAX_ANGULAR_VELOCITY);
     }
 
     @Override
