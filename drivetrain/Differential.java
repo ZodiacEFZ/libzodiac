@@ -205,6 +205,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
         builder.setActuator(true);
         builder.setSafeState(this::brake);
         builder.addBooleanProperty("Direct Angle", this::getDirectAngle, this::setDirectAngle);
+        builder.addBooleanProperty("Slow Mode", () -> this.slowMode, this::setSlowMode);
         builder.addDoubleProperty("Heading", () -> -this.getYaw().getDegrees(), null);
         SmartDashboard.putData("Differential Drive", differentialBuilder -> {
             differentialBuilder.setSmartDashboardType("DifferentialDrive");
@@ -212,6 +213,13 @@ public class Differential extends SubsystemBase implements Drivetrain {
             differentialBuilder.addDoubleProperty("Right Motor Speed", () -> this.getWheelSpeeds().rightMetersPerSecond, null);
         });
         SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading).ignoringDisable(true));
+    }
+
+    /**
+     * Set whether the robot is in slow mode.
+     */
+    private void setSlowMode(boolean slowMode) {
+        this.slowMode = slowMode;
     }
 
     /**
@@ -269,12 +277,12 @@ public class Differential extends SubsystemBase implements Drivetrain {
         this.directAngle = !this.directAngle;
     }
 
-	/**
-	 * Toggles slow mode.
-	 */
-	public void toggleSlowMode() {
-		this.slowMode = true;
-	}
+    /**
+     * Toggles slow mode.
+     */
+    public void toggleSlowMode() {
+        this.slowMode = !this.slowMode;
+    }
 
     /**
      * Calculates the desired rotation of the robot in direct angle mode.
@@ -296,7 +304,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
      * @param rotation Angular velocity in [-1, 1].
      */
     public ChassisSpeeds getChassisSpeeds(double velocity, double rotation) {
-        return new ChassisSpeeds(velocity * (this.slowMode ? this.MAX_SPEED / 5 : this.MAX_SPEED), 0, rotation * this.MAX_ANGULAR_VELOCITY);
+        return new ChassisSpeeds(velocity * (this.slowMode ? this.MAX_SPEED / 5 : this.MAX_SPEED), 0, rotation * (this.slowMode ? this.MAX_ANGULAR_VELOCITY / 3 : this.MAX_ANGULAR_VELOCITY));
     }
 
     @Override

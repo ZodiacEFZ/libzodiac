@@ -333,4 +333,8 @@ public final class TalonSRXMotor implements Motor {
     public void setPeakOutput(double peakOutput) {
         this.motor.configClosedLoopPeakOutput(0, peakOutput);
     }
+
+    public void allowableError(double allowableError) {
+        this.motor.configAllowableClosedloopError(0, allowableError);
+    }
 }
