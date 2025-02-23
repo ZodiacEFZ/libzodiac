@@ -307,14 +307,29 @@ public final class TalonSRXMotor implements Motor {
         this.motor.setSensorPhase(phase);
     }
 
+    /**
+     * Set the neutral mode of the motor.
+     *
+     * @param brake Whether to brake the motor when neutral.
+     */
     public void setBrakeMode(boolean brake) {
         this.motor.setNeutralMode(brake ? NeutralMode.Brake : NeutralMode.Coast);
     }
 
-    public void setMaxIntergralAccum(int maxIntergralAccum) {
-        this.motor.configMaxIntegralAccumulator(0, maxIntergralAccum);
+    /**
+     * Set the maximum integral accumulator of the motor.
+     *
+     * @param maxIntegralAccum The maximum integral accumulator.
+     */
+    public void setMaxIntegralAccum(int maxIntegralAccum) {
+        this.motor.configMaxIntegralAccumulator(0, maxIntegralAccum);
     }
 
+    /**
+     * Set the peak output of the motor.
+     *
+     * @param peakOutput The peak output.
+     */
     public void setPeakOutput(double peakOutput) {
         this.motor.configClosedLoopPeakOutput(0, peakOutput);
     }
