@@ -49,7 +49,6 @@ public class Differential extends SubsystemBase implements Drivetrain {
     private final TalonSRXMotor leftLeader;
     private final TalonSRXMotor rightLeader;
 
-
     /**
      * The gyro.
      */
@@ -118,6 +117,9 @@ public class Differential extends SubsystemBase implements Drivetrain {
         this.rightLeader.setInverted(config.rightLeaderInverted);
         leftFollower.follow(this.leftLeader, config.leftFollowerInverted != config.leftLeaderInverted);
         rightFollower.follow(this.rightLeader, config.rightFollowerInverted != config.rightLeaderInverted);
+
+        this.leftLeader.setBrakeWhenNeutral(true);
+        this.leftLeader.setBrakeWhenNeutral(true);
 
         this.leftLeader.setPhase(config.leftEncoderPhase);
         this.rightLeader.setPhase(config.rightEncoderPhase);
@@ -218,7 +220,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
     /**
      * Set whether the robot is in slow mode.
      */
-    private void setSlowMode(boolean slowMode) {
+    public void setSlowMode(boolean slowMode) {
         this.slowMode = slowMode;
     }
 

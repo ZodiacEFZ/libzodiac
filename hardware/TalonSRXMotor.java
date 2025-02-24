@@ -312,7 +312,7 @@ public final class TalonSRXMotor implements Motor {
      *
      * @param brake Whether to brake the motor when neutral.
      */
-    public void setBrakeMode(boolean brake) {
+    public void setBrakeWhenNeutral(boolean brake) {
         this.motor.setNeutralMode(brake ? NeutralMode.Brake : NeutralMode.Coast);
     }
 
