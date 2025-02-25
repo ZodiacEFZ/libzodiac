@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
@@ -43,7 +44,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     // Distance between front and back wheels on robot
     public final double ROBOT_LENGTH;
     public final LinearVelocity MAX_SPEED;
-    private final double MAX_ANGULAR_VELOCITY;
+    private final AngularVelocity MAX_ANGULAR_VELOCITY;
 
     // Robot swerve modules
     private final TalonFXSwerveModule frontLeft;
@@ -67,7 +68,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     public Swerve(Config config, Pose2d initialPose) {
         this.ROBOT_WIDTH = config.ROBOT_WIDTH;
         this.ROBOT_LENGTH = config.ROBOT_LENGTH;
-        this.MAX_SPEED = Units.MetersPerSecond.of(config.MAX_SPEED);
+        this.MAX_SPEED = config.MAX_SPEED;
         this.MAX_ANGULAR_VELOCITY = config.MAX_ANGULAR_VELOCITY;
         this.frontLeft = new TalonFXSwerveModule(config.frontLeft, config);
         this.frontRight = new TalonFXSwerveModule(config.frontRight, config);
@@ -178,7 +179,8 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
         final var velocity = translation.times(this.MAX_SPEED.in(Units.MetersPerSecond) / translation.getNorm());
-        return new ChassisSpeeds(velocity.getX(), velocity.getY(), rotation * this.MAX_ANGULAR_VELOCITY);
+        return new ChassisSpeeds(velocity.getX(), velocity.getY(),
+                rotation * this.MAX_ANGULAR_VELOCITY.in(Units.RadiansPerSecond));
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
@@ -307,7 +309,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     @Override
     public double getMaxAngularVelocity() {
-        return this.MAX_ANGULAR_VELOCITY;
+        return this.MAX_ANGULAR_VELOCITY.in(Units.RadiansPerSecond);
     }
 
     @Override
@@ -337,8 +339,8 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         public double ROBOT_WIDTH;
         // Distance between front and back wheels on robot
         public double ROBOT_LENGTH;
-        public double MAX_SPEED;
-        public double MAX_ANGULAR_VELOCITY;
+        public LinearVelocity MAX_SPEED;
+        public AngularVelocity MAX_ANGULAR_VELOCITY;
 
         // Robot swerve modules
         public TalonFXSwerveModule.Config frontLeft;
