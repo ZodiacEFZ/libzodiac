@@ -1,5 +1,6 @@
 package frc.libzodiac.hardware.group;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -21,8 +22,8 @@ public class TalonFXSwerveModule implements SwerveModule {
         this.angle = new TalonFXMotor(config.angle);
         this.angle.factoryDefault();
         this.drive.factoryDefault();
-        this.angle.setPID(swerveConfig.anglePID);
-        this.drive.setPID(swerveConfig.drivePID);
+        this.angle.setPID(config.anglePID != null ? config.anglePID : swerveConfig.anglePID);
+        this.drive.setPID(config.drivePID != null ? config.drivePID : swerveConfig.drivePID);
         this.angle.setInverted(config.angleReversed);
         this.drive.setInverted(config.driveReversed);
         this.angle.setSensorToMechanismRatio(swerveConfig.ANGLE_GEAR_RATIO);
@@ -118,20 +119,40 @@ public class TalonFXSwerveModule implements SwerveModule {
     }
 
     public static class Config {
-        final int angle;
-        final int drive;
-        final int encoder;
-        final int encoderZero;
-        final boolean angleReversed;
-        final boolean driveReversed;
+        int angle;
+        int drive;
+        int encoder;
+        int encoderZero;
+        boolean angleReversed = false;
+        boolean driveReversed = false;
+        PIDController drivePID = null;
+        PIDController anglePID = null;
 
-        public Config(int angle, int drive, int encoder, int encoderZero, boolean angleReversed, boolean driveReversed) {
+        public Config(int angle, int drive, int encoder, int encoderZero) {
             this.angle = angle;
             this.drive = drive;
             this.encoder = encoder;
             this.encoderZero = encoderZero;
-            this.angleReversed = angleReversed;
-            this.driveReversed = driveReversed;
+        }
+
+        public Config withDriveReversion(boolean reversionState) {
+            this.driveReversed = reversionState;
+            return this;
+        }
+
+        public Config withAngleReversion(boolean reversionState) {
+            this.angleReversed = reversionState;
+            return this;
+        }
+
+        public Config withDrivePID(PIDController drivePID) {
+            this.drivePID = drivePID;
+            return this;
+        }
+
+        public Config withAnglePID(PIDController anglePID) {
+            this.anglePID = anglePID;
+            return this;
         }
     }
 }

@@ -14,6 +14,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -40,7 +42,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     public final double ROBOT_WIDTH;
     // Distance between front and back wheels on robot
     public final double ROBOT_LENGTH;
-    public final double MAX_SPEED;
+    public final LinearVelocity MAX_SPEED;
     private final double MAX_ANGULAR_VELOCITY;
 
     // Robot swerve modules
@@ -65,7 +67,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     public Swerve(Config config, Pose2d initialPose) {
         this.ROBOT_WIDTH = config.ROBOT_WIDTH;
         this.ROBOT_LENGTH = config.ROBOT_LENGTH;
-        this.MAX_SPEED = config.MAX_SPEED;
+        this.MAX_SPEED = Units.MetersPerSecond.of(config.MAX_SPEED);
         this.MAX_ANGULAR_VELOCITY = config.MAX_ANGULAR_VELOCITY;
         this.frontLeft = new TalonFXSwerveModule(config.frontLeft, config);
         this.frontRight = new TalonFXSwerveModule(config.frontRight, config);
@@ -74,10 +76,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.gyro = new Pigeon2(config.gyro);
         this.headingController = config.headingController;
 
-        this.kinematics = new SwerveDriveKinematics(new Translation2d(this.ROBOT_LENGTH / 2, this.ROBOT_WIDTH / 2),
-                new Translation2d(this.ROBOT_LENGTH / 2, -this.ROBOT_WIDTH / 2),
-                new Translation2d(-this.ROBOT_LENGTH / 2, this.ROBOT_WIDTH / 2),
-                new Translation2d(-this.ROBOT_LENGTH / 2, -this.ROBOT_WIDTH / 2));
+        this.kinematics = new SwerveDriveKinematics(new Translation2d(this.ROBOT_LENGTH / 2, this.ROBOT_WIDTH / 2), new Translation2d(this.ROBOT_LENGTH / 2, -this.ROBOT_WIDTH / 2), new Translation2d(-this.ROBOT_LENGTH / 2, this.ROBOT_WIDTH / 2), new Translation2d(-this.ROBOT_LENGTH / 2, -this.ROBOT_WIDTH / 2));
 
         this.gyro.getConfigurator().apply(new Pigeon2Configuration());
         this.zeroHeading();
@@ -87,8 +86,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.resetEncoders();
         Timer.delay(0.5);
 
-        this.poseEstimator = new SwerveDrivePoseEstimator(this.kinematics, this.getYaw(), this.getModulePositions(),
-                initialPose);
+        this.poseEstimator = new SwerveDrivePoseEstimator(this.kinematics, this.getYaw(), this.getModulePositions(), initialPose);
     }
 
     /**
@@ -113,8 +111,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     public SwerveModulePosition[] getModulePositions() {
-        return new SwerveModulePosition[]{this.frontLeft.getPosition(), this.frontRight.getPosition(),
-                this.rearLeft.getPosition(), this.rearRight.getPosition()};
+        return new SwerveModulePosition[]{this.frontLeft.getPosition(), this.frontRight.getPosition(), this.rearLeft.getPosition(), this.rearRight.getPosition()};
     }
 
     @Override
@@ -180,7 +177,8 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
-        return new ChassisSpeeds(translation.getX() * this.MAX_SPEED, translation.getY() * this.MAX_SPEED, rotation * this.MAX_ANGULAR_VELOCITY);
+        final var velocity = translation.times(this.MAX_SPEED.in(Units.MetersPerSecond) / translation.getNorm());
+        return new ChassisSpeeds(velocity.getX(), velocity.getY(), rotation * this.MAX_ANGULAR_VELOCITY);
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
@@ -196,8 +194,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, BooleanSupplier driveDirectAngle, BooleanSupplier fieldRelative) {
-        return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get(),
-                fieldRelative.getAsBoolean()));
+        return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get(), fieldRelative.getAsBoolean()));
     }
 
     public void setMotorBrake(boolean brake) {
@@ -219,10 +216,8 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
-        this.targetHeading = headingSupplier.asTranslation()
-                .getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
-        return MathUtil.applyDeadband(MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0),
-                -1, 1), 0.05);
+        this.targetHeading = headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
+        return MathUtil.applyDeadband(MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0), -1, 1), 0.05);
     }
 
     public void toggleDirectAngle() {
@@ -292,8 +287,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     public PPHolonomicDriveController getPathFollowingController() {
         //TODO: Tune these PID constants
         return new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                new PIDConstants(this.headingController.getP(), this.headingController.getI(),
-                        this.headingController.getD())// Rotation PID constants
+                new PIDConstants(this.headingController.getP(), this.headingController.getI(), this.headingController.getD())// Rotation PID constants
         );
     }
 
@@ -309,8 +303,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     @Override
     public SwerveModuleState[] getModuleStates() {
-        return new SwerveModuleState[]{this.frontLeft.getState(), this.frontRight.getState(), this.rearLeft.getState(),
-                this.rearRight.getState()};
+        return new SwerveModuleState[]{this.frontLeft.getState(), this.frontRight.getState(), this.rearLeft.getState(), this.rearRight.getState()};
     }
 
     /**
@@ -352,7 +345,13 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         public double DRIVE_GEAR_RATIO;
         public double WHEEL_RADIUS;
 
+        /**
+         * PID arguments shall be set separately for each module, these values serve as a fallback.
+         */
         public PIDController drivePID;
+        /**
+         * PID arguments shall be set separately for each module, these values serve as a fallback.
+         */
         public PIDController anglePID;
     }
 
