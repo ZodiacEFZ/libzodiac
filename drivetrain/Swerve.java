@@ -197,6 +197,15 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get(), fieldRelative.getAsBoolean()));
     }
 
+    public void stopMotor(boolean brake) {
+        this.frontLeft.stopMotor(brake);
+        this.frontRight.stopMotor(brake);
+        this.rearLeft.stopMotor(brake);
+        this.rearRight.stopMotor(brake);
+    }
+
+    // renamed to more semantic <code>stopMotor</code>, noting that this is a control request, not a setter
+    @Deprecated
     public void setMotorBrake(boolean brake) {
         this.frontLeft.setMotorBrake(brake);
         this.frontRight.setMotorBrake(brake);
