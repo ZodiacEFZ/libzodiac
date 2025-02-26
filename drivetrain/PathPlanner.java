@@ -35,7 +35,7 @@ public class PathPlanner {
      * module states from robot-relative chassis speeds. If it is disabled, the
      * setpoint generator will not be used.
      */
-    private static final boolean SWERVE_SETPOINT_GENERATOR_ENABLED = false;
+    private static final boolean SWERVE_SETPOINT_GENERATOR_ENABLED = true;
     /**
      * The instance of the PathPlanner class.
      */

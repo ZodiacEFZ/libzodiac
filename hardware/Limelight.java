@@ -73,7 +73,7 @@ public class Limelight {
                 this.poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
         LimelightHelpers.PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(this.name);
 
-		// FIXME: poseEstimate == null 
+        // FIXME: poseEstimate == null
         // if our angular velocity is greater than 2 rotations per second, ignore vision updates
 //        if (poseEstimate.tagCount > 0 && Math.abs(
 //                this.gyro.getAngularVelocityZWorld().getValue().in(Units.RadiansPerSecond)) < Math.PI) {

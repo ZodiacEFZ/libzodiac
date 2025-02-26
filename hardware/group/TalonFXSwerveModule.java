@@ -145,24 +145,16 @@ public class TalonFXSwerveModule implements SwerveModule {
             this.encoderZero = encoderZero;
         }
 
-        public Config withDriveReversion(boolean reversionState) {
-            this.driveReversed = reversionState;
-            return this;
+        public Config(int angle, int drive, int encoder, int encoderZero, boolean angleReversed, boolean driveReversed) {
+            this(angle, drive, encoder, encoderZero);
+            this.angleReversed = angleReversed;
+            this.driveReversed = driveReversed;
         }
 
-        public Config withAngleReversion(boolean reversionState) {
-            this.angleReversed = reversionState;
-            return this;
-        }
-
-        public Config withDrivePID(PIDController drivePID) {
+        public Config(int angle, int drive, int encoder, int encoderZero, boolean angleReversed, boolean driveReversed, PIDController drivePID, PIDController anglePID) {
+            this(angle, drive, encoder, encoderZero, angleReversed, driveReversed);
             this.drivePID = drivePID;
-            return this;
-        }
-
-        public Config withAnglePID(PIDController anglePID) {
             this.anglePID = anglePID;
-            return this;
         }
     }
 }
