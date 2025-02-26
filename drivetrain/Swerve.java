@@ -16,6 +16,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
@@ -40,9 +41,9 @@ import java.util.function.Supplier;
 
 public class Swerve extends SubsystemBase implements Drivetrain {
     // Distance between centers of right and left wheels on robot
-    public final double ROBOT_WIDTH;
+    public final Distance ROBOT_WIDTH;
     // Distance between front and back wheels on robot
-    public final double ROBOT_LENGTH;
+    public final Distance ROBOT_LENGTH;
     public final LinearVelocity MAX_SPEED;
     private final AngularVelocity MAX_ANGULAR_VELOCITY;
 
@@ -77,7 +78,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.gyro = new Pigeon2(config.gyro);
         this.headingController = config.headingController;
 
-        this.kinematics = new SwerveDriveKinematics(new Translation2d(this.ROBOT_LENGTH / 2, this.ROBOT_WIDTH / 2), new Translation2d(this.ROBOT_LENGTH / 2, -this.ROBOT_WIDTH / 2), new Translation2d(-this.ROBOT_LENGTH / 2, this.ROBOT_WIDTH / 2), new Translation2d(-this.ROBOT_LENGTH / 2, -this.ROBOT_WIDTH / 2));
+        this.kinematics = new SwerveDriveKinematics(new Translation2d(this.ROBOT_LENGTH.in(Units.Meters) / 2, this.ROBOT_WIDTH.in(Units.Meters) / 2), new Translation2d(this.ROBOT_LENGTH.in(Units.Meters) / 2, -this.ROBOT_WIDTH.in(Units.Meters) / 2), new Translation2d(-this.ROBOT_LENGTH.in(Units.Meters) / 2, this.ROBOT_WIDTH.in(Units.Meters) / 2), new Translation2d(-this.ROBOT_LENGTH.in(Units.Meters) / 2, -this.ROBOT_WIDTH.in(Units.Meters) / 2));
 
         this.gyro.getConfigurator().apply(new Pigeon2Configuration());
         this.zeroHeading();
@@ -157,6 +158,13 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.rearRight.brake();
     }
 
+    public void shutdown() {
+        this.frontLeft.shutdown();
+        this.frontRight.shutdown();
+        this.rearLeft.shutdown();
+        this.rearRight.shutdown();
+    }
+
     public boolean getFieldCentric() {
         return this.fieldCentric;
     }
@@ -178,7 +186,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
-        final var velocity = translation.times(this.MAX_SPEED.in(Units.MetersPerSecond) / translation.getNorm());
+        final var velocity = Maths.limitTranslation(translation).times(this.MAX_SPEED.in(Units.MetersPerSecond));
         return new ChassisSpeeds(velocity.getX(), velocity.getY(),
                 rotation * this.MAX_ANGULAR_VELOCITY.in(Units.RadiansPerSecond));
     }
@@ -197,22 +205,6 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, BooleanSupplier driveDirectAngle, BooleanSupplier fieldRelative) {
         return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get(), fieldRelative.getAsBoolean()));
-    }
-
-    public void stopMotor(boolean brake) {
-        this.frontLeft.stopMotor(brake);
-        this.frontRight.stopMotor(brake);
-        this.rearLeft.stopMotor(brake);
-        this.rearRight.stopMotor(brake);
-    }
-
-    // renamed to more semantic <code>stopMotor</code>, noting that this is a control request, not a setter
-    @Deprecated
-    public void setMotorBrake(boolean brake) {
-        this.frontLeft.setMotorBrake(brake);
-        this.frontRight.setMotorBrake(brake);
-        this.rearLeft.setMotorBrake(brake);
-        this.rearRight.setMotorBrake(brake);
     }
 
     public void toggleFieldCentric() {
@@ -336,9 +328,9 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     public static class Config {
         // Distance between centers of right and left wheels on robot
-        public double ROBOT_WIDTH;
+        public Distance ROBOT_WIDTH;
         // Distance between front and back wheels on robot
-        public double ROBOT_LENGTH;
+        public Distance ROBOT_LENGTH;
         public LinearVelocity MAX_SPEED;
         public AngularVelocity MAX_ANGULAR_VELOCITY;
 

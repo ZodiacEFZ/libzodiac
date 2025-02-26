@@ -102,24 +102,6 @@ public class TalonFXSwerveModule implements SwerveModule {
                 this.getAngle());
     }
 
-    public void stopMotor(boolean brake) {
-        if (brake) {
-            this.drive.brake();
-        } else {
-            this.drive.shutdown();
-        }
-    }
-
-    // renamed to more semantic <code>stopMotor</code>, noting that this is a control request, not a setter
-    @Deprecated
-    public void setMotorBrake(boolean brake) {
-        if (brake) {
-            this.drive.brake();
-        } else {
-            this.drive.shutdown();
-        }
-    }
-
     public TalonFXMotor getAngleMotor() {
         return this.angle;
     }
