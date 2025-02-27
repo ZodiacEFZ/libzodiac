@@ -151,6 +151,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading));
     }
 
+    @Override
     public void brake() {
         this.frontLeft.brake();
         this.frontRight.brake();
@@ -158,6 +159,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.rearRight.brake();
     }
 
+    @Override
     public void shutdown() {
         this.frontLeft.shutdown();
         this.frontRight.shutdown();

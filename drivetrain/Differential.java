@@ -227,9 +227,16 @@ public class Differential extends SubsystemBase implements Drivetrain {
     /**
      * Brake the robot.
      */
+    @Override
     public void brake() {
         this.leftLeader.brake();
         this.rightLeader.brake();
+    }
+
+    @Override
+    public void shutdown() {
+        this.leftLeader.shutdown();
+        this.rightLeader.shutdown();
     }
 
     /**

@@ -90,6 +90,8 @@ public interface Drivetrain extends Subsystem {
      */
     boolean isSwerve();
 
+    void shutdown();
+
     /**
      * Brake the drivetrain
      */
