@@ -35,6 +35,7 @@ import frc.libzodiac.util.Translation2dSupplier;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -274,7 +275,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     @Override
     public ChassisSpeeds getRobotRelativeSpeeds() {
-        return this.kinematics.toChassisSpeeds(this.getModuleStates());
+        return this.kinematics.toChassisSpeeds(this.getModuleStates().orElseThrow());
     }
 
     @Override
@@ -307,8 +308,11 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     @Override
-    public SwerveModuleState[] getModuleStates() {
-        return new SwerveModuleState[]{this.frontLeft.getState(), this.frontRight.getState(), this.rearLeft.getState(), this.rearRight.getState()};
+    public Optional<SwerveModuleState[]> getModuleStates() {
+        final var state = new SwerveModuleState[]
+                {this.frontLeft.getState(), this.frontRight.getState(), this.rearLeft.getState(),
+                        this.rearRight.getState()};
+        return Optional.of(state);
     }
 
     /**
@@ -321,11 +325,6 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.frontRight.setDesiredState(desiredStates[1]);
         this.rearLeft.setDesiredState(desiredStates[2]);
         this.rearRight.setDesiredState(desiredStates[3]);
-    }
-
-    @Override
-    public boolean isSwerve() {
-        return true;
     }
 
     public static class Config {

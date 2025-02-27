@@ -21,6 +21,7 @@ import frc.libzodiac.hardware.TalonSRXMotor;
 import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
 
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -362,13 +363,8 @@ public class Differential extends SubsystemBase implements Drivetrain {
     }
 
     @Override
-    public SwerveModuleState[] getModuleStates() {
-        return null;
-    }
-
-    @Override
-    public boolean isSwerve() {
-        return false;
+    public Optional<SwerveModuleState[]> getModuleStates() {
+        return Optional.empty();
     }
 
     /**

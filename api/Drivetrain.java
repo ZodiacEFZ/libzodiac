@@ -9,6 +9,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
+import java.util.Optional;
+
 /**
  * The drivetrain interface
  */
@@ -81,14 +83,7 @@ public interface Drivetrain extends Subsystem {
      *
      * @return the module states of the robot
      */
-    SwerveModuleState[] getModuleStates();
-
-    /**
-     * Get whether the drivetrain is swerve or not
-     *
-     * @return whether the drivetrain is swerve or not
-     */
-    boolean isSwerve();
+    Optional<SwerveModuleState[]> getModuleStates();
 
     void shutdown();
 

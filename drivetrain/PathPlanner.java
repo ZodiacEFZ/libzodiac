@@ -76,13 +76,15 @@ public class PathPlanner {
          */
         this.drivetrain = drivetrain;
 
+        final var state = this.drivetrain.getModuleStates();
+
         /*
          * If the drivetrain is a swerve drivetrain, create a swerve setpoint generator.
          */
-        if (this.drivetrain.isSwerve()) {
+        if (state.isPresent()) {
             this.swerveSetpointGenerator = new SwerveSetpointGenerator(config, this.drivetrain.getMaxAngularVelocity());
             this.previousSetpoint = new SwerveSetpoint(this.drivetrain.getRobotRelativeSpeeds(),
-                    this.drivetrain.getModuleStates(), DriveFeedforwards.zeros(config.numModules));
+                    state.get(), DriveFeedforwards.zeros(config.numModules));
         } else {
             this.swerveSetpointGenerator = null;
         }
