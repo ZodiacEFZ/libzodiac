@@ -22,9 +22,6 @@ import java.util.stream.IntStream;
  * <i>Talon FX</i> controlled motors, such as Falcon 500 and Kraken X60/X44.
  */
 public final class TalonFXMotor implements Motor {
-
-    public static final MusicPlayer MUSIC = new MusicPlayer();
-
     /**
      * The motor.
      */
@@ -382,10 +379,6 @@ public final class TalonFXMotor implements Motor {
 
     public void applyConfiguration(SlotConfigs configs) {
         this.motor.getConfigurator().apply(configs);
-    }
-
-    public void registerInstrument() {
-        MUSIC.addInstrument(this);
     }
 
     /**
