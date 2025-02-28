@@ -172,6 +172,10 @@ public class Differential extends SubsystemBase implements Drivetrain {
      * @param speeds The desired wheel speeds.
      */
     public void setSpeeds(DifferentialDriveWheelSpeeds speeds) {
+        // DEBUG
+        SmartDashboard.putNumber("Left Desired Speed", speeds.leftMetersPerSecond / this.WHEEL_RADIUS);
+        SmartDashboard.putNumber("Right Desired Speed", speeds.rightMetersPerSecond / this.WHEEL_RADIUS);
+
         this.leftLeader.velocity(Units.RadiansPerSecond.of(speeds.leftMetersPerSecond / this.WHEEL_RADIUS));
         this.rightLeader.velocity(Units.RadiansPerSecond.of(speeds.rightMetersPerSecond / this.WHEEL_RADIUS));
     }
