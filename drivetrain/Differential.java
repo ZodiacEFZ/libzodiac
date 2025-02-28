@@ -121,7 +121,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
         rightFollower.follow(this.rightLeader, config.rightFollowerInverted != config.rightLeaderInverted);
 
         this.leftLeader.setBrakeWhenNeutral(true);
-        this.leftLeader.setBrakeWhenNeutral(true);
+        this.rightLeader.setBrakeWhenNeutral(true);
 
         this.leftLeader.setPhase(config.leftEncoderPhase);
         this.rightLeader.setPhase(config.rightEncoderPhase);
