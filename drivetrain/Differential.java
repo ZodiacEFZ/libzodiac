@@ -1,6 +1,5 @@
 package frc.libzodiac.drivetrain;
 
-import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.controllers.PPLTVController;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -72,10 +71,16 @@ public class Differential extends SubsystemBase implements Drivetrain {
      * Whether the robot should drive directly towards a target angle.
      */
     private boolean directAngle = true;
+
     /**
      * Whether the robot is in slow mode.
      */
     private boolean slowMode = false;
+
+    /**
+     * Whether the robot should drive directly towards a target angle.
+     */
+    private boolean directPower = false;
 
     /**
      * The target heading of the robot.
@@ -186,10 +191,27 @@ public class Differential extends SubsystemBase implements Drivetrain {
      * @param directAngle      Direct Angle Mode Input.
      * @param angularVelocity  Angular Velocity Mode Input.
      * @param driveDirectAngle Whether the robot should drive directly towards a target angle.
-     * @return The command.
+     * @return The command that drives the robot with the given linear velocity and angular velocity.
      */
-    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, BooleanSupplier driveDirectAngle) {
-        return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get()));
+    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity, BooleanSupplier driveDirectAngle, BooleanSupplier directPower) {
+        return run(() -> {
+            if (directPower.getAsBoolean()) {
+                this.driveDirectPower(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get());
+            } else {
+                this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get());
+            }
+        });
+    }
+
+    public void driveDirectPower(double xSpeed, double rot) {
+        this.driveDirectPower(new ChassisSpeeds(xSpeed, 0, rot));
+    }
+
+    public void driveDirectPower(ChassisSpeeds chassisSpeeds) {
+        var wheelSpeeds = this.kinematics.toWheelSpeeds(chassisSpeeds);
+        final double MAX_SPEED = this.MAX_SPEED;
+        this.leftLeader.power(wheelSpeeds.leftMetersPerSecond / MAX_SPEED);
+        this.rightLeader.power(wheelSpeeds.rightMetersPerSecond / MAX_SPEED);
     }
 
     @Override
@@ -213,7 +235,8 @@ public class Differential extends SubsystemBase implements Drivetrain {
         builder.setActuator(true);
         builder.setSafeState(this::brake);
         builder.addBooleanProperty("Direct Angle", this::getDirectAngle, this::setDirectAngle);
-        builder.addBooleanProperty("Slow Mode", () -> this.slowMode, this::setSlowMode);
+        builder.addBooleanProperty("Slow Mode", this::getSlowMode, this::setSlowMode);
+        builder.addBooleanProperty("Direct Power", this::getDirectPower, this::setDirectPower);
         builder.addDoubleProperty("Heading", () -> -this.getYaw().getDegrees(), null);
         SmartDashboard.putData("Differential Drive", differentialBuilder -> {
             differentialBuilder.setSmartDashboardType("DifferentialDrive");
@@ -221,13 +244,6 @@ public class Differential extends SubsystemBase implements Drivetrain {
             differentialBuilder.addDoubleProperty("Right Motor Speed", () -> this.getWheelSpeeds().rightMetersPerSecond, null);
         });
         SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading).ignoringDisable(true));
-    }
-
-    /**
-     * Set whether the robot is in slow mode.
-     */
-    public void setSlowMode(boolean slowMode) {
-        this.slowMode = slowMode;
     }
 
     /**
@@ -268,6 +284,38 @@ public class Differential extends SubsystemBase implements Drivetrain {
      */
     public void setDirectAngle(boolean directAngle) {
         this.directAngle = directAngle;
+    }
+
+    /**
+     * Returns whether the robot is in slow mode.
+     *
+     * @return Whether the robot is in slow mode.
+     */
+    public boolean getSlowMode() {
+        return this.slowMode;
+    }
+
+    /**
+     * Set whether the robot is in slow mode.
+     */
+    public void setSlowMode(boolean slowMode) {
+        this.slowMode = slowMode;
+    }
+
+    /**
+     * Returns whether the robot is in direct power mode.
+     *
+     * @return Whether the robot is in direct power mode.
+     */
+    public boolean getDirectPower() {
+        return this.directPower;
+    }
+
+    /**
+     * Set whether the robot is in direct power mode.
+     */
+    public void setDirectPower(boolean directPower) {
+        this.directPower = directPower;
     }
 
     /**
