@@ -1,7 +1,5 @@
 package frc.libzodiac.drivetrain;
 
-import com.ctre.phoenix6.configs.Pigeon2Configuration;
-import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.MathUtil;
@@ -26,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.libzodiac.api.Drivetrain;
+import frc.libzodiac.api.Gyro;
 import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.TalonFXMotor;
 import frc.libzodiac.hardware.group.TalonFXSwerveModule;
@@ -53,7 +52,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     private final TalonFXSwerveModule frontRight;
     private final TalonFXSwerveModule rearRight;
     // The gyro sensor
-    private final Pigeon2 gyro;
+    private final Gyro gyro;
 
     private final PIDController headingController;
     private final SwerveDriveKinematics kinematics;
@@ -61,6 +60,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     private final SwerveDrivePoseEstimator poseEstimator;
     private boolean fieldCentric = true;
     private boolean directAngle = true;
+    private boolean slowMode = false;
     private Rotation2d targetHeading = new Rotation2d();
 
     /**
@@ -75,12 +75,11 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.frontRight = new TalonFXSwerveModule(config.frontRight, config);
         this.rearLeft = new TalonFXSwerveModule(config.rearLeft, config);
         this.rearRight = new TalonFXSwerveModule(config.rearRight, config);
-        this.gyro = new Pigeon2(config.gyro);
+        this.gyro = config.gyro;
         this.headingController = config.headingController;
 
         this.kinematics = new SwerveDriveKinematics(new Translation2d(this.ROBOT_LENGTH.in(Units.Meters) / 2, this.ROBOT_WIDTH.in(Units.Meters) / 2), new Translation2d(this.ROBOT_LENGTH.in(Units.Meters) / 2, -this.ROBOT_WIDTH.in(Units.Meters) / 2), new Translation2d(-this.ROBOT_LENGTH.in(Units.Meters) / 2, this.ROBOT_WIDTH.in(Units.Meters) / 2), new Translation2d(-this.ROBOT_LENGTH.in(Units.Meters) / 2, -this.ROBOT_WIDTH.in(Units.Meters) / 2));
 
-        this.gyro.getConfigurator().apply(new Pigeon2Configuration());
         this.zeroHeading();
 
         // By pausing init for a second before setting module offsets, we avoid a bug with inverting motors.
@@ -131,6 +130,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         builder.setSafeState(this::brake);
         builder.addBooleanProperty("Field Centric", this::getFieldCentric, this::setFieldCentric);
         builder.addBooleanProperty("Direct Angle", this::getDirectAngle, this::setDirectAngle);
+        builder.addBooleanProperty("Slow Mode", this::getSlowMode, this::setSlowMode);
         SmartDashboard.putData("Swerve Drive", swerveBuilder -> {
             swerveBuilder.setSmartDashboardType("SwerveDrive");
 
@@ -148,7 +148,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
             swerveBuilder.addDoubleProperty("Robot Angle", () -> this.getYaw().getRadians(), null);
         });
-        SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading));
+        SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading).ignoringDisable(true));
     }
 
     public void brake() {
@@ -173,12 +173,32 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.fieldCentric = fieldCentric;
     }
 
+    public void toggleFieldCentric() {
+        this.fieldCentric = !this.fieldCentric;
+    }
+
     public boolean getDirectAngle() {
         return this.directAngle;
     }
 
     public void setDirectAngle(boolean directAngle) {
         this.directAngle = directAngle;
+    }
+
+    public void toggleDirectAngle() {
+        this.directAngle = !this.directAngle;
+    }
+
+    public boolean getSlowMode() {
+        return this.slowMode;
+    }
+
+    public void setSlowMode(boolean slowMode) {
+        this.slowMode = slowMode;
+    }
+
+    public void toggleSlowMode() {
+        this.slowMode = !this.slowMode;
     }
 
     public void driveFieldOriented(ChassisSpeeds speeds) {
@@ -207,10 +227,6 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get(), fieldRelative.getAsBoolean()));
     }
 
-    public void toggleFieldCentric() {
-        this.fieldCentric = !this.fieldCentric;
-    }
-
     public void centerModules() {
         this.frontLeft.setDesiredState(new SwerveModuleState(0, new Rotation2d()));
         this.frontRight.setDesiredState(new SwerveModuleState(0, new Rotation2d()));
@@ -221,10 +237,6 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
         this.targetHeading = headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
         return MathUtil.applyDeadband(MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0), -1, 1), 0.05);
-    }
-
-    public void toggleDirectAngle() {
-        this.directAngle = !this.directAngle;
     }
 
     public Collection<TalonFXMotor> getTalonFXMotors() {
@@ -246,7 +258,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     @Override
-    public Pigeon2 getGyro() {
+    public Gyro getGyro() {
         return this.gyro;
     }
 
@@ -289,7 +301,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     @Override
     public PPHolonomicDriveController getPathFollowingController() {
         //TODO: Tune these PID constants
-        return new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+        return new PPHolonomicDriveController(new PIDConstants(10, 0, 0,1), // Translation PID constants
                 new PIDConstants(this.headingController.getP(), this.headingController.getI(), this.headingController.getD())// Rotation PID constants
         );
     }
@@ -340,7 +352,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         public TalonFXSwerveModule.Config frontRight;
         public TalonFXSwerveModule.Config rearRight;
         // The gyro sensor
-        public int gyro;
+        public Gyro gyro;
 
         public PIDController headingController;
 

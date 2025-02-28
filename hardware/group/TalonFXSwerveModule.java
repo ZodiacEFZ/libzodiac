@@ -29,8 +29,8 @@ public class TalonFXSwerveModule implements SwerveModule {
         this.angle.setSensorToMechanismRatio(swerveConfig.ANGLE_GEAR_RATIO);
         this.drive.setSensorToMechanismRatio(swerveConfig.DRIVE_GEAR_RATIO);
         this.angle.setContinuous(true);
-        this.angle.setBrake(true);
-        this.drive.setBrake(false);
+        this.angle.setBrakeWhenNeutral(true);
+        this.drive.setBrakeWhenNeutral(false);
 
         this.encoder = new MagEncoder(config.encoder, config.encoderZero);
         this.lastAngle = this.getAngle();
@@ -85,8 +85,9 @@ public class TalonFXSwerveModule implements SwerveModule {
 
         this.drive.velocity(Units.RadiansPerSecond.of(optimizedDesiredState.speedMetersPerSecond / this.WHEEL_RADIUS));
 
-        this.lastAngle = (Math.abs(
-                optimizedDesiredState.speedMetersPerSecond) < 0.03) ? this.lastAngle : optimizedDesiredState.angle;
+        if (Math.abs(optimizedDesiredState.speedMetersPerSecond) >= 0.03 && Math.abs(this.lastAngle.minus(optimizedDesiredState.angle).getRadians()) >= Math.PI / 60) {
+            this.lastAngle = optimizedDesiredState.angle;
+        }
         this.angle.position(this.lastAngle.getMeasure());
     }
 

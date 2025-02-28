@@ -25,7 +25,7 @@ public interface Drivetrain extends Subsystem {
      *
      * @return the gyro
      */
-    Pigeon2 getGyro();
+    Gyro getGyro();
 
     /**
      * Get the current pose of the robot

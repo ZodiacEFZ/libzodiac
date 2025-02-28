@@ -101,7 +101,7 @@ public final class TalonFXMotor implements Motor {
      *
      * @param brake whether the motor should brake.
      */
-    public void setBrake(boolean brake) {
+    public void setBrakeWhenNeutral(boolean brake) {
         if (brake) {
             this.motor.setNeutralMode(NeutralModeValue.Brake);
         } else {

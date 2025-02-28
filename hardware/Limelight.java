@@ -6,6 +6,7 @@ import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.units.Units;
 import frc.libzodiac.api.Drivetrain;
+import frc.libzodiac.api.Gyro;
 import frc.libzodiac.hardware.limelight.LimelightHelpers;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class Limelight {
     /**
      * The gyro of the drivetrain.
      */
-    private final Pigeon2 gyro;
+    private final Gyro gyro;
     /**
      * The pose estimator of the drivetrain.
      */
@@ -75,9 +76,12 @@ public class Limelight {
         LimelightHelpers.PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(this.name);
 
         // FIXME: poseEstimate == null
+        if (poseEstimate == null) {
+            return;
+        }
         // if our angular velocity is greater than 2 rotations per second, ignore vision updates
         if (poseEstimate.tagCount > 0 && Math.abs(
-                this.gyro.getAngularVelocityZWorld().getValue().in(Units.RadiansPerSecond)) < Math.PI) {
+                this.gyro.getYawAngularVelocity().in(Units.RadiansPerSecond)) < Math.PI) {
             // TODO: Maybe increase the trust when we get closer
             this.poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
             this.poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds);

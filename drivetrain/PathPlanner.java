@@ -20,6 +20,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.libzodiac.api.Drivetrain;
 
@@ -168,7 +169,7 @@ public class PathPlanner {
      * @return The event trigger with the specified name.
      */
     public Trigger getEventTrigger(String name) {
-        return new EventTrigger("shoot note");
+        return new EventTrigger(name);
     }
 
     /**
@@ -179,6 +180,19 @@ public class PathPlanner {
      */
     public Trigger getPointTowardsZoneTrigger(String name) {
         return new PointTowardsZoneTrigger(name);
+    }
+
+    public Command getFollowPathCommand(PathPlannerPath path) {
+        return AutoBuilder.followPath(path);
+    }
+
+    public Command getFollowPathCommand(String name) {
+        try {
+            PathPlannerPath path = PathPlannerPath.fromPathFile("Example Path");
+            return AutoBuilder.followPath(path);
+        } catch (Exception ignored) {
+            return Commands.none();
+        }
     }
 
     /**
