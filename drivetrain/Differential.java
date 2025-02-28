@@ -116,6 +116,9 @@ public class Differential extends SubsystemBase implements Drivetrain {
         this.leftLeader.setPID(config.pidController);
         this.rightLeader.setPID(config.pidController);
 
+        this.leftLeader.setPhase(config.leftEncoderPhase);
+        this.rightLeader.setPhase(config.rightEncoderPhase);
+
         this.leftLeader.resetPosition();
         this.rightLeader.resetPosition();
 
@@ -127,9 +130,6 @@ public class Differential extends SubsystemBase implements Drivetrain {
 
         this.leftLeader.setBrakeWhenNeutral(true);
         this.rightLeader.setBrakeWhenNeutral(true);
-
-        this.leftLeader.setPhase(config.leftEncoderPhase);
-        this.rightLeader.setPhase(config.rightEncoderPhase);
 
         this.gyro.reset();
 
