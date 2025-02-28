@@ -19,9 +19,12 @@ import java.util.Collection;
 import java.util.stream.IntStream;
 
 /**
- * <i>Talon FX/i> motor, such as Falcon 500 and Kraken X60/X44.
+ * <i>Talon FX</i> controlled motors, such as Falcon 500 and Kraken X60/X44.
  */
 public final class TalonFXMotor implements Motor {
+
+    public static final MusicPlayer MUSIC = new MusicPlayer();
+
     /**
      * The motor.
      */
@@ -381,10 +384,14 @@ public final class TalonFXMotor implements Motor {
         this.motor.getConfigurator().apply(configs);
     }
 
+    public void registerInstrument() {
+        MUSIC.addInstrument(this);
+    }
+
     /**
      * The music player.
      */
-    public static class MusicPlayer implements Sendable {
+    public static final class MusicPlayer implements Sendable {
         /**
          * The orchestra.
          */
@@ -396,7 +403,7 @@ public final class TalonFXMotor implements Motor {
         /**
          * The music file to play.
          */
-        private String file;
+        private String path;
         /**
          * The track count.
          */
@@ -438,14 +445,14 @@ public final class TalonFXMotor implements Motor {
         /**
          * Load the music file.
          *
-         * @param file  the music file to load.
+         * @param path  the music file to load.
          * @param track the track count.
          */
-        public void loadMusic(String file, int track) {
-            this.file = file;
+        public void loadMusic(String path, int track) {
+            this.path = path;
             this.track = track;
             this.setInstrumentAllTracks(this.instruments);
-            this.orchestra.loadMusic(file);
+            this.orchestra.loadMusic(path);
         }
 
         /**
@@ -470,7 +477,7 @@ public final class TalonFXMotor implements Motor {
             builder.addBooleanProperty("Playing", this::isPlaying, this::setPlayingState);
             builder.addDoubleProperty("Time", this::getCurrentTime, null);
             builder.addDoubleProperty("Track", () -> this.track, null);
-            builder.addStringProperty("File", () -> this.file, null);
+            builder.addStringProperty("File", () -> this.path, null);
         }
 
         /**
