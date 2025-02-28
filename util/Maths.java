@@ -43,4 +43,9 @@ public class Maths {
         }
         return new Translation2d(distance, translation.getAngle());
     }
+
+    public static Translation2d limitTranslation(Translation2d translation) {
+        var norm = translation.getNorm();
+        return norm > 1 ? translation.div(norm) : translation;
+    }
 }

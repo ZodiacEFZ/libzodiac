@@ -1,12 +1,16 @@
 package frc.libzodiac.hardware;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.net.PortForwarder;
+import edu.wpi.first.units.Units;
 import frc.libzodiac.api.Drivetrain;
+import frc.libzodiac.api.Gyro;
 import frc.libzodiac.hardware.limelight.LimelightHelpers;
 
 import java.util.ArrayList;
+import java.util.stream.IntStream;
 
 /**
  * A class to interface with the Limelight camera.
@@ -23,7 +27,7 @@ public class Limelight {
     /**
      * The gyro of the drivetrain.
      */
-    private final Pigeon2 gyro;
+    private final Gyro gyro;
     /**
      * The pose estimator of the drivetrain.
      */
@@ -49,9 +53,7 @@ public class Limelight {
         this.gyro = drivetrain.getGyro();
         this.poseEstimator = drivetrain.getPoseEstimator();
 
-        for (int port = 5800; port <= 5809; port++) {
-            PortForwarder.add(port + limelights.size() * 10, this.name + ".local", port);
-        }
+        IntStream.rangeClosed(5800 + limelights.size() * 10, 5809 + limelights.size() * 10).forEachOrdered(port -> PortForwarder.add(port, this.name + ".local", port));
 
         limelights.add(this);
     }
@@ -73,14 +75,17 @@ public class Limelight {
                 this.poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
         LimelightHelpers.PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(this.name);
 
-		// FIXME: poseEstimate == null 
+        // FIXME: poseEstimate == null
+        if (poseEstimate == null) {
+            return;
+        }
         // if our angular velocity is greater than 2 rotations per second, ignore vision updates
-//        if (poseEstimate.tagCount > 0 && Math.abs(
-//                this.gyro.getAngularVelocityZWorld().getValue().in(Units.RadiansPerSecond)) < Math.PI) {
-//            // TODO: Maybe increase the trust when we get closer
-//            this.poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
-//            this.poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds);
-//        }
+        if (poseEstimate.tagCount > 0 && Math.abs(
+                this.gyro.getYawAngularVelocity().in(Units.RadiansPerSecond)) < Math.PI) {
+            // TODO: Maybe increase the trust when we get closer
+            this.poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
+            this.poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds);
+        }
     }
 
     /**
@@ -126,5 +131,9 @@ public class Limelight {
      */
     public double getAprilTagId() {
         return LimelightHelpers.getFiducialID(this.name);
+    }
+
+    public void setPipeline(int index) {
+        LimelightHelpers.setPipelineIndex(this.name, index);
     }
 }

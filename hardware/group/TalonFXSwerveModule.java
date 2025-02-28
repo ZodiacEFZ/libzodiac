@@ -29,8 +29,8 @@ public class TalonFXSwerveModule implements SwerveModule {
         this.angle.setSensorToMechanismRatio(swerveConfig.ANGLE_GEAR_RATIO);
         this.drive.setSensorToMechanismRatio(swerveConfig.DRIVE_GEAR_RATIO);
         this.angle.setContinuous(true);
-        this.angle.setBrake(true);
-        this.drive.setBrake(false);
+        this.angle.setBrakeWhenNeutral(true);
+        this.drive.setBrakeWhenNeutral(false);
 
         this.encoder = new MagEncoder(config.encoder, config.encoderZero);
         this.lastAngle = this.getAngle();
@@ -85,8 +85,9 @@ public class TalonFXSwerveModule implements SwerveModule {
 
         this.drive.velocity(Units.RadiansPerSecond.of(optimizedDesiredState.speedMetersPerSecond / this.WHEEL_RADIUS));
 
-        this.lastAngle = (Math.abs(
-                optimizedDesiredState.speedMetersPerSecond) < 0.03) ? this.lastAngle : optimizedDesiredState.angle;
+        if (Math.abs(optimizedDesiredState.speedMetersPerSecond) >= 0.03 && Math.abs(this.lastAngle.minus(optimizedDesiredState.angle).getRadians()) >= Math.PI / 60) {
+            this.lastAngle = optimizedDesiredState.angle;
+        }
         this.angle.position(this.lastAngle.getMeasure());
     }
 
@@ -100,24 +101,6 @@ public class TalonFXSwerveModule implements SwerveModule {
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(this.drive.getPosition().in(Units.Radians) * this.WHEEL_RADIUS,
                 this.getAngle());
-    }
-
-    public void stopMotor(boolean brake) {
-        if (brake) {
-            this.drive.brake();
-        } else {
-            this.drive.shutdown();
-        }
-    }
-
-    // renamed to more semantic <code>stopMotor</code>, noting that this is a control request, not a setter
-    @Deprecated
-    public void setMotorBrake(boolean brake) {
-        if (brake) {
-            this.drive.brake();
-        } else {
-            this.drive.shutdown();
-        }
     }
 
     public TalonFXMotor getAngleMotor() {
@@ -145,24 +128,16 @@ public class TalonFXSwerveModule implements SwerveModule {
             this.encoderZero = encoderZero;
         }
 
-        public Config withDriveReversion(boolean reversionState) {
-            this.driveReversed = reversionState;
-            return this;
+        public Config(int angle, int drive, int encoder, int encoderZero, boolean angleReversed, boolean driveReversed) {
+            this(angle, drive, encoder, encoderZero);
+            this.angleReversed = angleReversed;
+            this.driveReversed = driveReversed;
         }
 
-        public Config withAngleReversion(boolean reversionState) {
-            this.angleReversed = reversionState;
-            return this;
-        }
-
-        public Config withDrivePID(PIDController drivePID) {
+        public Config(int angle, int drive, int encoder, int encoderZero, boolean angleReversed, boolean driveReversed, PIDController drivePID, PIDController anglePID) {
+            this(angle, drive, encoder, encoderZero, angleReversed, driveReversed);
             this.drivePID = drivePID;
-            return this;
-        }
-
-        public Config withAnglePID(PIDController anglePID) {
             this.anglePID = anglePID;
-            return this;
         }
     }
 }

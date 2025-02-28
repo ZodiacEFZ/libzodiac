@@ -20,6 +20,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.libzodiac.api.Drivetrain;
 
@@ -35,7 +36,7 @@ public class PathPlanner {
      * module states from robot-relative chassis speeds. If it is disabled, the
      * setpoint generator will not be used.
      */
-    private static final boolean SWERVE_SETPOINT_GENERATOR_ENABLED = false;
+    private static final boolean SWERVE_SETPOINT_GENERATOR_ENABLED = true;
     /**
      * The instance of the PathPlanner class.
      */
@@ -76,13 +77,15 @@ public class PathPlanner {
          */
         this.drivetrain = drivetrain;
 
+        final var state = this.drivetrain.getModuleStates();
+
         /*
          * If the drivetrain is a swerve drivetrain, create a swerve setpoint generator.
          */
-        if (this.drivetrain.isSwerve()) {
+        if (state.isPresent()) {
             this.swerveSetpointGenerator = new SwerveSetpointGenerator(config, this.drivetrain.getMaxAngularVelocity());
             this.previousSetpoint = new SwerveSetpoint(this.drivetrain.getRobotRelativeSpeeds(),
-                    this.drivetrain.getModuleStates(), DriveFeedforwards.zeros(config.numModules));
+                    state.get(), DriveFeedforwards.zeros(config.numModules));
         } else {
             this.swerveSetpointGenerator = null;
         }
@@ -168,7 +171,7 @@ public class PathPlanner {
      * @return The event trigger with the specified name.
      */
     public Trigger getEventTrigger(String name) {
-        return new EventTrigger("shoot note");
+        return new EventTrigger(name);
     }
 
     /**
@@ -179,6 +182,19 @@ public class PathPlanner {
      */
     public Trigger getPointTowardsZoneTrigger(String name) {
         return new PointTowardsZoneTrigger(name);
+    }
+
+    public Command getFollowPathCommand(PathPlannerPath path) {
+        return AutoBuilder.followPath(path);
+    }
+
+    public Command getFollowPathCommand(String name) {
+        try {
+            PathPlannerPath path = PathPlannerPath.fromPathFile("Example Path");
+            return AutoBuilder.followPath(path);
+        } catch (Exception ignored) {
+            return Commands.none();
+        }
     }
 
     /**

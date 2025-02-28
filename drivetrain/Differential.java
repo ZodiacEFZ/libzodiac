@@ -16,11 +16,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.libzodiac.api.Drivetrain;
+import frc.libzodiac.api.Gyro;
 import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.TalonSRXMotor;
 import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
 
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -52,7 +54,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
     /**
      * The gyro.
      */
-    private final Pigeon2 gyro;
+    private final Gyro gyro;
 
     /**
      * The controller for the robot's heading.
@@ -94,7 +96,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
         TalonSRXMotor leftFollower = new TalonSRXMotor(config.leftFollower);
         this.rightLeader = new TalonSRXMotor(config.rightLeader);
         TalonSRXMotor rightFollower = new TalonSRXMotor(config.rightFollower);
-        this.gyro = new Pigeon2(config.gyro);
+        this.gyro = config.gyro;
         this.headingController = config.headingController;
         this.kinematics = new DifferentialDriveKinematics(config.ROBOT_WIDTH);
 
@@ -227,9 +229,16 @@ public class Differential extends SubsystemBase implements Drivetrain {
     /**
      * Brake the robot.
      */
+    @Override
     public void brake() {
         this.leftLeader.brake();
         this.rightLeader.brake();
+    }
+
+    @Override
+    public void shutdown() {
+        this.leftLeader.shutdown();
+        this.rightLeader.shutdown();
     }
 
     /**
@@ -315,7 +324,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
     }
 
     @Override
-    public Pigeon2 getGyro() {
+    public Gyro getGyro() {
         return this.gyro;
     }
 
@@ -355,13 +364,8 @@ public class Differential extends SubsystemBase implements Drivetrain {
     }
 
     @Override
-    public SwerveModuleState[] getModuleStates() {
-        return null;
-    }
-
-    @Override
-    public boolean isSwerve() {
-        return false;
+    public Optional<SwerveModuleState[]> getModuleStates() {
+        return Optional.empty();
     }
 
     /**
@@ -417,7 +421,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
         /**
          * The ID of the gyro.
          */
-        public int gyro;
+        public Gyro gyro;
         /**
          * The PID controller for the motors.
          */
