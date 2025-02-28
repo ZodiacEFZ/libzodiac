@@ -367,7 +367,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
      * @param rotation Angular velocity in [-1, 1].
      */
     public ChassisSpeeds getChassisSpeeds(double velocity, double rotation) {
-        return new ChassisSpeeds(velocity * (this.slowMode ? this.MAX_SPEED / 5 : this.MAX_SPEED), 0, rotation * (this.slowMode ? this.MAX_ANGULAR_VELOCITY / 3 : this.MAX_ANGULAR_VELOCITY));
+        return new ChassisSpeeds(velocity * (this.slowMode ? this.MAX_SPEED / 2 : this.MAX_SPEED), 0, rotation * (this.slowMode ? this.MAX_ANGULAR_VELOCITY / 1.5 : this.MAX_ANGULAR_VELOCITY));
     }
 
     @Override
