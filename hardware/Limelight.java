@@ -1,6 +1,5 @@
 package frc.libzodiac.hardware;
 
-import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.net.PortForwarder;
@@ -82,9 +81,17 @@ public class Limelight {
         // if our angular velocity is greater than 2 rotations per second, ignore vision updates
         if (poseEstimate.tagCount > 0 && Math.abs(
                 this.gyro.getYawAngularVelocity().in(Units.RadiansPerSecond)) < Math.PI) {
-            // TODO: Maybe increase the trust when we get closer
-            this.poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
-            this.poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds);
+            var minDistance = Double.MAX_VALUE;
+            for (var fiducial : poseEstimate.rawFiducials) {
+                minDistance = Math.min(minDistance, fiducial.distToCamera);
+            }
+            var visionMeasurementStdDevs = VecBuilder.fill(.7, .7, 9999999);
+            if (minDistance < 1) {
+                visionMeasurementStdDevs = VecBuilder.fill(.3, .3, 9999999);
+            } else if (minDistance < 2) {
+                visionMeasurementStdDevs = VecBuilder.fill(.5, .5, 9999999);
+            }
+            this.poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds, visionMeasurementStdDevs);
         }
     }
 
