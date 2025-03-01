@@ -12,6 +12,7 @@ public class Pigeon implements Gyro {
 
     public Pigeon(int id) {
         this.pigeon = new Pigeon2(id);
+        this.factoryDefault();
     }
 
     public Angle getYaw() {

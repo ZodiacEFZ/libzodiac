@@ -28,6 +28,7 @@ import frc.libzodiac.api.Gyro;
 import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.TalonFXMotor;
 import frc.libzodiac.hardware.group.TalonFXSwerveModule;
+import frc.libzodiac.util.GameUtil;
 import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
 import frc.libzodiac.util.Translation2dSupplier;
@@ -81,21 +82,22 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
         this.kinematics = new SwerveDriveKinematics(new Translation2d(this.ROBOT_LENGTH.in(Units.Meters) / 2, this.ROBOT_WIDTH.in(Units.Meters) / 2), new Translation2d(this.ROBOT_LENGTH.in(Units.Meters) / 2, -this.ROBOT_WIDTH.in(Units.Meters) / 2), new Translation2d(-this.ROBOT_LENGTH.in(Units.Meters) / 2, this.ROBOT_WIDTH.in(Units.Meters) / 2), new Translation2d(-this.ROBOT_LENGTH.in(Units.Meters) / 2, -this.ROBOT_WIDTH.in(Units.Meters) / 2));
 
-        this.zeroHeading();
+        this.gyro.reset();
 
         // By pausing init for a second before setting module offsets, we avoid a bug with inverting motors.
         Timer.delay(0.5);
         this.resetEncoders();
         Timer.delay(0.5);
 
-        this.poseEstimator = new SwerveDrivePoseEstimator(this.kinematics, this.getYaw(), this.getModulePositions(), initialPose);
+        this.poseEstimator = new SwerveDrivePoseEstimator(this.kinematics, this.getGyroYaw(), this.getModulePositions(), initialPose);
     }
 
     /**
      * Zeroes the heading of the robot.
      */
     public void zeroHeading() {
-        this.gyro.reset();
+        var pose = this.getPose();
+        this.setPose(new Pose2d(pose.getTranslation(), GameUtil.toPose2dYaw(new Rotation2d())));
     }
 
     /**
@@ -108,8 +110,33 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.rearRight.resetEncoder();
     }
 
-    public Rotation2d getYaw() {
+    /**
+     * Returns the current yaw reported by the gyro.
+     *
+     * @return The current yaw reported by the gyro.
+     */
+    public Rotation2d getGyroYaw() {
         return this.gyro.getRotation2d();
+    }
+
+    /**
+     * Returns the current yaw of the robot.
+     * The yaw of 0 is the robot facing the red alliance wall.
+     *
+     * @return The current yaw.
+     */
+    public Rotation2d getYaw() {
+        return this.getPose().getRotation();
+    }
+
+    /**
+     * Returns the current yaw of the robot.
+     * The yaw of 0 is the robot facing directly away from your alliance station wall.
+     *
+     * @return The current yaw.
+     */
+    public Rotation2d getYawRelative() {
+        return GameUtil.toAllianceRelativeYaw(this.getYaw());
     }
 
     public SwerveModulePosition[] getModulePositions() {
@@ -119,7 +146,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     @Override
     public void periodic() {
         // Update the odometry in the periodic block
-        this.poseEstimator.update(this.getYaw(), this.getModulePositions());
+        this.poseEstimator.update(this.getGyroYaw(), this.getModulePositions());
         Limelight.update();
         this.field.setRobotPose(this.getPose());
     }
@@ -147,7 +174,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
             swerveBuilder.addDoubleProperty("Back Right Angle", () -> this.rearRight.getState().angle.getRadians(), null);
             swerveBuilder.addDoubleProperty("Back Right Velocity", () -> this.rearRight.getState().speedMetersPerSecond, null);
 
-            swerveBuilder.addDoubleProperty("Robot Angle", () -> this.getYaw().getRadians(), null);
+            swerveBuilder.addDoubleProperty("Robot Angle", () -> this.getYawRelative().getRadians(), null);
         });
         SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading).ignoringDisable(true));
     }
@@ -205,7 +232,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     public void driveFieldOriented(ChassisSpeeds speeds) {
-        this.driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, this.getYaw()));
+        this.driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, this.getYawRelative()));
     }
 
     public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
@@ -239,7 +266,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
         this.targetHeading = headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
-        return MathUtil.applyDeadband(MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0), -1, 1), 0.05);
+        return MathUtil.applyDeadband(MathUtil.clamp(this.headingController.calculate(this.getYawRelative().minus(this.targetHeading).getRadians(), 0), -1, 1), 0.05);
     }
 
     public Collection<TalonFXMotor> getTalonFXMotors() {
@@ -282,7 +309,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
      */
     @Override
     public void setPose(Pose2d pose) {
-        this.poseEstimator.resetPosition(this.getYaw(), this.getModulePositions(), pose);
+        this.poseEstimator.resetPosition(this.getGyroYaw(), this.getModulePositions(), pose);
     }
 
     @Override
@@ -303,8 +330,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     @Override
     public PPHolonomicDriveController getPathFollowingController() {
-        //TODO: Tune these PID constants
-        return new PPHolonomicDriveController(new PIDConstants(10, 0, 0,1), // Translation PID constants
+        return new PPHolonomicDriveController(new PIDConstants(10, 0, 0, 1), // Translation PID constants
                 new PIDConstants(this.headingController.getP(), this.headingController.getI(), this.headingController.getD())// Rotation PID constants
         );
     }
