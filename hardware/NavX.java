@@ -8,7 +8,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import frc.libzodiac.api.Gyro;
 
 public class NavX implements Gyro {
-    AHRS navX = new AHRS(AHRS.NavXComType.kMXP_SPI);
+    final AHRS navX = new AHRS(AHRS.NavXComType.kMXP_SPI);
 
     public Angle getYaw() {
         return Units.Degrees.of(this.navX.getAngle());

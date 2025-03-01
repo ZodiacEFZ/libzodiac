@@ -112,10 +112,10 @@ public class TalonFXSwerveModule implements SwerveModule {
     }
 
     public static class Config {
-        int angle;
-        int drive;
-        int encoder;
-        int encoderZero;
+        final int angle;
+        final int drive;
+        final int encoder;
+        final int encoderZero;
         boolean angleReversed = false;
         boolean driveReversed = false;
         PIDController drivePID = null;

@@ -92,7 +92,7 @@ public class HIDUtils {
     public static class HIDRecorder extends SubsystemBase {
         private final GenericHID device;
         private final HIDRecord record = new HIDRecord();
-        Timer timer = new Timer();
+        final Timer timer = new Timer();
         private boolean recording = false;
 
         public HIDRecorder(GenericHID device) {
@@ -632,14 +632,14 @@ public class HIDUtils {
     public static class CommandHIDPlayback {
         private final HIDPlayback playback;
 
-        private final Map<EventLoop, Map<Integer, Trigger>> m_buttonCache = new HashMap<>();
-        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> m_axisLessThanCache =
+        private final Map<EventLoop, Map<Integer, Trigger>> buttonCache = new HashMap<>();
+        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> axisLessThanCache =
                 new HashMap<>();
-        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> m_axisGreaterThanCache =
+        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> axisGreaterThanCache =
                 new HashMap<>();
         private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>>
-                m_axisMagnitudeGreaterThanCache = new HashMap<>();
-        private final Map<EventLoop, Map<Integer, Trigger>> m_povCache = new HashMap<>();
+                axisMagnitudeGreaterThanCache = new HashMap<>();
+        private final Map<EventLoop, Map<Integer, Trigger>> povCache = new HashMap<>();
 
         public CommandHIDPlayback(String serializedRecord) {
             this.playback = new HIDPlayback(serializedRecord);
@@ -673,7 +673,7 @@ public class HIDUtils {
          * @return an event instance representing the button's digital signal attached to the given loop.
          */
         public Trigger button(int button, EventLoop loop) {
-            var cache = m_buttonCache.computeIfAbsent(loop, k -> new HashMap<>());
+            var cache = buttonCache.computeIfAbsent(loop, k -> new HashMap<>());
             return cache.computeIfAbsent(button, k -> new Trigger(loop, () -> playback.getRawButton(k)));
         }
 
@@ -705,95 +705,95 @@ public class HIDUtils {
          * @return a Trigger instance based around this angle of a POV on the HID.
          */
         public Trigger pov(int pov, int angle, EventLoop loop) {
-            var cache = m_povCache.computeIfAbsent(loop, k -> new HashMap<>());
+            var cache = povCache.computeIfAbsent(loop, k -> new HashMap<>());
             // angle can be -1, so use 3600 instead of 360
             return cache.computeIfAbsent(
                     pov * 3600 + angle, k -> new Trigger(loop, () -> playback.getPOV(pov) == angle));
         }
 
         /**
-         * Constructs a Trigger instance based around the 0 degree angle (up) of the default (index 0) POV
+         * Constructs a Trigger instance based around the 0-degree angle (up) of the default (index 0) POV
          * on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command
          * scheduler button loop}.
          *
-         * @return a Trigger instance based around the 0 degree angle of a POV on the HID.
+         * @return a Trigger instance based around the 0-degree angle of a POV on the HID.
          */
         public Trigger povUp() {
             return pov(0);
         }
 
         /**
-         * Constructs a Trigger instance based around the 45 degree angle (right up) of the default (index
+         * Constructs a Trigger instance based around the 45-degree angle (right up) of the default (index
          * 0) POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default
          * command scheduler button loop}.
          *
-         * @return a Trigger instance based around the 45 degree angle of a POV on the HID.
+         * @return a Trigger instance based around the 45-degree angle of a POV on the HID.
          */
         public Trigger povUpRight() {
             return pov(45);
         }
 
         /**
-         * Constructs a Trigger instance based around the 90 degree angle (right) of the default (index 0)
+         * Constructs a Trigger instance based around the 90-degree angle (right) of the default (index 0)
          * POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command
          * scheduler button loop}.
          *
-         * @return a Trigger instance based around the 90 degree angle of a POV on the HID.
+         * @return a Trigger instance based around the 90-degree angle of a POV on the HID.
          */
         public Trigger povRight() {
             return pov(90);
         }
 
         /**
-         * Constructs a Trigger instance based around the 135 degree angle (right down) of the default
+         * Constructs a Trigger instance based around the 135-degree angle (right down) of the default
          * (index 0) POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the
          * default command scheduler button loop}.
          *
-         * @return a Trigger instance based around the 135 degree angle of a POV on the HID.
+         * @return a Trigger instance based around the 135-degree angle of a POV on the HID.
          */
         public Trigger povDownRight() {
             return pov(135);
         }
 
         /**
-         * Constructs a Trigger instance based around the 180 degree angle (down) of the default (index 0)
+         * Constructs a Trigger instance based around the 180-degree angle (down) of the default (index 0)
          * POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command
          * scheduler button loop}.
          *
-         * @return a Trigger instance based around the 180 degree angle of a POV on the HID.
+         * @return a Trigger instance based around the 180-degree angle of a POV on the HID.
          */
         public Trigger povDown() {
             return pov(180);
         }
 
         /**
-         * Constructs a Trigger instance based around the 225 degree angle (down left) of the default
+         * Constructs a Trigger instance based around the 225-degree angle (down left) of the default
          * (index 0) POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the
          * default command scheduler button loop}.
          *
-         * @return a Trigger instance based around the 225 degree angle of a POV on the HID.
+         * @return a Trigger instance based around the 225-degree angle of a POV on the HID.
          */
         public Trigger povDownLeft() {
             return pov(225);
         }
 
         /**
-         * Constructs a Trigger instance based around the 270 degree angle (left) of the default (index 0)
+         * Constructs a Trigger instance based around the 270-degree angle (left) of the default (index 0)
          * POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command
          * scheduler button loop}.
          *
-         * @return a Trigger instance based around the 270 degree angle of a POV on the HID.
+         * @return a Trigger instance based around the 270-degree angle of a POV on the HID.
          */
         public Trigger povLeft() {
             return pov(270);
         }
 
         /**
-         * Constructs a Trigger instance based around the 315 degree angle (left up) of the default (index
+         * Constructs a Trigger instance based around the 315-degree angle (left up) of the default (index
          * 0) POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default
          * command scheduler button loop}.
          *
-         * @return a Trigger instance based around the 315 degree angle of a POV on the HID.
+         * @return a Trigger instance based around the 315-degree angle of a POV on the HID.
          */
         public Trigger povUpLeft() {
             return pov(315);
@@ -835,7 +835,7 @@ public class HIDUtils {
          * threshold.
          */
         public Trigger axisLessThan(int axis, double threshold, EventLoop loop) {
-            var cache = m_axisLessThanCache.computeIfAbsent(loop, k -> new HashMap<>());
+            var cache = axisLessThanCache.computeIfAbsent(loop, k -> new HashMap<>());
             return cache.computeIfAbsent(
                     Pair.of(axis, threshold), k -> new Trigger(loop, () -> getRawAxis(axis) < threshold));
         }
@@ -865,7 +865,7 @@ public class HIDUtils {
          * threshold.
          */
         public Trigger axisGreaterThan(int axis, double threshold, EventLoop loop) {
-            var cache = m_axisGreaterThanCache.computeIfAbsent(loop, k -> new HashMap<>());
+            var cache = axisGreaterThanCache.computeIfAbsent(loop, k -> new HashMap<>());
             return cache.computeIfAbsent(
                     Pair.of(axis, threshold), k -> new Trigger(loop, () -> getRawAxis(axis) > threshold));
         }
@@ -881,7 +881,7 @@ public class HIDUtils {
          * provided threshold.
          */
         public Trigger axisMagnitudeGreaterThan(int axis, double threshold, EventLoop loop) {
-            var cache = m_axisMagnitudeGreaterThanCache.computeIfAbsent(loop, k -> new HashMap<>());
+            var cache = axisMagnitudeGreaterThanCache.computeIfAbsent(loop, k -> new HashMap<>());
             return cache.computeIfAbsent(
                     Pair.of(axis, threshold),
                     k -> new Trigger(loop, () -> Math.abs(getRawAxis(axis)) > threshold));

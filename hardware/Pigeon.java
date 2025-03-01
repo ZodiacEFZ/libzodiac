@@ -8,7 +8,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import frc.libzodiac.api.Gyro;
 
 public class Pigeon implements Gyro {
-    Pigeon2 pigeon;
+    final Pigeon2 pigeon;
 
     public Pigeon(int id) {
         this.pigeon = new Pigeon2(id);
