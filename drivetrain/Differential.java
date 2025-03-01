@@ -18,6 +18,7 @@ import frc.libzodiac.api.Drivetrain;
 import frc.libzodiac.api.Gyro;
 import frc.libzodiac.hardware.Limelight;
 import frc.libzodiac.hardware.TalonSRXMotor;
+import frc.libzodiac.util.GameUtil;
 import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
 
@@ -134,7 +135,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
         this.gyro.reset();
 
         var wheelPositions = this.getWheelPositions();
-        this.poseEstimator = new DifferentialDrivePoseEstimator(this.kinematics, this.getYaw(),
+        this.poseEstimator = new DifferentialDrivePoseEstimator(this.kinematics, this.getGyroYaw(),
                 wheelPositions.leftMeters, wheelPositions.rightMeters, initialPose);
     }
 
@@ -149,12 +150,32 @@ public class Differential extends SubsystemBase implements Drivetrain {
     }
 
     /**
+     * Returns the current yaw reported by the gyro.
+     *
+     * @return The current yaw reported by the gyro.
+     */
+    private Rotation2d getGyroYaw() {
+        return this.gyro.getRotation2d();
+    }
+
+    /**
      * Returns the current yaw of the robot.
+     * The yaw of 0 is the robot facing the red alliance wall.
      *
      * @return The current yaw.
      */
     public Rotation2d getYaw() {
-        return this.gyro.getRotation2d();
+        return this.getPose().getRotation();
+    }
+
+    /**
+     * Returns the current yaw of the robot.
+     * The yaw of 0 is the robot facing directly away from your alliance station wall.
+     *
+     * @return The current yaw.
+     */
+    public Rotation2d getYawRelative() {
+        return GameUtil.toAllianceRelativeYaw(this.getYaw());
     }
 
     /**
@@ -219,7 +240,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
         /*
           Update the pose using wheel position and Limelight.
          */
-        this.poseEstimator.update(this.getYaw(), this.getWheelPositions());
+        this.poseEstimator.update(this.getGyroYaw(), this.getWheelPositions());
         Limelight.update();
         this.field.setRobotPose(this.getPose());
     }
@@ -237,7 +258,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
         builder.addBooleanProperty("Direct Angle", this::getDirectAngle, this::setDirectAngle);
         builder.addBooleanProperty("Slow Mode", this::getSlowMode, this::setSlowMode);
         builder.addBooleanProperty("Direct Power", this::getDirectPower, this::setDirectPower);
-        builder.addDoubleProperty("Heading", () -> -this.getYaw().getDegrees(), null);
+        builder.addDoubleProperty("Heading", () -> -this.getYawRelative().getDegrees(), null);
         SmartDashboard.putData("Differential Drive", differentialBuilder -> {
             differentialBuilder.setSmartDashboardType("DifferentialDrive");
             differentialBuilder.addDoubleProperty("Left Motor Speed", () -> this.getWheelSpeeds().leftMetersPerSecond, null);
@@ -265,7 +286,8 @@ public class Differential extends SubsystemBase implements Drivetrain {
      * Zero the heading of the robot.
      */
     public void zeroHeading() {
-        this.gyro.reset();
+        var pose = this.getPose();
+        this.setPose(new Pose2d(pose.getTranslation(), GameUtil.toPose2dYaw(new Rotation2d())));
     }
 
     /**
@@ -356,7 +378,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
         this.targetHeading = headingSupplier.asTranslation()
                 .getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
-        return MathUtil.applyDeadband(MathUtil.clamp(this.headingController.calculate(this.getYaw().minus(this.targetHeading).getRadians(), 0),
+        return MathUtil.applyDeadband(MathUtil.clamp(this.headingController.calculate(this.getYawRelative().minus(this.targetHeading).getRadians(), 0),
                 -1, 1), 0.05);
     }
 
@@ -387,7 +409,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
 
     @Override
     public void setPose(Pose2d pose) {
-        this.poseEstimator.resetPosition(this.getYaw(), this.getWheelPositions(), pose);
+        this.poseEstimator.resetPosition(this.getGyroYaw(), this.getWheelPositions(), pose);
     }
 
     @Override
