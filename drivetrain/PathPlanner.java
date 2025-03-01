@@ -17,12 +17,12 @@ import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.libzodiac.api.Drivetrain;
+import frc.libzodiac.util.GameUtil;
 
 import java.util.List;
 
@@ -101,7 +101,8 @@ public class PathPlanner {
                 // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also, optionally outputs individual module feedforwards
                 this.drivetrain.getPathFollowingController(), // The path following controller
                 config, // The robot configuration
-                () -> DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red,
+                // TODO: Test this with different alliance colors
+                GameUtil::isRedAlliance,
                 this.drivetrain // Reference to this subsystem to set requirements
         );
     }
