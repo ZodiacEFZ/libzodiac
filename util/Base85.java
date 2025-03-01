@@ -60,22 +60,6 @@ public class Base85 {
         return ASCII85DECODER;
     }
 
-    public static void main(String[] args) {
-      /*
-      System.out.println( e.encode( "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstu" ) );
-      System.out.println( e.encode( "測試中" ) );
-      System.out.println( e.encode( "اختبارات" ) );
-      System.out.println( e.encode( "A" ) );
-      System.out.println( e.encode( "AB" ) );
-      System.out.println( e.encode( "ABC" ) );
-      System.out.println( e.encode( "ABCD" ) );
-      System.out.println( e.encode( "ABCDE" ) );
-      System.out.println( e.encode( "ABCDEF" ) );
-      System.out.println( e.encode( "ABCDEFG" ) );
-      System.out.println( e.encode( "ABCDEFGH" ) );
-      */
-    }
-
     /**
      * This is a base class for encoding data using the Base85 encoding scheme,
      * in the same style as Base64 encoder.
@@ -691,7 +675,7 @@ public class Base85 {
     /**
      * This class decodes data in the Base85 encoding using the character set described by IETF RFC 1924,
      * in the efficient algorithm of Ascii85 and Z85.
-     * Malformed data may or may not throws IllegalArgumentException on decode; call test(byte[]) to check data if necessary.
+     * Malformed data may or may not throw IllegalArgumentException on decode; call test(byte[]) to check data if necessary.
      * Decoder instances can be safely shared by multiple threads.
      *
      * @see <a href="https://tools.ietf.org/html/rfc1924">RFC 1924</a>
@@ -716,7 +700,7 @@ public class Base85 {
 
     /**
      * This class decodes data in the Base85 encoding scheme Z85 as described by ZeroMQ.
-     * Malformed data may or may not throws IllegalArgumentException on decode; call test(byte[]) to check data if necessary.
+     * Malformed data may or may not throw IllegalArgumentException on decode; call test(byte[]) to check data if necessary.
      * Decoder instances can be safely shared by multiple threads.
      *
      * @see <a href="https://rfc.zeromq.org/spec:32/Z85/">Z85</a>
@@ -742,7 +726,7 @@ public class Base85 {
     /**
      * This class decodes Ascii85 encoded data (Adobe variant without &lt;~ and ~&gt;).
      * 'y' and 'z' are always processed.  This keep the decoder simple.
-     * Malformed data may or may not throws IllegalArgumentException on decode; call test(byte[]) to check data if necessary.
+     * Malformed data may or may not throw IllegalArgumentException on decode; call test(byte[]) to check data if necessary.
      * Decoder instances can be safely shared by multiple threads.
      *
      * @see <a href="https://en.wikipedia.org/wiki/Ascii85">Ascii85</a>
@@ -810,15 +794,11 @@ public class Base85 {
             final byte[] buf = buffer.array(), decodeMap = getDecodeMap();
             for (int max = ri + rlen, max2 = max - 4; ri < max; wi += 4) {
                 while (ri < max && (in[ri] == 'z' || in[ri] == 'y')) {
-                    byte[] src = null;
-                    switch (in[ri++]) {
-                        case 'z':
-                            src = zeros;
-                            break;
-                        case 'y':
-                            src = spaces;
-                            break;
-                    }
+                    byte[] src = switch (in[ri++]) {
+                        case 'z' -> zeros;
+                        case 'y' -> spaces;
+                        default -> null;
+                    };
                     System.arraycopy(src, 0, out, wi, 4);
                     wi += 4;
                 }
