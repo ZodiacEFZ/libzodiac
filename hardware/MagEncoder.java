@@ -14,8 +14,9 @@ public final class MagEncoder {
     /**
      * The unit of the CTRE MagEncoder.
      */
-    private static final AngleUnit CTRE_MAG_ENCODER_UNIT = Units.derive(Units.Rotations).splitInto(4096).named("MagEncoderUnit").symbol("")
-            .make();
+    private static final AngleUnit CTRE_MAG_ENCODER_UNIT = Units.derive(Units.Rotations).splitInto(4096)
+                                                                .named("MagEncoderUnit").symbol("")
+                                                                .make();
 
     /**
      * The encoder.
@@ -46,7 +47,7 @@ public final class MagEncoder {
      * @param can_id the CAN ID of the encoder.
      */
     public MagEncoder(int can_id) {
-        this.encoder = new TalonSRX(can_id);
+        this(can_id, 0);
     }
 
     /**
@@ -77,9 +78,9 @@ public final class MagEncoder {
     }
 
     /**
-     * Get the angle of the encoder in Rotation2d.
+     * Get the angle of the encoder in {@link Rotation2d}.
      *
-     * @return the angle of the encoder in Rotation2d.
+     * @return the angle of the encoder in  {@link Rotation2d}.
      */
     public Rotation2d getRotation2d() {
         return new Rotation2d(this.get());
