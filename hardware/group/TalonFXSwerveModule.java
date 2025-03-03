@@ -25,8 +25,8 @@ public class TalonFXSwerveModule implements SwerveModule {
         this.drive.factoryDefault();
         this.angle.setPID(config.anglePID != null ? config.anglePID : parent.anglePID);
         this.drive.setPID(config.drivePID != null ? config.drivePID : parent.drivePID);
-        this.angle.setInverted(config.angleReversed);
-        this.drive.setInverted(config.driveReversed);
+        this.angle.setInverted(config.angleInverted);
+        this.drive.setInverted(config.driveInverted);
         this.angle.setSensorToMechanismRatio(parent.angleGearRatio);
         this.drive.setSensorToMechanismRatio(parent.driveGearRatio);
         this.angle.setContinuous(true);
@@ -132,11 +132,11 @@ public class TalonFXSwerveModule implements SwerveModule {
         /**
          * Reversion state of angle motor.
          */
-        boolean angleReversed = false;
+        boolean angleInverted = false;
         /**
          * Reversion state of drive motor.
          */
-        boolean driveReversed = false;
+        boolean driveInverted = false;
         /**
          * PID arguments for drive motor.
          */
@@ -146,13 +146,18 @@ public class TalonFXSwerveModule implements SwerveModule {
          */
         PIDController anglePID = null;
 
-        public TalonFXSwerveModule build(Swerve.Config parent) {
-            return new TalonFXSwerveModule(this, parent);
+        public Config withAngleInverted(boolean angleInverted) {
+            this.angleInverted = angleInverted;
+            return this;
         }
 
-        public Config withAngleReversed(boolean angleReversed) {
-            this.angleReversed = angleReversed;
+        public Config withDriveInverted(boolean driveInverted) {
+            this.driveInverted = driveInverted;
             return this;
+        }
+
+        public TalonFXSwerveModule build(Swerve.Config parent) {
+            return new TalonFXSwerveModule(this, parent);
         }
 
         public Config withAngle(int angle) {
@@ -172,11 +177,6 @@ public class TalonFXSwerveModule implements SwerveModule {
 
         public Config withEncoderZero(int encoderZero) {
             this.encoderZero = encoderZero;
-            return this;
-        }
-
-        public Config withDriveReversed(boolean driveReversed) {
-            this.driveReversed = driveReversed;
             return this;
         }
 

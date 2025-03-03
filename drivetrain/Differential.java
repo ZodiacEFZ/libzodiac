@@ -477,10 +477,10 @@ public class Differential extends SubsystemBase implements Drivetrain {
         /**
          * Whether the motors are inverted.
          */
-        public boolean leftLeaderInverted;
-        public boolean leftFollowerInverted;
-        public boolean rightLeaderInverted;
-        public boolean rightFollowerInverted;
+        public boolean leftLeaderInverted = false;
+        public boolean leftFollowerInverted = false;
+        public boolean rightLeaderInverted = false;
+        public boolean rightFollowerInverted = false;
         /**
          * Whether the encoders are phase inverted.
          */
