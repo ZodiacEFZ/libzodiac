@@ -8,6 +8,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -31,19 +34,7 @@ import java.util.function.Supplier;
  * A differential drive drivetrain.
  */
 public class Differential extends SubsystemBase implements Drivetrain {
-    /**
-     * The maximum speed of the robot in m/s.
-     */
-    public final double MAX_SPEED;
-    /**
-     * The maximum turning speed of the robot in rad/s.
-     */
-    public final double MAX_ANGULAR_VELOCITY;
-    /**
-     * The radius of the wheels in meters.
-     */
-    private final double WHEEL_RADIUS; // meters
-
+    public final Config config;
 
     /**
      * The left and right motors that control the robot's movement.
@@ -59,7 +50,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
     /**
      * The controller for the robot's heading.
      */
-    private final PIDController headingController;
+    private final PIDController headingPID;
 
     /**
      * The kinematics and pose estimator for the robot.
@@ -91,20 +82,16 @@ public class Differential extends SubsystemBase implements Drivetrain {
     /**
      * Construct a differential drive object.
      */
-    public Differential(Config config, Pose2d initialPose) {
-        /*
-          Initialize the constants, motors, gyro, and controllers.
-         */
-        this.MAX_SPEED = config.MAX_SPEED;
-        this.MAX_ANGULAR_VELOCITY = config.MAX_ANGULAR_VELOCITY;
-        this.WHEEL_RADIUS = config.WHEEL_RADIUS;
+    public Differential(Config config) {
+        this.config = config;
         this.leftLeader = new TalonSRXMotor(config.leftLeader);
-        TalonSRXMotor leftFollower = new TalonSRXMotor(config.leftFollower);
         this.rightLeader = new TalonSRXMotor(config.rightLeader);
-        TalonSRXMotor rightFollower = new TalonSRXMotor(config.rightFollower);
         this.gyro = config.gyro;
-        this.headingController = config.headingController;
-        this.kinematics = new DifferentialDriveKinematics(config.ROBOT_WIDTH);
+        this.headingPID = config.headingPID;
+        this.kinematics = new DifferentialDriveKinematics(config.robotWidth);
+
+        final var leftFollower = new TalonSRXMotor(config.leftFollower);
+        final var rightFollower = new TalonSRXMotor(config.rightFollower);
 
         /*
           Configure the motors and gyro.
@@ -136,7 +123,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
 
         var wheelPositions = this.getWheelPositions();
         this.poseEstimator = new DifferentialDrivePoseEstimator(this.kinematics, this.getGyroYaw(),
-                wheelPositions.leftMeters, wheelPositions.rightMeters, initialPose);
+                wheelPositions.leftMeters, wheelPositions.rightMeters, config.initialPose);
     }
 
     /**
@@ -145,8 +132,9 @@ public class Differential extends SubsystemBase implements Drivetrain {
      * @return The current wheel position.
      */
     private DifferentialDriveWheelPositions getWheelPositions() {
-        return new DifferentialDriveWheelPositions(this.leftLeader.getPosition().in(Units.Radians) * this.WHEEL_RADIUS,
-                this.rightLeader.getPosition().in(Units.Radians) * this.WHEEL_RADIUS);
+        return new DifferentialDriveWheelPositions(
+                this.leftLeader.getPosition().in(Units.Radians) * this.config.wheelRadius.in(Units.Meter),
+                this.rightLeader.getPosition().in(Units.Radians) * this.config.wheelRadius.in(Units.Meter));
     }
 
     /**
@@ -199,11 +187,12 @@ public class Differential extends SubsystemBase implements Drivetrain {
      */
     public void setSpeeds(DifferentialDriveWheelSpeeds speeds) {
         // DEBUG
-        SmartDashboard.putNumber("Left Desired Speed", speeds.leftMetersPerSecond / this.WHEEL_RADIUS);
-        SmartDashboard.putNumber("Right Desired Speed", speeds.rightMetersPerSecond / this.WHEEL_RADIUS);
+        SmartDashboard.putNumber("Left Desired Speed",
+                speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
+        SmartDashboard.putNumber("Right Desired Speed", speeds.rightMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
 
-        this.leftLeader.velocity(Units.RadiansPerSecond.of(speeds.leftMetersPerSecond / this.WHEEL_RADIUS));
-        this.rightLeader.velocity(Units.RadiansPerSecond.of(speeds.rightMetersPerSecond / this.WHEEL_RADIUS));
+        this.leftLeader.velocity(Units.RadiansPerSecond.of(speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter)));
+        this.rightLeader.velocity(Units.RadiansPerSecond.of(speeds.rightMetersPerSecond / this.config.wheelRadius.in(Units.Meter)));
     }
 
     /**
@@ -230,7 +219,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
 
     public void driveDirectPower(ChassisSpeeds chassisSpeeds) {
         var wheelSpeeds = this.kinematics.toWheelSpeeds(chassisSpeeds);
-        final double MAX_SPEED = this.MAX_SPEED;
+        final var MAX_SPEED = this.config.maxSpeed.in(Units.MetersPerSecond);
         this.leftLeader.power(wheelSpeeds.leftMetersPerSecond / MAX_SPEED);
         this.rightLeader.power(wheelSpeeds.rightMetersPerSecond / MAX_SPEED);
     }
@@ -377,8 +366,10 @@ public class Differential extends SubsystemBase implements Drivetrain {
      */
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
         this.targetHeading = headingSupplier.asTranslation()
-                .getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
-        return MathUtil.applyDeadband(MathUtil.clamp(this.headingController.calculate(this.getYawRelative().minus(this.targetHeading).getRadians(), 0),
+                                            .getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
+        return MathUtil.applyDeadband(MathUtil.clamp(this.headingPID.calculate(this.getYawRelative()
+                                                                                   .minus(this.targetHeading)
+                                                                                   .getRadians(), 0),
                 -1, 1), 0.05);
     }
 
@@ -389,7 +380,9 @@ public class Differential extends SubsystemBase implements Drivetrain {
      * @param rotation Angular velocity in [-1, 1].
      */
     public ChassisSpeeds getChassisSpeeds(double velocity, double rotation) {
-        return new ChassisSpeeds(velocity * (this.slowMode ? this.MAX_SPEED / 2 : this.MAX_SPEED), 0, rotation * (this.slowMode ? this.MAX_ANGULAR_VELOCITY / 1.5 : this.MAX_ANGULAR_VELOCITY));
+        return new ChassisSpeeds(
+                velocity * (this.slowMode ? this.config.maxSpeed.div(2) : this.config.maxSpeed).in(Units.MetersPerSecond), 0,
+                rotation * (this.slowMode ? this.config.maxAngularVelocity.div(1.5) : this.config.maxAngularVelocity).in(Units.RadiansPerSecond));
     }
 
     @Override
@@ -424,7 +417,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
 
     @Override
     public PPLTVController getPathFollowingController() {
-        return new PPLTVController(0.02, this.MAX_SPEED);
+        return new PPLTVController(0.02, this.config.maxSpeed.in(Units.MetersPerSecond));
     }
 
     @Override
@@ -434,7 +427,7 @@ public class Differential extends SubsystemBase implements Drivetrain {
 
     @Override
     public double getMaxAngularVelocity() {
-        return this.MAX_ANGULAR_VELOCITY;
+        return this.config.maxAngularVelocity.in(Units.RadiansPerSecond);
     }
 
     @Override
@@ -449,30 +442,31 @@ public class Differential extends SubsystemBase implements Drivetrain {
      */
     private DifferentialDriveWheelSpeeds getWheelSpeeds() {
         return new DifferentialDriveWheelSpeeds(
-                this.leftLeader.getVelocity().in(Units.RadiansPerSecond) * this.WHEEL_RADIUS,
-                this.rightLeader.getVelocity().in(Units.RadiansPerSecond) * this.WHEEL_RADIUS);
+                this.leftLeader.getVelocity().in(Units.RadiansPerSecond) * this.config.wheelRadius.in(Units.Meter),
+                this.rightLeader.getVelocity().in(Units.RadiansPerSecond) * this.config.wheelRadius.in(Units.Meter));
     }
 
     /**
      * Config for the differential drive.
      */
     public static class Config {
+
         /**
          * The width of the robot in meters.
          */
-        public double ROBOT_WIDTH;
+        public Distance robotWidth;
         /**
          * The maximum speed of the robot in m/s.
          */
-        public double MAX_SPEED;
+        public LinearVelocity maxSpeed;
         /**
          * The maximum turning speed of the robot in rad/s.
          */
-        public double MAX_ANGULAR_VELOCITY;
+        public AngularVelocity maxAngularVelocity;
         /**
          * The radius of the wheels in meters.
          */
-        public double WHEEL_RADIUS;
+        public Distance wheelRadius;
         /**
          * The IDs of the motors.
          */
@@ -503,7 +497,102 @@ public class Differential extends SubsystemBase implements Drivetrain {
         /**
          * The PID controller for the heading.
          */
-        public PIDController headingController;
+        public PIDController headingPID;
+        public Pose2d initialPose;
+
+        public Differential build() {
+            return new Differential(this);
+        }
+
+        public Config withInitialPose(Pose2d initialPose) {
+            this.initialPose = initialPose;
+            return this;
+        }
+
+        public Config withRobotWidth(Distance robotWidth) {
+            this.robotWidth = robotWidth;
+            return this;
+        }
+
+        public Config withMaxSpeed(LinearVelocity maxSpeed) {
+            this.maxSpeed = maxSpeed;
+            return this;
+        }
+
+        public Config withMaxAngularVelocity(AngularVelocity maxAngularVelocity) {
+            this.maxAngularVelocity = maxAngularVelocity;
+            return this;
+        }
+
+        public Config withWheelRadius(Distance wheelRadius) {
+            this.wheelRadius = wheelRadius;
+            return this;
+        }
+
+        public Config withLeftLeader(int leftLeader) {
+            this.leftLeader = leftLeader;
+            return this;
+        }
+
+        public Config withLeftFollower(int leftFollower) {
+            this.leftFollower = leftFollower;
+            return this;
+        }
+
+        public Config withRightLeader(int rightLeader) {
+            this.rightLeader = rightLeader;
+            return this;
+        }
+
+        public Config withRightFollower(int rightFollower) {
+            this.rightFollower = rightFollower;
+            return this;
+        }
+
+        public Config withLeftLeaderInverted(boolean leftLeaderInverted) {
+            this.leftLeaderInverted = leftLeaderInverted;
+            return this;
+        }
+
+        public Config withRightLeaderInverted(boolean rightLeaderInverted) {
+            this.rightLeaderInverted = rightLeaderInverted;
+            return this;
+        }
+
+        public Config withLeftFollowerInverted(boolean leftFollowerInverted) {
+            this.leftFollowerInverted = leftFollowerInverted;
+            return this;
+        }
+
+        public Config withRightFollowerInverted(boolean rightFollowerInverted) {
+            this.rightFollowerInverted = rightFollowerInverted;
+            return this;
+        }
+
+        public Config withLeftEncoderPhase(boolean leftEncoderPhase) {
+            this.leftEncoderPhase = leftEncoderPhase;
+            return this;
+        }
+
+        public Config withRightEncoderPhase(boolean rightEncoderPhase) {
+            this.rightEncoderPhase = rightEncoderPhase;
+            return this;
+        }
+
+        public Config withGyro(Gyro gyro) {
+            this.gyro = gyro;
+            return this;
+        }
+
+        public Config withPidController(PIDController pidController) {
+            this.pidController = pidController;
+            return this;
+        }
+
+        public Config withHeadingPID(PIDController headingPID) {
+            this.headingPID = headingPID;
+            return this;
+        }
     }
 
     /**
