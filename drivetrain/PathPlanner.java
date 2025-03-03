@@ -40,7 +40,7 @@ public class PathPlanner {
     /**
      * The instance of the PathPlanner class.
      */
-    private static PathPlanner instance;
+    private static PathPlanner PATHPLANNER;
     /**
      * The drivetrain subsystem.
      */
@@ -113,9 +113,9 @@ public class PathPlanner {
      * @param drivetrain The drivetrain subsystem.
      */
     public static void initInstance(Drivetrain drivetrain) {
-        if (instance == null) {
-            instance = new PathPlanner(drivetrain);
-            instance.warmup();
+        if (PATHPLANNER == null) {
+            PATHPLANNER = new PathPlanner(drivetrain);
+            PATHPLANNER.warmup();
         }
     }
 
@@ -125,7 +125,7 @@ public class PathPlanner {
      * @return PathPlanner The instance of the PathPlanner class.
      */
     public static PathPlanner getInstance() {
-        return instance;
+        return PATHPLANNER;
     }
 
     /**
@@ -135,16 +135,16 @@ public class PathPlanner {
      * @return SwerveModuleState[] The desired swerve module states.
      */
     public static SwerveModuleState[] generateSwerveSetpoint(ChassisSpeeds speeds) {
-        if (!SWERVE_SETPOINT_GENERATOR_ENABLED || instance == null || instance.swerveSetpointGenerator == null) {
+        if (!SWERVE_SETPOINT_GENERATOR_ENABLED || PATHPLANNER == null || PATHPLANNER.swerveSetpointGenerator == null) {
             return null;
         }
 
-        instance.previousSetpoint = instance.swerveSetpointGenerator.generateSetpoint(instance.previousSetpoint,
+        PATHPLANNER.previousSetpoint = PATHPLANNER.swerveSetpointGenerator.generateSetpoint(PATHPLANNER.previousSetpoint,
                 // The previous setpoint
                 speeds, // The desired target speeds
                 0.02 // The loop time of the robot code, in seconds
         );
-        return instance.previousSetpoint.moduleStates();
+        return PATHPLANNER.previousSetpoint.moduleStates();
     }
 
     /**

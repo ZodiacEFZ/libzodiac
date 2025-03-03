@@ -9,6 +9,8 @@ import frc.libzodiac.api.Gyro;
 import frc.libzodiac.hardware.limelight.LimelightHelpers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.stream.IntStream;
 
 /**
@@ -18,7 +20,7 @@ public class Limelight {
     /**
      * The list of all Limelights.
      */
-    private static final ArrayList<Limelight> limelights = new ArrayList<>();
+    private static final ArrayList<Limelight> LIMELIGHTS = new ArrayList<>();
     /**
      * The name of the Limelight.
      */
@@ -52,16 +54,17 @@ public class Limelight {
         this.gyro = drivetrain.getGyro();
         this.poseEstimator = drivetrain.getPoseEstimator();
 
-        IntStream.rangeClosed(5800 + limelights.size() * 10, 5809 + limelights.size() * 10).forEachOrdered(port -> PortForwarder.add(port, this.name + ".local", port));
+        IntStream.rangeClosed(5800 + LIMELIGHTS.size() * 10, 5809 + LIMELIGHTS.size() * 10)
+                 .forEachOrdered(port -> PortForwarder.add(port, this.name + ".local", port));
 
-        limelights.add(this);
+        LIMELIGHTS.add(this);
     }
 
     /**
      * Update the odometry with all Limelights.
      */
     public static void update() {
-        for (Limelight limelight : limelights) {
+        for (Limelight limelight : LIMELIGHTS) {
             limelight.updateOdometry();
         }
     }
@@ -72,27 +75,34 @@ public class Limelight {
     private void updateOdometry() {
         LimelightHelpers.SetRobotOrientation(this.name,
                 this.poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-        LimelightHelpers.PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(this.name);
+        final var poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(this.name);
 
         // FIXME: poseEstimate == null
         if (poseEstimate == null) {
             return;
         }
+
         // if our angular velocity is greater than 2 rotations per second, ignore vision updates
-        if (poseEstimate.tagCount > 0 && Math.abs(
-                this.gyro.getYawAngularVelocity().in(Units.RadiansPerSecond)) < Math.PI) {
-            var minDistance = Double.MAX_VALUE;
-            for (var fiducial : poseEstimate.rawFiducials) {
-                minDistance = Math.min(minDistance, fiducial.distToCamera);
-            }
-            var visionMeasurementStdDevs = VecBuilder.fill(.7, .7, 9999999);
-            if (minDistance < 1) {
-                visionMeasurementStdDevs = VecBuilder.fill(.3, .3, 9999999);
-            } else if (minDistance < 2) {
-                visionMeasurementStdDevs = VecBuilder.fill(.5, .5, 9999999);
-            }
-            this.poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds, visionMeasurementStdDevs);
+        if (Math.abs(this.gyro.getYawAngularVelocity().in(Units.RadiansPerSecond)) >= Math.PI) {
+            return;
         }
+
+        if (poseEstimate.tagCount <= 0) {
+            return;
+        }
+
+
+        final var minDistance = Arrays.stream(poseEstimate.rawFiducials).map(x -> x.distToCamera)
+                                      .min(Comparator.naturalOrder())
+                                      .orElseThrow();
+        var visionMeasurementStdDevs = VecBuilder.fill(.7, .7, 9999999);
+        if (minDistance < 1) {
+            visionMeasurementStdDevs = VecBuilder.fill(.3, .3, 9999999);
+        } else if (minDistance < 2) {
+            visionMeasurementStdDevs = VecBuilder.fill(.5, .5, 9999999);
+        }
+        this.poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds, visionMeasurementStdDevs);
+
     }
 
     /**
@@ -109,7 +119,7 @@ public class Limelight {
      *
      * @return Horizontal offset angle in degrees.
      */
-    public double getTx() {
+    public double getTX() {
         return LimelightHelpers.getTX(this.name);
     }
 
@@ -118,7 +128,7 @@ public class Limelight {
      *
      * @return Vertical offset angle in degrees.
      */
-    public double getTy() {
+    public double getTY() {
         return LimelightHelpers.getTY(this.name);
     }
 
@@ -127,7 +137,7 @@ public class Limelight {
      *
      * @return Target area percentage (0-100).
      */
-    public double getTa() {
+    public double getTA() {
         return LimelightHelpers.getTA(this.name);
     }
 

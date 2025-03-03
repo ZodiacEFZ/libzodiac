@@ -6,20 +6,9 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 /**
- * A supplier for a Translation2d.
+ * Utility for constructing {@link Supplier<Translation2d>} with two {@link DoubleSupplier}s as x and y dimension.
  */
-public class Translation2dSupplier implements Supplier<Translation2d> {
-    /**
-     * The x and y value of the Translation2d.
-     */
-    final DoubleSupplier x;
-    final DoubleSupplier y;
-
-    public Translation2dSupplier(DoubleSupplier x, DoubleSupplier y) {
-        this.x = x;
-        this.y = y;
-    }
-
+public record Translation2dSupplier(DoubleSupplier x, DoubleSupplier y) implements Supplier<Translation2d> {
     @Override
     public Translation2d get() {
         return new Translation2d(this.x.getAsDouble(), this.y.getAsDouble());

@@ -18,7 +18,7 @@ public final class TalonSRXMotor implements Motor {
     /**
      * The velocity time unit of the sensor.
      */
-    private static final TimeUnit velocityTimeUnit = Units.derive(Units.Seconds).splitInto(10).named("100ms").symbol("*100ms").make();
+    private static final TimeUnit VELOCITY_TIME_UNIT = Units.derive(Units.Seconds).splitInto(10).named("100ms").symbol("*100ms").make();
     /**
      * The motor controller.
      */
@@ -91,7 +91,7 @@ public final class TalonSRXMotor implements Motor {
     public void setUnit(double unitsPerRotation) {
         this.positionUnit = Units.derive(Units.Rotations).splitInto(unitsPerRotation).named("TalonSRXEncoderUnit").symbol("")
                 .make();
-        this.velocityUnit = this.positionUnit.per(velocityTimeUnit);
+        this.velocityUnit = this.positionUnit.per(VELOCITY_TIME_UNIT);
         this.accelerationUnit = this.velocityUnit.per(Units.Seconds);
     }
 
