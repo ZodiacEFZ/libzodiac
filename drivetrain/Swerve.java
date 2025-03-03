@@ -41,13 +41,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class Swerve extends SubsystemBase implements Drivetrain {
-    // Distance between centers of right and left wheels on robot
-    public final Distance ROBOT_WIDTH;
-    // Distance between front and back wheels on robot
-    public final Distance ROBOT_LENGTH;
-    public final LinearVelocity MAX_SPEED;
-    private final AngularVelocity MAX_ANGULAR_VELOCITY;
-
+    public final Config config;
     // Robot swerve modules
     private final TalonFXSwerveModule frontLeft;
     private final TalonFXSwerveModule rearLeft;
@@ -55,8 +49,6 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     private final TalonFXSwerveModule rearRight;
     // The gyro sensor
     private final Gyro gyro;
-
-    private final PIDController headingController;
     private final SwerveDriveKinematics kinematics;
     private final Field2d field = new Field2d();
     private final SwerveDrivePoseEstimator poseEstimator;
@@ -68,19 +60,19 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     /**
      * Creates a new DriveSubsystem.
      */
-    public Swerve(Config config, Pose2d initialPose) {
-        this.ROBOT_WIDTH = config.ROBOT_WIDTH;
-        this.ROBOT_LENGTH = config.ROBOT_LENGTH;
-        this.MAX_SPEED = config.MAX_SPEED;
-        this.MAX_ANGULAR_VELOCITY = config.MAX_ANGULAR_VELOCITY;
-        this.frontLeft = new TalonFXSwerveModule(config.frontLeft, config);
-        this.frontRight = new TalonFXSwerveModule(config.frontRight, config);
-        this.rearLeft = new TalonFXSwerveModule(config.rearLeft, config);
-        this.rearRight = new TalonFXSwerveModule(config.rearRight, config);
+    public Swerve(Config config) {
+        this.config = config;
+        this.frontLeft = config.frontLeft.build(config);
+        this.frontRight = config.frontRight.build(config);
+        this.rearLeft = config.rearLeft.build(config);
+        this.rearRight = config.rearRight.build(config);
         this.gyro = config.gyro;
-        this.headingController = config.headingController;
 
-        this.kinematics = new SwerveDriveKinematics(new Translation2d(this.ROBOT_LENGTH.in(Units.Meters) / 2, this.ROBOT_WIDTH.in(Units.Meters) / 2), new Translation2d(this.ROBOT_LENGTH.in(Units.Meters) / 2, -this.ROBOT_WIDTH.in(Units.Meters) / 2), new Translation2d(-this.ROBOT_LENGTH.in(Units.Meters) / 2, this.ROBOT_WIDTH.in(Units.Meters) / 2), new Translation2d(-this.ROBOT_LENGTH.in(Units.Meters) / 2, -this.ROBOT_WIDTH.in(Units.Meters) / 2));
+        this.kinematics = new SwerveDriveKinematics(
+                new Translation2d(this.config.robotLength.in(Units.Meters) / 2, this.config.robotWidth.in(Units.Meters) / 2),
+                new Translation2d(this.config.robotLength.in(Units.Meters) / 2, -this.config.robotWidth.in(Units.Meters) / 2),
+                new Translation2d(-this.config.robotLength.in(Units.Meters) / 2, this.config.robotWidth.in(Units.Meters) / 2),
+                new Translation2d(-this.config.robotLength.in(Units.Meters) / 2, -this.config.robotWidth.in(Units.Meters) / 2));
 
         this.gyro.reset();
 
@@ -89,7 +81,8 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.resetEncoders();
         Timer.delay(0.5);
 
-        this.poseEstimator = new SwerveDrivePoseEstimator(this.kinematics, this.getGyroYaw(), this.getModulePositions(), initialPose);
+        this.poseEstimator = new SwerveDrivePoseEstimator(this.kinematics, this.getGyroYaw(),
+                this.getModulePositions(), config.initialPose);
     }
 
     /**
@@ -236,9 +229,9 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
-        final var velocity = Maths.limitTranslation(translation).times(this.MAX_SPEED.in(Units.MetersPerSecond));
+        final var velocity = Maths.limitTranslation(translation).times(this.config.maxSpeed.in(Units.MetersPerSecond));
         return new ChassisSpeeds(velocity.getX(), velocity.getY(),
-                rotation * this.MAX_ANGULAR_VELOCITY.in(Units.RadiansPerSecond));
+                rotation * this.config.maxAngularVelocity.in(Units.RadiansPerSecond));
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
@@ -265,8 +258,11 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
-        this.targetHeading = headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
-        return MathUtil.applyDeadband(MathUtil.clamp(this.headingController.calculate(this.getYawRelative().minus(this.targetHeading).getRadians(), 0), -1, 1), 0.05);
+        this.targetHeading = headingSupplier.asTranslation()
+                                            .getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
+        return MathUtil.applyDeadband(MathUtil.clamp(this.config.headingPID.calculate(this.getYawRelative()
+                                                                                          .minus(this.targetHeading)
+                                                                                          .getRadians(), 0), -1, 1), 0.05);
     }
 
     public Collection<TalonFXMotor> getTalonFXMotors() {
@@ -323,15 +319,18 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         states = PathPlanner.generateSwerveSetpoint(speeds);
         if (states == null) {
             states = this.kinematics.toSwerveModuleStates(speeds);
-            SwerveDriveKinematics.desaturateWheelSpeeds(states, this.MAX_SPEED);
+            SwerveDriveKinematics.desaturateWheelSpeeds(states, this.config.maxSpeed);
         }
         this.setModuleStates(states);
     }
 
     @Override
     public PPHolonomicDriveController getPathFollowingController() {
-        return new PPHolonomicDriveController(new PIDConstants(10, 0, 0, 1), // Translation PID constants
-                new PIDConstants(this.headingController.getP(), this.headingController.getI(), this.headingController.getD())// Rotation PID constants
+        return new PPHolonomicDriveController(
+                // Translation PID constants
+                new PIDConstants(10, 0, 0, 1),
+                // Rotation PID constants
+                new PIDConstants(this.config.headingPID.getP(), this.config.headingPID.getI(), this.config.headingPID.getD())
         );
     }
 
@@ -342,7 +341,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     @Override
     public double getMaxAngularVelocity() {
-        return this.MAX_ANGULAR_VELOCITY.in(Units.RadiansPerSecond);
+        return this.config.maxAngularVelocity.in(Units.RadiansPerSecond);
     }
 
     @Override
@@ -366,27 +365,47 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     public static class Config {
-        // Distance between centers of right and left wheels on robot
-        public Distance ROBOT_WIDTH;
-        // Distance between front and back wheels on robot
-        public Distance ROBOT_LENGTH;
-        public LinearVelocity MAX_SPEED;
-        public AngularVelocity MAX_ANGULAR_VELOCITY;
-
-        // Robot swerve modules
+        /**
+         * Distance between centers of right and left wheels on robot.
+         */
+        public Distance robotWidth;
+        /**
+         * Distance between front and back wheels on robot
+         */
+        public Distance robotLength;
+        /**
+         * Maximum linear velocity the chassis is allowed to attain.
+         */
+        public LinearVelocity maxSpeed;
+        /**
+         * Maximum angular velocity the chassis is allowed to attain.
+         */
+        public AngularVelocity maxAngularVelocity;
         public TalonFXSwerveModule.Config frontLeft;
         public TalonFXSwerveModule.Config rearLeft;
         public TalonFXSwerveModule.Config frontRight;
         public TalonFXSwerveModule.Config rearRight;
-        // The gyro sensor
+        /**
+         * The gyroscope.
+         */
         public Gyro gyro;
-
-        public PIDController headingController;
-
-        public double ANGLE_GEAR_RATIO;
-        public double DRIVE_GEAR_RATIO;
-        public double WHEEL_RADIUS;
-
+        /**
+         * Robot heading
+         */
+        public PIDController headingPID;
+        /**
+         * Angle motor's gear ratio, i.e. how many rotations of angle motor produce one revolution of wheel.
+         */
+        public double angleGearRatio;
+        /**
+         * Drive motor's gear ratio, i.e. how many rotations of drive motor produce one rotation of wheel.
+         */
+        public double driveGearRatio;
+        /**
+         * Radius of wheel.
+         */
+        public Distance wheelRadius;
+        public Pose2d initialPose;
         /**
          * PID arguments shall be set separately for each module, these values serve as a fallback.
          */
@@ -395,6 +414,90 @@ public class Swerve extends SubsystemBase implements Drivetrain {
          * PID arguments shall be set separately for each module, these values serve as a fallback.
          */
         public PIDController anglePID;
+
+        public Config withInitialPose(Pose2d initialPose) {
+            this.initialPose = initialPose;
+            return this;
+        }
+
+        public Config withRobotLength(Distance robotLength) {
+            this.robotLength = robotLength;
+            return this;
+        }
+
+        public Config withMaxSpeed(LinearVelocity maxSpeed) {
+            this.maxSpeed = maxSpeed;
+            return this;
+        }
+
+        public Config withMaxAngularVelocity(AngularVelocity maxAngularVelocity) {
+            this.maxAngularVelocity = maxAngularVelocity;
+            return this;
+        }
+
+        public Config withFrontLeft(TalonFXSwerveModule.Config frontLeft) {
+            this.frontLeft = frontLeft;
+            return this;
+        }
+
+        public Config withRearLeft(TalonFXSwerveModule.Config rearLeft) {
+            this.rearLeft = rearLeft;
+            return this;
+        }
+
+        public Config withFrontRight(TalonFXSwerveModule.Config frontRight) {
+            this.frontRight = frontRight;
+            return this;
+        }
+
+        public Config withRearRight(TalonFXSwerveModule.Config rearRight) {
+            this.rearRight = rearRight;
+            return this;
+        }
+
+        public Config withGyro(Gyro gyro) {
+            this.gyro = gyro;
+            return this;
+        }
+
+        public Config withHeadingPID(PIDController headingPID) {
+            this.headingPID = headingPID;
+            return this;
+        }
+
+        public Config withAngleGearRatio(double angleGearRatio) {
+            this.angleGearRatio = angleGearRatio;
+            return this;
+        }
+
+        public Config withDriveGearRatio(double driveGearRatio) {
+            this.driveGearRatio = driveGearRatio;
+            return this;
+        }
+
+        public Config withWheelRadius(Distance wheelRadius) {
+            this.wheelRadius = wheelRadius;
+            return this;
+        }
+
+        public Config withDrivePID(PIDController drivePID) {
+            this.drivePID = drivePID;
+            return this;
+        }
+
+        public Config withAnglePID(PIDController anglePID) {
+            this.anglePID = anglePID;
+            return this;
+        }
+
+        public Config withRobotWidth(Distance robotWidth) {
+            this.robotWidth = robotWidth;
+            return this;
+        }
+
+        public Swerve build() {
+            return new Swerve(this);
+        }
     }
 
     public static class InputStream implements Supplier<ChassisSpeeds> {
