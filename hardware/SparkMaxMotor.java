@@ -17,7 +17,7 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.libzodiac.api.Motor;
 
 public final class SparkMaxMotor implements Motor {
-    public static final AngleUnit POSITION_UNIT = Units.Rotations;
+    public static final AngleUnit           POSITION_UNIT = Units.Rotations;
     public static final AngularVelocityUnit VELOCITY_UNIT = Units.Rotations.per(Units.Minutes);
 
     private final SparkMax motor;
@@ -45,34 +45,39 @@ public final class SparkMaxMotor implements Motor {
      * Factory default the motor.
      */
     public void factoryDefault() {
-        this.motor.configure(new SparkMaxConfig(), SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+        this.motor.configure(new SparkMaxConfig(), SparkBase.ResetMode.kResetSafeParameters,
+                             SparkBase.PersistMode.kPersistParameters);
     }
 
     @Override
     public void setInverted(boolean inverted) {
-        this.applyConfig(new SparkMaxConfig().inverted(inverted));
+        this.applyConfiguration(new SparkMaxConfig().inverted(inverted));
     }
 
     @Override
     public void invert() {
-        this.applyConfig(new SparkMaxConfig().inverted(!this.motor.configAccessor.getInverted()));
+        this.applyConfiguration(new SparkMaxConfig().inverted(!this.motor.configAccessor.getInverted()));
     }
 
     @Override
     public void shutdown() {
-        this.applyConfig(new SparkMaxConfig().idleMode(SparkBaseConfig.IdleMode.kCoast));
+        this.applyConfiguration(new SparkMaxConfig().idleMode(SparkBaseConfig.IdleMode.kCoast));
         this.motor.stopMotor();
     }
 
     @Override
     public void brake() {
-        this.applyConfig(new SparkMaxConfig().idleMode(SparkBaseConfig.IdleMode.kBrake));
+        this.applyConfiguration(new SparkMaxConfig().idleMode(SparkBaseConfig.IdleMode.kBrake));
         this.motor.stopMotor();
     }
 
     @Override
     public void setPower(double percent) {
         this.motor.getClosedLoopController().setReference(percent, SparkBase.ControlType.kDutyCycle);
+    }
+
+    public Angle getPosition() {
+        return Units.Rotations.of(this.motor.getEncoder().getPosition());
     }
 
     @Override
@@ -97,6 +102,16 @@ public final class SparkMaxMotor implements Motor {
     }
 
     /**
+     * Append specified config to the motor. This does not reset all configurations.
+     *
+     * @param config the motor config
+     */
+    public void applyConfiguration(SparkBaseConfig config) {
+        this.motor.configure(config, SparkBase.ResetMode.kNoResetSafeParameters,
+                             SparkBase.PersistMode.kNoPersistParameters);
+    }
+
+    /**
      * Control the motor to turn to a specific position with MAX Motion.
      *
      * @param position the position to turn to.
@@ -115,7 +130,6 @@ public final class SparkMaxMotor implements Motor {
         this.motor.getClosedLoopController()
                   .setReference(angularVelocity.in(VELOCITY_UNIT), SparkBase.ControlType.kMAXMotionVelocityControl);
     }
-
 
     /**
      * Set the PID controller of the motor.
@@ -136,31 +150,18 @@ public final class SparkMaxMotor implements Motor {
     public void setPID(double kP, double kI, double kD) {
         var config = new SparkMaxConfig();
         config.closedLoop.pid(kP, kI, kD);
-        this.applyConfig(config);
-    }
-
-    /**
-     * Append specified config to the motor. This does not reset all configurations.
-     *
-     * @param config the motor config
-     */
-    public void applyConfiguration(SparkMaxConfig config) {
-        this.motor.configure(config, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
+        this.applyConfiguration(config);
     }
 
     public void applyConfiguration(MAXMotionConfig maxMotionConfig) {
         var config = new SparkMaxConfig();
         config.closedLoop.maxMotion.apply(maxMotionConfig);
-        this.motor.configure(config, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
-    }
-
-    public Angle getPosition() {
-        return Units.Rotations.of(this.motor.getEncoder().getPosition());
+        this.applyConfiguration(config);
     }
 
     public void setSensorToMechanismRatio(double ratio) {
         var config = new SparkMaxConfig();
         config.encoder.positionConversionFactor(1 / ratio);
-        this.motor.configure(config, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
+        this.applyConfiguration(config);
     }
 }
