@@ -24,15 +24,15 @@ public class Limelight {
     /**
      * The name of the Limelight.
      */
-    private final        String               name;
+    private final String name;
     /**
      * The gyro of the drivetrain.
      */
-    private final        Gyro                 gyro;
+    private final Gyro gyro;
     /**
      * The pose estimator of the drivetrain.
      */
-    private final        PoseEstimator<?>     poseEstimator;
+    private final PoseEstimator<?> poseEstimator;
 
     /**
      * Construct a new Limelight.
@@ -50,8 +50,8 @@ public class Limelight {
      * @param drivetrain The drivetrain.
      */
     public Limelight(String name, Drivetrain drivetrain) {
-        this.name          = name;
-        this.gyro          = drivetrain.getGyro();
+        this.name = name;
+        this.gyro = drivetrain.getGyro();
         this.poseEstimator = drivetrain.getPoseEstimator();
 
         IntStream.rangeClosed(5800 + LIMELIGHTS.size() * 10, 5809 + LIMELIGHTS.size() * 10)

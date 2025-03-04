@@ -13,17 +13,17 @@ public class Rectangle {
 
     public Rectangle(Translation2d bottomLeft, Translation2d bottomRight, Translation2d topLeft,
                      Translation2d topRight) {
-        this.bottomLeft  = bottomLeft;
+        this.bottomLeft = bottomLeft;
         this.bottomRight = bottomRight;
-        this.topLeft     = topLeft;
-        this.topRight    = topRight;
+        this.topLeft = topLeft;
+        this.topRight = topRight;
     }
 
     public Rectangle(Translation2d bottomLeft, Translation2d topRight) {
-        this.bottomLeft  = bottomLeft;
+        this.bottomLeft = bottomLeft;
         this.bottomRight = new Translation2d(topRight.getX(), bottomLeft.getY());
-        this.topLeft     = new Translation2d(bottomLeft.getX(), topRight.getY());
-        this.topRight    = topRight;
+        this.topLeft = new Translation2d(bottomLeft.getX(), topRight.getY());
+        this.topRight = topRight;
     }
 
     public Rectangle(Translation2d bottomLeft, Distance width, Distance height) {
@@ -31,10 +31,10 @@ public class Rectangle {
     }
 
     public Rectangle(Translation2d bottomLeft, double width, double height) {
-        this.bottomLeft  = bottomLeft;
+        this.bottomLeft = bottomLeft;
         this.bottomRight = bottomLeft.plus(new Translation2d(width, 0));
-        this.topLeft     = bottomLeft.plus(new Translation2d(0, height));
-        this.topRight    = bottomLeft.plus(new Translation2d(width, height));
+        this.topLeft = bottomLeft.plus(new Translation2d(0, height));
+        this.topRight = bottomLeft.plus(new Translation2d(width, height));
     }
 
     public Translation2d getBottomLeft() {
@@ -67,11 +67,11 @@ public class Rectangle {
     }
 
     public Rectangle scale(double scale) {
-        var center         = this.getCenter();
-        var newBottomLeft  = this.bottomLeft.minus(center).times(scale).plus(center);
+        var center = this.getCenter();
+        var newBottomLeft = this.bottomLeft.minus(center).times(scale).plus(center);
         var newBottomRight = this.bottomRight.minus(center).times(scale).plus(center);
-        var newTopLeft     = this.topLeft.minus(center).times(scale).plus(center);
-        var newTopRight    = this.topRight.minus(center).times(scale).plus(center);
+        var newTopLeft = this.topLeft.minus(center).times(scale).plus(center);
+        var newTopRight = this.topRight.minus(center).times(scale).plus(center);
         return new Rectangle(newBottomLeft, newBottomRight, newTopLeft, newTopRight);
     }
 
@@ -80,10 +80,10 @@ public class Rectangle {
     }
 
     public Rectangle rotateAroundOrigin(Rotation2d angle) {
-        var newBottomLeft  = this.bottomLeft.rotateBy(angle);
+        var newBottomLeft = this.bottomLeft.rotateBy(angle);
         var newBottomRight = this.bottomRight.rotateBy(angle);
-        var newTopLeft     = this.topLeft.rotateBy(angle);
-        var newTopRight    = this.topRight.rotateBy(angle);
+        var newTopLeft = this.topLeft.rotateBy(angle);
+        var newTopRight = this.topRight.rotateBy(angle);
         return new Rectangle(newBottomLeft, newBottomRight, newTopLeft, newTopRight);
     }
 
@@ -92,10 +92,10 @@ public class Rectangle {
     }
 
     public Rectangle rotateAround(Translation2d other, Rotation2d angle) {
-        var newBottomLeft  = this.bottomLeft.rotateAround(other, angle);
+        var newBottomLeft = this.bottomLeft.rotateAround(other, angle);
         var newBottomRight = this.bottomRight.rotateAround(other, angle);
-        var newTopLeft     = this.topLeft.rotateAround(other, angle);
-        var newTopRight    = this.topRight.rotateAround(other, angle);
+        var newTopLeft = this.topLeft.rotateAround(other, angle);
+        var newTopRight = this.topRight.rotateAround(other, angle);
         return new Rectangle(newBottomLeft, newBottomRight, newTopLeft, newTopRight);
     }
 

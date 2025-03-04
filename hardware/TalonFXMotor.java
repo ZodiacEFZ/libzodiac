@@ -397,7 +397,7 @@ public final class TalonFXMotor implements Motor {
         /**
          * The orchestra.
          */
-        private final Orchestra                orchestra;
+        private final Orchestra orchestra;
         /**
          * The instruments.
          */
@@ -405,17 +405,17 @@ public final class TalonFXMotor implements Motor {
         /**
          * The music file to play.
          */
-        private       String                   path;
+        private String path;
         /**
          * The track count.
          */
-        private       int                      track;
+        private int track;
 
         /**
          * Construct a new music player.
          */
         public MusicPlayer() {
-            this.orchestra   = new Orchestra();
+            this.orchestra = new Orchestra();
             this.instruments = new java.util.ArrayList<>();
         }
 
@@ -451,7 +451,7 @@ public final class TalonFXMotor implements Motor {
          * @param track the track count.
          */
         public void loadMusic(String path, int track) {
-            this.path  = path;
+            this.path = path;
             this.track = track;
             this.setInstrumentAllTracks(this.instruments);
             this.orchestra.loadMusic(path);

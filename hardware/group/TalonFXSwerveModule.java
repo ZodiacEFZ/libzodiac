@@ -12,11 +12,11 @@ import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonFXMotor;
 
 public class TalonFXSwerveModule implements SwerveModule {
-    private final Distance     wheelRadius;
+    private final Distance wheelRadius;
     private final TalonFXMotor angle;
     private final TalonFXMotor drive;
-    private final MagEncoder   encoder;
-    private       Rotation2d   lastAngle;
+    private final MagEncoder encoder;
+    private Rotation2d lastAngle;
 
     public TalonFXSwerveModule(Config config, Swerve.Config parent) {
         this.drive = new TalonFXMotor(config.drive);
@@ -33,7 +33,7 @@ public class TalonFXSwerveModule implements SwerveModule {
         this.angle.setBrakeWhenNeutral(true);
         this.drive.setBrakeWhenNeutral(false);
 
-        this.encoder   = new MagEncoder(config.encoder, config.encoderZero);
+        this.encoder = new MagEncoder(config.encoder, config.encoderZero);
         this.lastAngle = this.getAngle();
 
         this.wheelRadius = parent.wheelRadius;
@@ -119,35 +119,35 @@ public class TalonFXSwerveModule implements SwerveModule {
         /**
          * CAN ID of angle motor.
          */
-        public int           angle;
+        public int angle;
         /**
          * CAN ID of drive motor.
          */
-        public int           drive;
+        public int drive;
         /**
          * CAN ID of absolute encoder.
          */
-        public int           encoder;
+        public int encoder;
         /**
          * Zero position of encoder in raw units.
          */
-        public double        encoderZero;
+        public double encoderZero;
         /**
          * Reversion state of angle motor.
          */
-        public boolean       angleInverted = false;
+        public boolean angleInverted = false;
         /**
          * Reversion state of drive motor.
          */
-        public boolean       driveInverted = false;
+        public boolean driveInverted = false;
         /**
          * PID arguments for drive motor.
          */
-        public PIDController drivePID      = null;
+        public PIDController drivePID = null;
         /**
          * PID arguments for angle motor.
          */
-        public PIDController anglePID      = null;
+        public PIDController anglePID = null;
 
         public Config withEncoderZero(double encoderZero) {
             this.encoderZero = encoderZero;

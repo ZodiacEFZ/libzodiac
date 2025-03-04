@@ -34,7 +34,7 @@ public interface SimpleSendable extends Sendable {
     default void simpleSendableInit(SendableBuilder builder) {
         builder.setSmartDashboardType(this.title());
         final var childClass = this.getClass();
-        final var entries    = new Entries();
+        final var entries = new Entries();
         for (final var method : childClass.getDeclaredMethods()) {
             if (method.isAnnotationPresent(SendableGetter.class)) {
                 entries.addGetter(this, method);
@@ -115,10 +115,10 @@ public interface SimpleSendable extends Sendable {
     }
 
     final class Entries {
-        final HashMap<String, Tuple2<BooleanSupplier, BooleanConsumer>>   boolEntries   = new HashMap<>();
-        final HashMap<String, Tuple2<LongSupplier, LongConsumer>>         intEntries    = new HashMap<>();
-        final HashMap<String, Tuple2<FloatSupplier, FloatConsumer>>       floatEntries  = new HashMap<>();
-        final HashMap<String, Tuple2<DoubleSupplier, DoubleConsumer>>     doubleEntries = new HashMap<>();
+        final HashMap<String, Tuple2<BooleanSupplier, BooleanConsumer>> boolEntries = new HashMap<>();
+        final HashMap<String, Tuple2<LongSupplier, LongConsumer>> intEntries = new HashMap<>();
+        final HashMap<String, Tuple2<FloatSupplier, FloatConsumer>> floatEntries = new HashMap<>();
+        final HashMap<String, Tuple2<DoubleSupplier, DoubleConsumer>> doubleEntries = new HashMap<>();
         final HashMap<String, Tuple2<Supplier<String>, Consumer<String>>> stringEntries = new HashMap<>();
 
         static <T> Supplier<T> wrap(Class<T> desiredType, Supplier<Object> supplier) {
@@ -134,7 +134,7 @@ public interface SimpleSendable extends Sendable {
 
             final var returnType = method.getReturnType();
             final var getterInfo = method.getAnnotation(SendableGetter.class);
-            final var name       = getterInfo.name().isEmpty() ? method.getName() : getterInfo.name();
+            final var name = getterInfo.name().isEmpty() ? method.getName() : getterInfo.name();
             final Supplier<Object> raw = () -> {
                 try {
                     return method.invoke(obj);
@@ -196,9 +196,9 @@ public interface SimpleSendable extends Sendable {
             // setters shall return void
             assert NarrowType.isVoid(method.getReturnType());
 
-            final var takeType   = method.getParameterTypes()[0];
+            final var takeType = method.getParameterTypes()[0];
             final var setterInfo = method.getAnnotation(SendableSetter.class);
-            final var name       = setterInfo.name().isEmpty() ? method.getName() : setterInfo.name();
+            final var name = setterInfo.name().isEmpty() ? method.getName() : setterInfo.name();
             final Consumer<Object> raw = x -> {
                 try {
                     method.invoke(obj, x);
@@ -265,9 +265,9 @@ public interface SimpleSendable extends Sendable {
             // to bypass visibility control by java
             field.setAccessible(true);
 
-            final var fieldType    = field.getType();
+            final var fieldType = field.getType();
             final var propertyInfo = field.getAnnotation(SendableProperty.class);
-            final var name         = propertyInfo.name().isEmpty() ? field.getName() : propertyInfo.name();
+            final var name = propertyInfo.name().isEmpty() ? field.getName() : propertyInfo.name();
             if (propertyInfo.access() != SendableProperty.AccessType.In) {
                 final Supplier<Object> raw = () -> {
                     try {

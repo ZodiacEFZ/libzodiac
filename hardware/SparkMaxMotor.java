@@ -17,7 +17,7 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.libzodiac.api.Motor;
 
 public final class SparkMaxMotor implements Motor {
-    public static final AngleUnit           POSITION_UNIT = Units.Rotations;
+    public static final AngleUnit POSITION_UNIT = Units.Rotations;
     public static final AngularVelocityUnit VELOCITY_UNIT = Units.Rotations.per(Units.Minutes);
 
     private final SparkMax motor;
