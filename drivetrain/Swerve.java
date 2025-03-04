@@ -108,7 +108,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
      *
      * @return The current yaw reported by the gyro.
      */
-    public Rotation2d getGyroYaw() {
+    private Rotation2d getGyroYaw() {
         return this.gyro.getRotation2d();
     }
 
@@ -205,10 +205,16 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     public void setDirectAngle(boolean directAngle) {
+        if (!this.directAngle && directAngle) {
+            this.targetHeading = this.getYawRelative();
+        }
         this.directAngle = directAngle;
     }
 
     public void toggleDirectAngle() {
+        if (!this.directAngle) {
+            this.targetHeading = this.getYawRelative();
+        }
         this.directAngle = !this.directAngle;
     }
 
@@ -229,7 +235,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
-        final var velocity = Maths.limitTranslation(translation).times(this.config.maxSpeed.in(Units.MetersPerSecond));
+        final var velocity = Maths.limitTranslation(translation, 1).times(this.config.maxSpeed.in(Units.MetersPerSecond));
         return new ChassisSpeeds(velocity.getX(), velocity.getY(),
                 rotation * this.config.maxAngularVelocity.in(Units.RadiansPerSecond));
     }
