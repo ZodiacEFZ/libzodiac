@@ -15,6 +15,11 @@ public final class NavX implements Gyro {
     final AHRS navX = new AHRS(AHRS.NavXComType.kMXP_SPI);
 
     @Override
+    public void reset() {
+        this.navX.reset();
+    }
+
+    @Override
     public Angle getYaw() {
         return Units.Degrees.of(this.navX.getAngle());
     }
@@ -32,10 +37,5 @@ public final class NavX implements Gyro {
     @Override
     public AngularVelocity getYawAngularVelocity() {
         return Units.DegreesPerSecond.of(this.navX.getRawGyroZ());
-    }
-
-    @Override
-    public void reset() {
-        this.navX.reset();
     }
 }

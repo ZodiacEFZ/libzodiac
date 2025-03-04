@@ -67,8 +67,8 @@ public final class TalonFXMotor implements Motor {
     }
 
     /**
-     * Set the motor to be continuous or not.
-     * {@link TalonFXMotor#setSensorToMechanismRatio(double)} must be called before this method.
+     * Set the motor to be continuous or not. {@link TalonFXMotor#setSensorToMechanismRatio(double)} must be called
+     * before this method.
      *
      * @param continuous whether the motor is continuous or not.
      */
@@ -81,8 +81,9 @@ public final class TalonFXMotor implements Motor {
     public void setInverted(boolean inverted) {
         MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs();
         this.motor.getConfigurator().refresh(motorOutputConfigs);
-        this.motor.getConfigurator().apply(motorOutputConfigs.withInverted(
-                inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive));
+        this.motor.getConfigurator()
+                  .apply(motorOutputConfigs.withInverted(
+                          inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive));
     }
 
     @Override
@@ -94,19 +95,6 @@ public final class TalonFXMotor implements Motor {
             case CounterClockwise_Positive -> InvertedValue.Clockwise_Positive;
         };
         this.motor.getConfigurator().apply(motorOutputConfigs);
-    }
-
-    /**
-     * Set the motor to brake or coast.
-     *
-     * @param brake whether the motor should brake.
-     */
-    public void setBrakeWhenNeutral(boolean brake) {
-        if (brake) {
-            this.motor.setNeutralMode(NeutralModeValue.Brake);
-        } else {
-            this.motor.setNeutralMode(NeutralModeValue.Coast);
-        }
     }
 
     @Override
@@ -130,6 +118,28 @@ public final class TalonFXMotor implements Motor {
     }
 
     @Override
+    public Angle getPosition() {
+        return this.motor.getPosition().getValue();
+    }
+
+    @Override
+    public void setPosition(Angle position) {
+        this.motor.setControl(new PositionDutyCycle(position));
+    }
+
+    @Override
+    public AngularVelocity getVelocity() {
+        return this.motor.getVelocity().getValue();
+    }
+
+    @Override
+    public void setVelocity(AngularVelocity angularVelocity) {
+        // Our practice suggest that `VelocityVoltage` api produces a somehow more
+        // stable output than `VelocityDutyCycle`.
+        this.motor.setControl(new VelocityVoltage(angularVelocity));
+    }
+
+    @Override
     public Voltage getVoltage() {
         return this.motor.getMotorVoltage().getValue();
     }
@@ -139,6 +149,24 @@ public final class TalonFXMotor implements Motor {
         this.motor.setControl(new VoltageOut(voltage.in(Units.Volts)));
     }
 
+    @Override
+    public Current getCurrent() {
+        return this.motor.getTorqueCurrent().getValue();
+    }
+
+    /**
+     * Set the motor to brake or coast.
+     *
+     * @param brake whether the motor should brake.
+     */
+    public void setBrakeWhenNeutral(boolean brake) {
+        if (brake) {
+            this.motor.setNeutralMode(NeutralModeValue.Brake);
+        } else {
+            this.motor.setNeutralMode(NeutralModeValue.Coast);
+        }
+    }
+
     /**
      * Set the motor to produce a sound of a certain frequency.
      *
@@ -146,16 +174,6 @@ public final class TalonFXMotor implements Motor {
      */
     public void frequency(Frequency frequency) {
         this.motor.setControl(new MusicTone(frequency.in(Units.Hertz)).withUpdateFreqHz(50));
-    }
-
-    @Override
-    public Angle getPosition() {
-        return this.motor.getPosition().getValue();
-    }
-
-    @Override
-    public void setPosition(Angle position) {
-        this.motor.setControl(new PositionDutyCycle(position));
     }
 
     /**
@@ -172,23 +190,6 @@ public final class TalonFXMotor implements Motor {
      */
     public void resetRelativeEncoderPosition() {
         this.motor.setPosition(0);
-    }
-
-    @Override
-    public AngularVelocity getVelocity() {
-        return this.motor.getVelocity().getValue();
-    }
-
-    @Override
-    public void setVelocity(AngularVelocity angularVelocity) {
-        // Our practice suggest that `VelocityVoltage` api produces a somehow more
-        // stable output than `VelocityDutyCycle`.
-        this.motor.setControl(new VelocityVoltage(angularVelocity));
-    }
-
-    @Override
-    public Current getCurrent() {
-        return this.motor.getTorqueCurrent().getValue();
     }
 
     /**
@@ -270,7 +271,8 @@ public final class TalonFXMotor implements Motor {
      * @param acceleration    the acceleration to apply.
      * @param feedforward     the feedforward to apply.
      */
-    public void MotionMagicVelocity(AngularVelocity angularVelocity, AngularAcceleration acceleration, Voltage feedforward) {
+    public void MotionMagicVelocity(AngularVelocity angularVelocity, AngularAcceleration acceleration,
+                                    Voltage feedforward) {
         this.motor.setControl(new MotionMagicVelocityVoltage(angularVelocity).withAcceleration(acceleration)
                                                                              .withFeedForward(feedforward));
     }
@@ -395,7 +397,7 @@ public final class TalonFXMotor implements Motor {
         /**
          * The orchestra.
          */
-        private final Orchestra orchestra;
+        private final Orchestra                orchestra;
         /**
          * The instruments.
          */
@@ -403,17 +405,17 @@ public final class TalonFXMotor implements Motor {
         /**
          * The music file to play.
          */
-        private String path;
+        private       String                   path;
         /**
          * The track count.
          */
-        private int track;
+        private       int                      track;
 
         /**
          * Construct a new music player.
          */
         public MusicPlayer() {
-            this.orchestra = new Orchestra();
+            this.orchestra   = new Orchestra();
             this.instruments = new java.util.ArrayList<>();
         }
 
@@ -449,7 +451,7 @@ public final class TalonFXMotor implements Motor {
          * @param track the track count.
          */
         public void loadMusic(String path, int track) {
-            this.path = path;
+            this.path  = path;
             this.track = track;
             this.setInstrumentAllTracks(this.instruments);
             this.orchestra.loadMusic(path);

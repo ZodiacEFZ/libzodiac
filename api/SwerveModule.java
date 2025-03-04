@@ -30,6 +30,7 @@ public interface SwerveModule {
      * Returns the current state of the module.
      *
      * @return the state
+     *
      * @throws UnsupportedOperationException if not implemented
      */
     default SwerveModuleState getState() {
@@ -40,6 +41,7 @@ public interface SwerveModule {
      * Returns the current position of the module.
      *
      * @return the position
+     *
      * @throws UnsupportedOperationException if not implemented
      */
     default SwerveModulePosition getPosition() {

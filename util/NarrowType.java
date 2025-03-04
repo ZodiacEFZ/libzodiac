@@ -9,6 +9,10 @@ public final class NarrowType {
         return type.getName().equals(boolean.class.getName()) || type.getName().equals(Boolean.class.getName());
     }
 
+    public static boolean isAnyInt(Class<?> type) {
+        return isShort(type) || isInt(type) || isLong(type);
+    }
+
     public static boolean isShort(Class<?> type) {
         return type.getName().equals(short.class.getName()) || type.getName().equals(Short.class.getName());
     }
@@ -21,8 +25,8 @@ public final class NarrowType {
         return type.getName().equals(long.class.getName()) || type.getName().equals(Long.class.getName());
     }
 
-    public static boolean isAnyInt(Class<?> type) {
-        return isShort(type) || isInt(type) || isLong(type);
+    public static boolean isAnyFloat(Class<?> type) {
+        return isFloat(type) || isDouble(type);
     }
 
     public static boolean isFloat(Class<?> type) {
@@ -31,10 +35,6 @@ public final class NarrowType {
 
     public static boolean isDouble(Class<?> type) {
         return type.getName().equals(double.class.getName()) || type.getName().equals(Double.class.getName());
-    }
-
-    public static boolean isAnyFloat(Class<?> type) {
-        return isFloat(type) || isDouble(type);
     }
 
     public static boolean isString(Class<?> type) {

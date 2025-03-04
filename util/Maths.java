@@ -10,6 +10,7 @@ public class Maths {
      * Squares the norm of the translation
      *
      * @param translation The translation to square
+     *
      * @return The squared translation
      */
     public static Translation2d squareTranslation(Translation2d translation) {
@@ -23,6 +24,7 @@ public class Maths {
      * Squares a value
      *
      * @param v The value to square
+     *
      * @return The squared value
      */
     public static double square(double v) {
@@ -34,6 +36,7 @@ public class Maths {
      *
      * @param translation The translation to apply the deadband to
      * @param deadband    The deadband to apply
+     *
      * @return The translation with the deadband applied
      */
     public static Translation2d applyDeadband(Translation2d translation, double deadband) {
@@ -48,6 +51,7 @@ public class Maths {
      * Limits the translation to a norm of 1
      *
      * @param translation The translation to limit
+     *
      * @return The limited translation
      */
     public static Translation2d limitTranslation(Translation2d translation, double limit) {

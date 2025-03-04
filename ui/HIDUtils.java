@@ -35,24 +35,24 @@ public class HIDUtils {
         }
 
         /**
-         * Get the raw value of the button state.
-         *
-         * @return The raw value of the button state.
-         */
-        public int toInt() {
-            int rawBit = this.raw ? 1 : 0;
-            int pressedBit = this.pressed ? 1 : 0;
-            int releasedBit = this.released ? 1 : 0;
-            return rawBit << 2 | pressedBit << 1 | releasedBit;
-        }
-
-        /**
          * Get the raw value of the button state as a string.
          *
          * @return The raw value of the button state as a string.
          */
         public String toString() {
             return Integer.toString(this.toInt());
+        }
+
+        /**
+         * Get the raw value of the button state.
+         *
+         * @return The raw value of the button state.
+         */
+        public int toInt() {
+            int rawBit      = this.raw ? 1 : 0;
+            int pressedBit  = this.pressed ? 1 : 0;
+            int releasedBit = this.released ? 1 : 0;
+            return rawBit << 2 | pressedBit << 1 | releasedBit;
         }
     }
 
@@ -71,8 +71,8 @@ public class HIDUtils {
          * @return The state as a string.
          */
         public String toString() {
-            return time + "," + Arrays.toString(this.buttons) + "," +
-                    Arrays.toString(this.axes) + "," + Arrays.toString(this.pov);
+            return time + "," + Arrays.toString(this.buttons) + "," + Arrays.toString(this.axes) + "," +
+                   Arrays.toString(this.pov);
         }
     }
 
@@ -104,11 +104,14 @@ public class HIDUtils {
             }
             String[] stateStrings = string.split("\\|");
             for (String stateString : stateStrings) {
-                String[] parts = stateString.split(",");
-                double time = Double.parseDouble(parts[0]);
-                ButtonState[] buttons = Arrays.stream(parts[1].split(",")).mapToInt(Integer::parseInt).mapToObj(ButtonState::new).toArray(ButtonState[]::new);
-                double[] axes = Arrays.stream(parts[2].split(",")).mapToDouble(Double::parseDouble).toArray();
-                int[] pov = Arrays.stream(parts[3].split(",")).mapToInt(Integer::parseInt).toArray();
+                String[]      parts   = stateString.split(",");
+                double        time    = Double.parseDouble(parts[0]);
+                ButtonState[] buttons = Arrays.stream(parts[1].split(","))
+                                              .mapToInt(Integer::parseInt)
+                                              .mapToObj(ButtonState::new)
+                                              .toArray(ButtonState[]::new);
+                double[]      axes    = Arrays.stream(parts[2].split(",")).mapToDouble(Double::parseDouble).toArray();
+                int[]         pov     = Arrays.stream(parts[3].split(",")).mapToInt(Integer::parseInt).toArray();
                 this.states.add(new HIDState(time, buttons, axes, pov));
             }
         }
@@ -139,6 +142,15 @@ public class HIDUtils {
         }
 
         /**
+         * Get the record as a Base85 string.
+         *
+         * @return The record as a Base85 string.
+         */
+        public String toZ85String() {
+            return "B85" + Base85.getZ85Encoder().encode(this.toRawString());
+        }
+
+        /**
          * Get the record as a raw string.
          *
          * @return The record as a raw string.
@@ -153,25 +165,16 @@ public class HIDUtils {
             });
             return builder.toString();
         }
-
-        /**
-         * Get the record as a Base85 string.
-         *
-         * @return The record as a Base85 string.
-         */
-        public String toZ85String() {
-            return "B85" + Base85.getZ85Encoder().encode(this.toRawString());
-        }
     }
 
     /**
      * A class for recording HID states.
      */
     public static class HIDRecorder extends SubsystemBase {
-        final Timer timer = new Timer();
+        final         Timer      timer     = new Timer();
         private final GenericHID device;
-        private final HIDRecord record = new HIDRecord();
-        private boolean recording = false;
+        private final HIDRecord  record    = new HIDRecord();
+        private       boolean    recording = false;
 
         /**
          * Constructs a HIDRecorder.
@@ -216,9 +219,11 @@ public class HIDUtils {
         public void periodic() {
             if (recording) {
                 ButtonState[] buttons = new ButtonState[device.getButtonCount()];
-                double[] axes = new double[device.getAxisCount()];
-                int[] pov = new int[device.getPOVCount()];
-                Arrays.setAll(buttons, i -> new ButtonState(this.device.getRawButton(i), this.device.getRawButtonPressed(i), this.device.getRawButtonReleased(i)));
+                double[]      axes    = new double[device.getAxisCount()];
+                int[]         pov     = new int[device.getPOVCount()];
+                Arrays.setAll(buttons,
+                              i -> new ButtonState(this.device.getRawButton(i), this.device.getRawButtonPressed(i),
+                                                   this.device.getRawButtonReleased(i)));
                 Arrays.setAll(axes, this.device::getRawAxis);
                 Arrays.setAll(pov, this.device::getPOV);
                 this.record.add(new HIDState(this.timer.get(), buttons, axes, pov));
@@ -230,19 +235,20 @@ public class HIDUtils {
      * A class for playing back HID records.
      */
     public static class HIDPlayback {
-        private final Timer timer = new Timer();
+        private final Timer     timer   = new Timer();
         private final HIDRecord record;
         private final boolean[] presented;
-        private int index = 0;
-        private boolean playing = false;
+        private       int       index   = 0;
+        private       boolean   playing = false;
 
         /**
          * Constructs a HIDPlayback.
          *
-         * @param serializedRecord The record as a string. If the string starts with "B85", it will be decoded as a Base85 string.
+         * @param serializedRecord The record as a string. If the string starts with "B85", it will be decoded as a
+         *                         Base85 string.
          */
         public HIDPlayback(String serializedRecord) {
-            this.record = new HIDRecord(serializedRecord);
+            this.record    = new HIDRecord(serializedRecord);
             this.presented = new boolean[this.record.states.size()];
         }
 
@@ -252,7 +258,7 @@ public class HIDUtils {
          * @param record The record.
          */
         public HIDPlayback(HIDRecord record) {
-            this.record = record;
+            this.record    = record;
             this.presented = new boolean[this.record.states.size()];
         }
 
@@ -262,10 +268,10 @@ public class HIDUtils {
          * @param playback The playback to copy.
          */
         public HIDPlayback(HIDPlayback playback) {
-            this.record = playback.record;
+            this.record    = playback.record;
             this.presented = new boolean[this.record.states.size()];
-            this.index = 0;
-            this.playing = false;
+            this.index     = 0;
+            this.playing   = false;
         }
 
         /**
@@ -274,7 +280,7 @@ public class HIDUtils {
         public void start() {
             this.timer.reset();
             this.timer.start();
-            this.index = 0;
+            this.index   = 0;
             this.playing = true;
         }
 
@@ -284,6 +290,23 @@ public class HIDUtils {
         public void reset() {
             this.timer.reset();
             this.playing = false;
+        }
+
+        /**
+         * Get the button value (starting at button 1).
+         *
+         * <p>The buttons are returned in a single 16 bit value with one bit representing the state of
+         * each button. The appropriate button is returned as a boolean value.
+         *
+         * <p>This method returns true if the button is being held down at the time that this method is
+         * being called.
+         *
+         * @param button The button number to be read (starting at 1)
+         *
+         * @return The state of the button.
+         */
+        public boolean getRawButton(int button) {
+            return this.getCurrentState().buttons[button].raw;
         }
 
         /**
@@ -308,29 +331,14 @@ public class HIDUtils {
         }
 
         /**
-         * Get the button value (starting at button 1).
-         *
-         * <p>The buttons are returned in a single 16 bit value with one bit representing the state of
-         * each button. The appropriate button is returned as a boolean value.
-         *
-         * <p>This method returns true if the button is being held down at the time that this method is
-         * being called.
-         *
-         * @param button The button number to be read (starting at 1)
-         * @return The state of the button.
-         */
-        public boolean getRawButton(int button) {
-            return this.getCurrentState().buttons[button].raw;
-        }
-
-        /**
          * Whether the button was pressed since the last check. Button indexes begin at 1.
          *
          * <p>This method returns true if the button went from not pressed to held down since the last
-         * time this method was called. This is useful if you only want to call a function once when you
-         * press the button.
+         * time this method was called. This is useful if you only want to call a function once when you press the
+         * button.
          *
          * @param button The button index, beginning at 1.
+         *
          * @return Whether the button was pressed since the last check.
          */
         public boolean getRawButtonPressed(int button) {
@@ -341,10 +349,11 @@ public class HIDUtils {
          * Whether the button was released since the last check. Button indexes begin at 1.
          *
          * <p>This method returns true if the button went from held down to not pressed since the last
-         * time this method was called. This is useful if you only want to call a function once when you
-         * release the button.
+         * time this method was called. This is useful if you only want to call a function once when you release the
+         * button.
          *
          * @param button The button index, beginning at 1.
+         *
          * @return Whether the button was released since the last check.
          */
         public boolean getRawButtonReleased(int button) {
@@ -355,6 +364,7 @@ public class HIDUtils {
          * Get the value of the axis.
          *
          * @param axis The axis to read, starting at 0.
+         *
          * @return The value of the axis.
          */
         public double getRawAxis(int axis) {
@@ -368,6 +378,7 @@ public class HIDUtils {
          * upper-left is 315).
          *
          * @param pov The index of the POV to read (starting at 0). Defaults to 0.
+         *
          * @return the angle of the POV in degrees, or -1 if the POV is not pressed.
          */
         public int getPOV(int pov) {
@@ -418,7 +429,8 @@ public class HIDUtils {
         /**
          * Constructs a XboxPlayback.
          *
-         * @param serializedRecord The record as a string. If the string starts with "B85", it will be decoded as a Base85 string.
+         * @param serializedRecord The record as a string. If the string starts with "B85", it will be decoded as a
+         *                         Base85 string.
          */
         public XboxPlayback(String serializedRecord) {
             super(serializedRecord);
@@ -479,8 +491,8 @@ public class HIDUtils {
         }
 
         /**
-         * Get the left trigger axis value of the controller. Note that this axis is bound to the
-         * range of [0, 1] as opposed to the usual [-1, 1].
+         * Get the left trigger axis value of the controller. Note that this axis is bound to the range of [0, 1] as
+         * opposed to the usual [-1, 1].
          *
          * @return The axis value.
          */
@@ -489,8 +501,8 @@ public class HIDUtils {
         }
 
         /**
-         * Get the right trigger axis value of the controller. Note that this axis is bound to the
-         * range of [0, 1] as opposed to the usual [-1, 1].
+         * Get the right trigger axis value of the controller. Note that this axis is bound to the range of [0, 1] as
+         * opposed to the usual [-1, 1].
          *
          * @return The axis value.
          */
@@ -772,19 +784,17 @@ public class HIDUtils {
     public static class CommandHIDPlayback {
         private final HIDPlayback playback;
 
-        private final Map<EventLoop, Map<Integer, Trigger>> buttonCache = new HashMap<>();
-        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> axisLessThanCache =
-                new HashMap<>();
-        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> axisGreaterThanCache =
-                new HashMap<>();
-        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>>
-                axisMagnitudeGreaterThanCache = new HashMap<>();
-        private final Map<EventLoop, Map<Integer, Trigger>> povCache = new HashMap<>();
+        private final Map<EventLoop, Map<Integer, Trigger>>               buttonCache                   = new HashMap<>();
+        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> axisLessThanCache             = new HashMap<>();
+        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> axisGreaterThanCache          = new HashMap<>();
+        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> axisMagnitudeGreaterThanCache = new HashMap<>();
+        private final Map<EventLoop, Map<Integer, Trigger>>               povCache                      = new HashMap<>();
 
         /**
          * Constructs a CommandHIDPlayback.
          *
-         * @param serializedRecord The record as a string. If the string starts with "B85", it will be decoded as a Base85 string.
+         * @param serializedRecord The record as a string. If the string starts with "B85", it will be decoded as a
+         *                         Base85 string.
          */
         public CommandHIDPlayback(String serializedRecord) {
             this.playback = new HIDPlayback(serializedRecord);
@@ -812,8 +822,10 @@ public class HIDUtils {
          * Constructs an event instance around this button's digital signal.
          *
          * @param button the button index
-         * @return an event instance representing the button's digital signal attached to the {@link
-         * CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         *
+         * @return an event instance representing the button's digital signal attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         *
          * @see #button(int, EventLoop)
          */
         public Trigger button(int button) {
@@ -825,6 +837,7 @@ public class HIDUtils {
          *
          * @param button the button index
          * @param loop   the event loop instance to attach the event to.
+         *
          * @return an event instance representing the button's digital signal attached to the given loop.
          */
         public Trigger button(int button, EventLoop loop) {
@@ -833,14 +846,24 @@ public class HIDUtils {
         }
 
         /**
-         * Constructs a Trigger instance based around this angle of the default (index 0) POV on the HID,
-         * attached to {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button
-         * loop}.
+         * Constructs a Trigger instance based around the 0-degree angle (up) of the default (index 0) POV on the HID,
+         * attached to {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
+         *
+         * @return a Trigger instance based around the 0-degree angle of a POV on the HID.
+         */
+        public Trigger povUp() {
+            return pov(0);
+        }
+
+        /**
+         * Constructs a Trigger instance based around this angle of the default (index 0) POV on the HID, attached to
+         * {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
          *
          * <p>The POV angles start at 0 in the up direction, and increase clockwise (e.g. right is 90,
          * upper-left is 315).
          *
          * @param angle POV angle in degrees, or -1 for the center / not pressed.
+         *
          * @return a Trigger instance based around this angle of a POV on the HID.
          */
         public Trigger pov(int angle) {
@@ -855,32 +878,21 @@ public class HIDUtils {
          *
          * @param pov   index of the POV to read (starting at 0). Defaults to 0.
          * @param angle POV angle in degrees, or -1 for the center / not pressed.
-         * @param loop  the event loop instance to attach the event to. Defaults to {@link
-         *              CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
+         * @param loop  the event loop instance to attach the event to. Defaults to
+         *              {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
+         *
          * @return a Trigger instance based around this angle of a POV on the HID.
          */
         public Trigger pov(int pov, int angle, EventLoop loop) {
             var cache = povCache.computeIfAbsent(loop, k -> new HashMap<>());
             // angle can be -1, so use 3600 instead of 360
-            return cache.computeIfAbsent(
-                    pov * 3600 + angle, k -> new Trigger(loop, () -> playback.getPOV(pov) == angle));
+            return cache.computeIfAbsent(pov * 3600 + angle,
+                                         k -> new Trigger(loop, () -> playback.getPOV(pov) == angle));
         }
 
         /**
-         * Constructs a Trigger instance based around the 0-degree angle (up) of the default (index 0) POV
-         * on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command
-         * scheduler button loop}.
-         *
-         * @return a Trigger instance based around the 0-degree angle of a POV on the HID.
-         */
-        public Trigger povUp() {
-            return pov(0);
-        }
-
-        /**
-         * Constructs a Trigger instance based around the 45-degree angle (right up) of the default (index
-         * 0) POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default
-         * command scheduler button loop}.
+         * Constructs a Trigger instance based around the 45-degree angle (right up) of the default (index 0) POV on the
+         * HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
          *
          * @return a Trigger instance based around the 45-degree angle of a POV on the HID.
          */
@@ -889,9 +901,8 @@ public class HIDUtils {
         }
 
         /**
-         * Constructs a Trigger instance based around the 90-degree angle (right) of the default (index 0)
-         * POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command
-         * scheduler button loop}.
+         * Constructs a Trigger instance based around the 90-degree angle (right) of the default (index 0) POV on the
+         * HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
          *
          * @return a Trigger instance based around the 90-degree angle of a POV on the HID.
          */
@@ -900,9 +911,9 @@ public class HIDUtils {
         }
 
         /**
-         * Constructs a Trigger instance based around the 135-degree angle (right down) of the default
-         * (index 0) POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the
-         * default command scheduler button loop}.
+         * Constructs a Trigger instance based around the 135-degree angle (right down) of the default (index 0) POV on
+         * the HID, attached to
+         * {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
          *
          * @return a Trigger instance based around the 135-degree angle of a POV on the HID.
          */
@@ -911,9 +922,8 @@ public class HIDUtils {
         }
 
         /**
-         * Constructs a Trigger instance based around the 180-degree angle (down) of the default (index 0)
-         * POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command
-         * scheduler button loop}.
+         * Constructs a Trigger instance based around the 180-degree angle (down) of the default (index 0) POV on the
+         * HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
          *
          * @return a Trigger instance based around the 180-degree angle of a POV on the HID.
          */
@@ -922,9 +932,9 @@ public class HIDUtils {
         }
 
         /**
-         * Constructs a Trigger instance based around the 225-degree angle (down left) of the default
-         * (index 0) POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the
-         * default command scheduler button loop}.
+         * Constructs a Trigger instance based around the 225-degree angle (down left) of the default (index 0) POV on
+         * the HID, attached to
+         * {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
          *
          * @return a Trigger instance based around the 225-degree angle of a POV on the HID.
          */
@@ -933,9 +943,8 @@ public class HIDUtils {
         }
 
         /**
-         * Constructs a Trigger instance based around the 270-degree angle (left) of the default (index 0)
-         * POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command
-         * scheduler button loop}.
+         * Constructs a Trigger instance based around the 270-degree angle (left) of the default (index 0) POV on the
+         * HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
          *
          * @return a Trigger instance based around the 270-degree angle of a POV on the HID.
          */
@@ -944,9 +953,8 @@ public class HIDUtils {
         }
 
         /**
-         * Constructs a Trigger instance based around the 315-degree angle (left up) of the default (index
-         * 0) POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default
-         * command scheduler button loop}.
+         * Constructs a Trigger instance based around the 315-degree angle (left up) of the default (index 0) POV on the
+         * HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
          *
          * @return a Trigger instance based around the 315-degree angle of a POV on the HID.
          */
@@ -955,9 +963,9 @@ public class HIDUtils {
         }
 
         /**
-         * Constructs a Trigger instance based around the center (not pressed) position of the default
-         * (index 0) POV on the HID, attached to {@link CommandScheduler#getDefaultButtonLoop() the
-         * default command scheduler button loop}.
+         * Constructs a Trigger instance based around the center (not pressed) position of the default (index 0) POV on
+         * the HID, attached to
+         * {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
          *
          * @return a Trigger instance based around the center position of a POV on the HID.
          */
@@ -966,104 +974,101 @@ public class HIDUtils {
         }
 
         /**
-         * Constructs a Trigger instance that is true when the axis value is less than {@code threshold},
-         * attached to {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button
-         * loop}.
+         * Constructs a Trigger instance that is true when the axis value is less than {@code threshold}, attached to
+         * {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
          *
          * @param axis      The axis to read, starting at 0
          * @param threshold The value below which this trigger should return true.
-         * @return a Trigger instance that is true when the axis value is less than the provided
-         * threshold.
+         *
+         * @return a Trigger instance that is true when the axis value is less than the provided threshold.
          */
         public Trigger axisLessThan(int axis, double threshold) {
             return axisLessThan(axis, threshold, CommandScheduler.getInstance().getDefaultButtonLoop());
         }
 
         /**
-         * Constructs a Trigger instance that is true when the axis value is less than {@code threshold},
-         * attached to the given loop.
+         * Constructs a Trigger instance that is true when the axis value is less than {@code threshold}, attached to
+         * the given loop.
          *
          * @param axis      The axis to read, starting at 0
          * @param threshold The value below which this trigger should return true.
          * @param loop      the event loop instance to attach the trigger to
-         * @return a Trigger instance that is true when the axis value is less than the provided
-         * threshold.
+         *
+         * @return a Trigger instance that is true when the axis value is less than the provided threshold.
          */
         public Trigger axisLessThan(int axis, double threshold, EventLoop loop) {
             var cache = axisLessThanCache.computeIfAbsent(loop, k -> new HashMap<>());
-            return cache.computeIfAbsent(
-                    Pair.of(axis, threshold), k -> new Trigger(loop, () -> getRawAxis(axis) < threshold));
-        }
-
-        /**
-         * Constructs a Trigger instance that is true when the axis value is less than {@code threshold},
-         * attached to {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button
-         * loop}.
-         *
-         * @param axis      The axis to read, starting at 0
-         * @param threshold The value above which this trigger should return true.
-         * @return a Trigger instance that is true when the axis value is greater than the provided
-         * threshold.
-         */
-        public Trigger axisGreaterThan(int axis, double threshold) {
-            return axisGreaterThan(axis, threshold, CommandScheduler.getInstance().getDefaultButtonLoop());
-        }
-
-        /**
-         * Constructs a Trigger instance that is true when the axis value is greater than {@code
-         * threshold}, attached to the given loop.
-         *
-         * @param axis      The axis to read, starting at 0
-         * @param threshold The value above which this trigger should return true.
-         * @param loop      the event loop instance to attach the trigger to.
-         * @return a Trigger instance that is true when the axis value is greater than the provided
-         * threshold.
-         */
-        public Trigger axisGreaterThan(int axis, double threshold, EventLoop loop) {
-            var cache = axisGreaterThanCache.computeIfAbsent(loop, k -> new HashMap<>());
-            return cache.computeIfAbsent(
-                    Pair.of(axis, threshold), k -> new Trigger(loop, () -> getRawAxis(axis) > threshold));
-        }
-
-        /**
-         * Constructs a Trigger instance that is true when the axis magnitude value is greater than {@code
-         * threshold}, attached to the given loop.
-         *
-         * @param axis      The axis to read, starting at 0
-         * @param threshold The value above which this trigger should return true.
-         * @param loop      the event loop instance to attach the trigger to.
-         * @return a Trigger instance that is true when the axis magnitude value is greater than the
-         * provided threshold.
-         */
-        public Trigger axisMagnitudeGreaterThan(int axis, double threshold, EventLoop loop) {
-            var cache = axisMagnitudeGreaterThanCache.computeIfAbsent(loop, k -> new HashMap<>());
-            return cache.computeIfAbsent(
-                    Pair.of(axis, threshold),
-                    k -> new Trigger(loop, () -> Math.abs(getRawAxis(axis)) > threshold));
-        }
-
-        /**
-         * Constructs a Trigger instance that is true when the axis magnitude value is greater than {@code
-         * threshold}, attached to {@link CommandScheduler#getDefaultButtonLoop() the default command
-         * scheduler button loop}.
-         *
-         * @param axis      The axis to read, starting at 0
-         * @param threshold The value above which this trigger should return true.
-         * @return a Trigger instance that is true when the deadbanded axis value is active (non-zero).
-         */
-        public Trigger axisMagnitudeGreaterThan(int axis, double threshold) {
-            return axisMagnitudeGreaterThan(
-                    axis, threshold, CommandScheduler.getInstance().getDefaultButtonLoop());
+            return cache.computeIfAbsent(Pair.of(axis, threshold),
+                                         k -> new Trigger(loop, () -> getRawAxis(axis) < threshold));
         }
 
         /**
          * Get the value of the axis.
          *
          * @param axis The axis to read, starting at 0.
+         *
          * @return The value of the axis.
          */
         public double getRawAxis(int axis) {
             return playback.getRawAxis(axis);
+        }
+
+        /**
+         * Constructs a Trigger instance that is true when the axis value is less than {@code threshold}, attached to
+         * {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
+         *
+         * @param axis      The axis to read, starting at 0
+         * @param threshold The value above which this trigger should return true.
+         *
+         * @return a Trigger instance that is true when the axis value is greater than the provided threshold.
+         */
+        public Trigger axisGreaterThan(int axis, double threshold) {
+            return axisGreaterThan(axis, threshold, CommandScheduler.getInstance().getDefaultButtonLoop());
+        }
+
+        /**
+         * Constructs a Trigger instance that is true when the axis value is greater than {@code threshold}, attached to
+         * the given loop.
+         *
+         * @param axis      The axis to read, starting at 0
+         * @param threshold The value above which this trigger should return true.
+         * @param loop      the event loop instance to attach the trigger to.
+         *
+         * @return a Trigger instance that is true when the axis value is greater than the provided threshold.
+         */
+        public Trigger axisGreaterThan(int axis, double threshold, EventLoop loop) {
+            var cache = axisGreaterThanCache.computeIfAbsent(loop, k -> new HashMap<>());
+            return cache.computeIfAbsent(Pair.of(axis, threshold),
+                                         k -> new Trigger(loop, () -> getRawAxis(axis) > threshold));
+        }
+
+        /**
+         * Constructs a Trigger instance that is true when the axis magnitude value is greater than {@code threshold},
+         * attached to {@link CommandScheduler#getDefaultButtonLoop() the default command scheduler button loop}.
+         *
+         * @param axis      The axis to read, starting at 0
+         * @param threshold The value above which this trigger should return true.
+         *
+         * @return a Trigger instance that is true when the deadbanded axis value is active (non-zero).
+         */
+        public Trigger axisMagnitudeGreaterThan(int axis, double threshold) {
+            return axisMagnitudeGreaterThan(axis, threshold, CommandScheduler.getInstance().getDefaultButtonLoop());
+        }
+
+        /**
+         * Constructs a Trigger instance that is true when the axis magnitude value is greater than {@code threshold},
+         * attached to the given loop.
+         *
+         * @param axis      The axis to read, starting at 0
+         * @param threshold The value above which this trigger should return true.
+         * @param loop      the event loop instance to attach the trigger to.
+         *
+         * @return a Trigger instance that is true when the axis magnitude value is greater than the provided threshold.
+         */
+        public Trigger axisMagnitudeGreaterThan(int axis, double threshold, EventLoop loop) {
+            var cache = axisMagnitudeGreaterThanCache.computeIfAbsent(loop, k -> new HashMap<>());
+            return cache.computeIfAbsent(Pair.of(axis, threshold),
+                                         k -> new Trigger(loop, () -> Math.abs(getRawAxis(axis)) > threshold));
         }
     }
 
@@ -1073,7 +1078,8 @@ public class HIDUtils {
         /**
          * Constructs a CommandXboxPlayback.
          *
-         * @param serializedRecord The record as a string. If the string starts with "B85", it will be decoded as a Base85 string.
+         * @param serializedRecord The record as a string. If the string starts with "B85", it will be decoded as a
+         *                         Base85 string.
          */
         public CommandXboxPlayback(String serializedRecord) {
             super(serializedRecord);
@@ -1113,8 +1119,9 @@ public class HIDUtils {
         /**
          * Constructs a Trigger instance around the A button's digital signal.
          *
-         * @return a Trigger instance representing the A button's digital signal attached
-         * to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         * @return a Trigger instance representing the A button's digital signal attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         *
          * @see #a(EventLoop)
          */
         public Trigger a() {
@@ -1125,8 +1132,8 @@ public class HIDUtils {
          * Constructs a Trigger instance around the A button's digital signal.
          *
          * @param loop the event loop instance to attach the event to.
-         * @return a Trigger instance representing the A button's digital signal attached
-         * to the given loop.
+         *
+         * @return a Trigger instance representing the A button's digital signal attached to the given loop.
          */
         public Trigger a(EventLoop loop) {
             return button(XboxController.Button.kA.value, loop);
@@ -1135,8 +1142,9 @@ public class HIDUtils {
         /**
          * Constructs a Trigger instance around the B button's digital signal.
          *
-         * @return a Trigger instance representing the B button's digital signal attached
-         * to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         * @return a Trigger instance representing the B button's digital signal attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         *
          * @see #b(EventLoop)
          */
         public Trigger b() {
@@ -1147,8 +1155,8 @@ public class HIDUtils {
          * Constructs a Trigger instance around the B button's digital signal.
          *
          * @param loop the event loop instance to attach the event to.
-         * @return a Trigger instance representing the B button's digital signal attached
-         * to the given loop.
+         *
+         * @return a Trigger instance representing the B button's digital signal attached to the given loop.
          */
         public Trigger b(EventLoop loop) {
             return button(XboxController.Button.kB.value, loop);
@@ -1157,8 +1165,9 @@ public class HIDUtils {
         /**
          * Constructs a Trigger instance around the X button's digital signal.
          *
-         * @return a Trigger instance representing the X button's digital signal attached
-         * to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         * @return a Trigger instance representing the X button's digital signal attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         *
          * @see #x(EventLoop)
          */
         public Trigger x() {
@@ -1169,8 +1178,8 @@ public class HIDUtils {
          * Constructs a Trigger instance around the X button's digital signal.
          *
          * @param loop the event loop instance to attach the event to.
-         * @return a Trigger instance representing the X button's digital signal attached
-         * to the given loop.
+         *
+         * @return a Trigger instance representing the X button's digital signal attached to the given loop.
          */
         public Trigger x(EventLoop loop) {
             return button(XboxController.Button.kX.value, loop);
@@ -1179,8 +1188,9 @@ public class HIDUtils {
         /**
          * Constructs a Trigger instance around the Y button's digital signal.
          *
-         * @return a Trigger instance representing the Y button's digital signal attached
-         * to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         * @return a Trigger instance representing the Y button's digital signal attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         *
          * @see #y(EventLoop)
          */
         public Trigger y() {
@@ -1191,8 +1201,8 @@ public class HIDUtils {
          * Constructs a Trigger instance around the Y button's digital signal.
          *
          * @param loop the event loop instance to attach the event to.
-         * @return a Trigger instance representing the Y button's digital signal attached
-         * to the given loop.
+         *
+         * @return a Trigger instance representing the Y button's digital signal attached to the given loop.
          */
         public Trigger y(EventLoop loop) {
             return button(XboxController.Button.kY.value, loop);
@@ -1201,8 +1211,9 @@ public class HIDUtils {
         /**
          * Constructs a Trigger instance around the left bumper button's digital signal.
          *
-         * @return a Trigger instance representing the left bumper button's digital signal attached
-         * to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         * @return a Trigger instance representing the left bumper button's digital signal attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         *
          * @see #leftBumper(EventLoop)
          */
         public Trigger leftBumper() {
@@ -1213,8 +1224,8 @@ public class HIDUtils {
          * Constructs a Trigger instance around the left bumper button's digital signal.
          *
          * @param loop the event loop instance to attach the event to.
-         * @return a Trigger instance representing the left bumper button's digital signal attached
-         * to the given loop.
+         *
+         * @return a Trigger instance representing the left bumper button's digital signal attached to the given loop.
          */
         public Trigger leftBumper(EventLoop loop) {
             return button(XboxController.Button.kLeftBumper.value, loop);
@@ -1223,8 +1234,9 @@ public class HIDUtils {
         /**
          * Constructs a Trigger instance around the right bumper button's digital signal.
          *
-         * @return a Trigger instance representing the right bumper button's digital signal attached
-         * to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         * @return a Trigger instance representing the right bumper button's digital signal attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         *
          * @see #rightBumper(EventLoop)
          */
         public Trigger rightBumper() {
@@ -1235,8 +1247,8 @@ public class HIDUtils {
          * Constructs a Trigger instance around the right bumper button's digital signal.
          *
          * @param loop the event loop instance to attach the event to.
-         * @return a Trigger instance representing the right bumper button's digital signal attached
-         * to the given loop.
+         *
+         * @return a Trigger instance representing the right bumper button's digital signal attached to the given loop.
          */
         public Trigger rightBumper(EventLoop loop) {
             return button(XboxController.Button.kRightBumper.value, loop);
@@ -1245,8 +1257,9 @@ public class HIDUtils {
         /**
          * Constructs a Trigger instance around the back button's digital signal.
          *
-         * @return a Trigger instance representing the back button's digital signal attached
-         * to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         * @return a Trigger instance representing the back button's digital signal attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         *
          * @see #back(EventLoop)
          */
         public Trigger back() {
@@ -1257,8 +1270,8 @@ public class HIDUtils {
          * Constructs a Trigger instance around the back button's digital signal.
          *
          * @param loop the event loop instance to attach the event to.
-         * @return a Trigger instance representing the back button's digital signal attached
-         * to the given loop.
+         *
+         * @return a Trigger instance representing the back button's digital signal attached to the given loop.
          */
         public Trigger back(EventLoop loop) {
             return button(XboxController.Button.kBack.value, loop);
@@ -1267,8 +1280,9 @@ public class HIDUtils {
         /**
          * Constructs a Trigger instance around the start button's digital signal.
          *
-         * @return a Trigger instance representing the start button's digital signal attached
-         * to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         * @return a Trigger instance representing the start button's digital signal attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         *
          * @see #start(EventLoop)
          */
         public Trigger start() {
@@ -1279,8 +1293,8 @@ public class HIDUtils {
          * Constructs a Trigger instance around the start button's digital signal.
          *
          * @param loop the event loop instance to attach the event to.
-         * @return a Trigger instance representing the start button's digital signal attached
-         * to the given loop.
+         *
+         * @return a Trigger instance representing the start button's digital signal attached to the given loop.
          */
         public Trigger start(EventLoop loop) {
             return button(XboxController.Button.kStart.value, loop);
@@ -1289,8 +1303,9 @@ public class HIDUtils {
         /**
          * Constructs a Trigger instance around the left stick button's digital signal.
          *
-         * @return a Trigger instance representing the left stick button's digital signal attached
-         * to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         * @return a Trigger instance representing the left stick button's digital signal attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         *
          * @see #leftStick(EventLoop)
          */
         public Trigger leftStick() {
@@ -1301,8 +1316,8 @@ public class HIDUtils {
          * Constructs a Trigger instance around the left stick button's digital signal.
          *
          * @param loop the event loop instance to attach the event to.
-         * @return a Trigger instance representing the left stick button's digital signal attached
-         * to the given loop.
+         *
+         * @return a Trigger instance representing the left stick button's digital signal attached to the given loop.
          */
         public Trigger leftStick(EventLoop loop) {
             return button(XboxController.Button.kLeftStick.value, loop);
@@ -1311,8 +1326,9 @@ public class HIDUtils {
         /**
          * Constructs a Trigger instance around the right stick button's digital signal.
          *
-         * @return a Trigger instance representing the right stick button's digital signal attached
-         * to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         * @return a Trigger instance representing the right stick button's digital signal attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         *
          * @see #rightStick(EventLoop)
          */
         public Trigger rightStick() {
@@ -1323,89 +1339,91 @@ public class HIDUtils {
          * Constructs a Trigger instance around the right stick button's digital signal.
          *
          * @param loop the event loop instance to attach the event to.
-         * @return a Trigger instance representing the right stick button's digital signal attached
-         * to the given loop.
+         *
+         * @return a Trigger instance representing the right stick button's digital signal attached to the given loop.
          */
         public Trigger rightStick(EventLoop loop) {
             return button(XboxController.Button.kRightStick.value, loop);
         }
 
         /**
-         * Constructs a Trigger instance around the axis value of the left trigger. The returned
-         * trigger will be true when the axis value is greater than {@code threshold}.
+         * Constructs a Trigger instance around the axis value of the left trigger. The returned trigger will be true
+         * when the axis value is greater than 0.5.
          *
-         * @param threshold the minimum axis value for the returned {@link Trigger} to be true. This value
-         *                  should be in the range [0, 1] where 0 is the unpressed state of the axis.
-         * @param loop      the event loop instance to attach the Trigger to.
-         * @return a Trigger instance that is true when the left trigger's axis exceeds the provided
-         * threshold, attached to the given event loop
-         */
-        public Trigger leftTrigger(double threshold, EventLoop loop) {
-            return axisGreaterThan(XboxController.Axis.kLeftTrigger.value, threshold, loop);
-        }
-
-        /**
-         * Constructs a Trigger instance around the axis value of the left trigger. The returned
-         * trigger will be true when the axis value is greater than {@code threshold}.
-         *
-         * @param threshold the minimum axis value for the returned {@link Trigger} to be true. This value
-         *                  should be in the range [0, 1] where 0 is the unpressed state of the axis.
-         * @return a Trigger instance that is true when the left trigger's axis exceeds the provided
-         * threshold, attached to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler
-         * button loop}.
-         */
-        public Trigger leftTrigger(double threshold) {
-            return leftTrigger(threshold, CommandScheduler.getInstance().getDefaultButtonLoop());
-        }
-
-        /**
-         * Constructs a Trigger instance around the axis value of the left trigger. The returned trigger
-         * will be true when the axis value is greater than 0.5.
-         *
-         * @return a Trigger instance that is true when the left trigger's axis exceeds 0.5, attached to
-         * the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         * @return a Trigger instance that is true when the left trigger's axis exceeds 0.5, attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
          */
         public Trigger leftTrigger() {
             return leftTrigger(0.5);
         }
 
         /**
-         * Constructs a Trigger instance around the axis value of the right trigger. The returned
-         * trigger will be true when the axis value is greater than {@code threshold}.
+         * Constructs a Trigger instance around the axis value of the left trigger. The returned trigger will be true
+         * when the axis value is greater than {@code threshold}.
          *
-         * @param threshold the minimum axis value for the returned {@link Trigger} to be true. This value
-         *                  should be in the range [0, 1] where 0 is the unpressed state of the axis.
-         * @param loop      the event loop instance to attach the Trigger to.
-         * @return a Trigger instance that is true when the right trigger's axis exceeds the provided
-         * threshold, attached to the given event loop
+         * @param threshold the minimum axis value for the returned {@link Trigger} to be true. This value should be in
+         *                  the range [0, 1] where 0 is the unpressed state of the axis.
+         *
+         * @return a Trigger instance that is true when the left trigger's axis exceeds the provided threshold, attached
+         * to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
          */
-        public Trigger rightTrigger(double threshold, EventLoop loop) {
-            return axisGreaterThan(XboxController.Axis.kRightTrigger.value, threshold, loop);
+        public Trigger leftTrigger(double threshold) {
+            return leftTrigger(threshold, CommandScheduler.getInstance().getDefaultButtonLoop());
         }
 
         /**
-         * Constructs a Trigger instance around the axis value of the right trigger. The returned
-         * trigger will be true when the axis value is greater than {@code threshold}.
+         * Constructs a Trigger instance around the axis value of the left trigger. The returned trigger will be true
+         * when the axis value is greater than {@code threshold}.
          *
-         * @param threshold the minimum axis value for the returned {@link Trigger} to be true. This value
-         *                  should be in the range [0, 1] where 0 is the unpressed state of the axis.
-         * @return a Trigger instance that is true when the right trigger's axis exceeds the provided
-         * threshold, attached to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler
-         * button loop}.
+         * @param threshold the minimum axis value for the returned {@link Trigger} to be true. This value should be in
+         *                  the range [0, 1] where 0 is the unpressed state of the axis.
+         * @param loop      the event loop instance to attach the Trigger to.
+         *
+         * @return a Trigger instance that is true when the left trigger's axis exceeds the provided threshold, attached
+         * to the given event loop
+         */
+        public Trigger leftTrigger(double threshold, EventLoop loop) {
+            return axisGreaterThan(XboxController.Axis.kLeftTrigger.value, threshold, loop);
+        }
+
+        /**
+         * Constructs a Trigger instance around the axis value of the right trigger. The returned trigger will be true
+         * when the axis value is greater than 0.5.
+         *
+         * @return a Trigger instance that is true when the right trigger's axis exceeds 0.5, attached to the
+         * {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         */
+        public Trigger rightTrigger() {
+            return rightTrigger(0.5);
+        }
+
+        /**
+         * Constructs a Trigger instance around the axis value of the right trigger. The returned trigger will be true
+         * when the axis value is greater than {@code threshold}.
+         *
+         * @param threshold the minimum axis value for the returned {@link Trigger} to be true. This value should be in
+         *                  the range [0, 1] where 0 is the unpressed state of the axis.
+         *
+         * @return a Trigger instance that is true when the right trigger's axis exceeds the provided threshold,
+         * attached to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
          */
         public Trigger rightTrigger(double threshold) {
             return rightTrigger(threshold, CommandScheduler.getInstance().getDefaultButtonLoop());
         }
 
         /**
-         * Constructs a Trigger instance around the axis value of the right trigger. The returned trigger
-         * will be true when the axis value is greater than 0.5.
+         * Constructs a Trigger instance around the axis value of the right trigger. The returned trigger will be true
+         * when the axis value is greater than {@code threshold}.
          *
-         * @return a Trigger instance that is true when the right trigger's axis exceeds 0.5, attached to
-         * the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+         * @param threshold the minimum axis value for the returned {@link Trigger} to be true. This value should be in
+         *                  the range [0, 1] where 0 is the unpressed state of the axis.
+         * @param loop      the event loop instance to attach the Trigger to.
+         *
+         * @return a Trigger instance that is true when the right trigger's axis exceeds the provided threshold,
+         * attached to the given event loop
          */
-        public Trigger rightTrigger() {
-            return rightTrigger(0.5);
+        public Trigger rightTrigger(double threshold, EventLoop loop) {
+            return axisGreaterThan(XboxController.Axis.kRightTrigger.value, threshold, loop);
         }
 
         /**
@@ -1445,8 +1463,8 @@ public class HIDUtils {
         }
 
         /**
-         * Get the left trigger axis value of the controller. Note that this axis is bound to the
-         * range of [0, 1] as opposed to the usual [-1, 1].
+         * Get the left trigger axis value of the controller. Note that this axis is bound to the range of [0, 1] as
+         * opposed to the usual [-1, 1].
          *
          * @return The axis value.
          */
@@ -1455,8 +1473,8 @@ public class HIDUtils {
         }
 
         /**
-         * Get the right trigger axis value of the controller. Note that this axis is bound to the
-         * range of [0, 1] as opposed to the usual [-1, 1].
+         * Get the right trigger axis value of the controller. Note that this axis is bound to the range of [0, 1] as
+         * opposed to the usual [-1, 1].
          *
          * @return The axis value.
          */

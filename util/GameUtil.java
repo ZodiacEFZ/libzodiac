@@ -5,15 +5,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 
 public class GameUtil {
     /**
-     * Get whether the robot is on the red alliance.
-     *
-     * @return Whether the robot is on the red alliance.
-     */
-    public static boolean isRedAlliance() {
-        return DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
-    }
-
-    /**
      * Get whether the robot is on the blue alliance.
      *
      * @return Whether the robot is on the blue alliance.
@@ -23,8 +14,17 @@ public class GameUtil {
     }
 
     /**
-     * Get alliance-relative rotation from Pose2d rotation.
-     * The yaw of 0 is the robot facing the opponents' alliance wall.
+     * Get whether the robot is on the red alliance.
+     *
+     * @return Whether the robot is on the red alliance.
+     */
+    public static boolean isRedAlliance() {
+        return DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
+    }
+
+    /**
+     * Get alliance-relative rotation from Pose2d rotation. The yaw of 0 is the robot facing the opponents' alliance
+     * wall.
      *
      * @return The alliance-relative rotation.
      */
@@ -33,8 +33,7 @@ public class GameUtil {
     }
 
     /**
-     * Get Pose2d rotation from alliance-relative rotation.
-     * The yaw of 0 is the robot facing the red alliance wall.
+     * Get Pose2d rotation from alliance-relative rotation. The yaw of 0 is the robot facing the red alliance wall.
      *
      * @return The robot-relative yaw.
      */

@@ -20,17 +20,19 @@ public class CommandUtil {
     }
 
     /**
-     * Creates a command that rumbles the controller for a specified duration and
-     * intensity
+     * Creates a command that rumbles the controller for a specified duration and intensity
      *
      * @param controller The controller to rumble
      * @param intensity  The intensity of the rumble
      * @param duration   The duration of the rumble
+     *
      * @return The command that rumbles the controller
      */
     public static Command rumbleControllerCommand(GenericHID controller, double intensity, double duration) {
-        return Commands.runOnce(() -> controller.setRumble(GenericHID.RumbleType.kBothRumble, intensity)).repeatedly()
-                .withTimeout(duration).finallyDo(() -> controller.setRumble(GenericHID.RumbleType.kBothRumble, 0))
-                .ignoringDisable(true);
+        return Commands.runOnce(() -> controller.setRumble(GenericHID.RumbleType.kBothRumble, intensity))
+                       .repeatedly()
+                       .withTimeout(duration)
+                       .finallyDo(() -> controller.setRumble(GenericHID.RumbleType.kBothRumble, 0))
+                       .ignoringDisable(true);
     }
 }

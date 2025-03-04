@@ -31,32 +31,31 @@ import java.util.List;
  */
 public class PathPlanner {
     /**
-     * This boolean determines whether the swerve setpoint generator is enabled.
-     * If it is enabled, the setpoint generator will be used to generate swerve
-     * module states from robot-relative chassis speeds. If it is disabled, the
-     * setpoint generator will not be used.
+     * This boolean determines whether the swerve setpoint generator is enabled. If it is enabled, the setpoint
+     * generator will be used to generate swerve module states from robot-relative chassis speeds. If it is disabled,
+     * the setpoint generator will not be used.
      */
-    private static final boolean SWERVE_SETPOINT_GENERATOR_ENABLED = true;
+    private static final boolean                 SWERVE_SETPOINT_GENERATOR_ENABLED = true;
     /**
      * The instance of the PathPlanner class.
      */
-    private static PathPlanner PATHPLANNER;
+    private static       PathPlanner             PATHPLANNER;
     /**
      * The drivetrain subsystem.
      */
-    private final Drivetrain drivetrain;
+    private final        Drivetrain              drivetrain;
     /**
      * The swerve setpoint generator.
      */
-    private final SwerveSetpointGenerator swerveSetpointGenerator;
+    private final        SwerveSetpointGenerator swerveSetpointGenerator;
     /**
      * The previous swerve setpoint.
      */
-    private SwerveSetpoint previousSetpoint = null;
+    private              SwerveSetpoint          previousSetpoint                  = null;
     /**
      * The robot configuration.
      */
-    private RobotConfig config;
+    private              RobotConfig             config;
 
     /**
      * The constructor for the PathPlanner class.
@@ -84,8 +83,8 @@ public class PathPlanner {
          */
         if (state.isPresent()) {
             this.swerveSetpointGenerator = new SwerveSetpointGenerator(config, this.drivetrain.getMaxAngularVelocity());
-            this.previousSetpoint = new SwerveSetpoint(this.drivetrain.getRobotRelativeSpeeds(),
-                    state.get(), DriveFeedforwards.zeros(config.numModules));
+            this.previousSetpoint        = new SwerveSetpoint(this.drivetrain.getRobotRelativeSpeeds(), state.get(),
+                                                              DriveFeedforwards.zeros(config.numModules));
         } else {
             this.swerveSetpointGenerator = null;
         }
@@ -94,17 +93,18 @@ public class PathPlanner {
          * Configure the auto builder.
          */
         AutoBuilder.configure(this.drivetrain::getPose, // Robot pose supplier
-                this.drivetrain::setPose,
-                // Method to reset odometry (will be called if your auto has a starting pose)
-                this.drivetrain::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                (ChassisSpeeds speeds, DriveFeedforwards feedforwards) -> this.drivetrain.driveRobotRelative(speeds),
-                // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also, optionally outputs individual module feedforwards
-                this.drivetrain.getPathFollowingController(), // The path following controller
-                config, // The robot configuration
-                // TODO: Test this with different alliance colors
-                GameUtil::isRedAlliance,
-                this.drivetrain // Reference to this subsystem to set requirements
-        );
+                              this.drivetrain::setPose,
+                              // Method to reset odometry (will be called if your auto has a starting pose)
+                              this.drivetrain::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                              (ChassisSpeeds speeds, DriveFeedforwards feedforwards) -> this.drivetrain.driveRobotRelative(
+                                      speeds),
+                              // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also, optionally outputs individual module feedforwards
+                              this.drivetrain.getPathFollowingController(), // The path following controller
+                              config, // The robot configuration
+                              // TODO: Test this with different alliance colors
+                              GameUtil::isRedAlliance, this.drivetrain
+                              // Reference to this subsystem to set requirements
+                             );
     }
 
     /**
@@ -120,6 +120,14 @@ public class PathPlanner {
     }
 
     /**
+     * Warm up PathPlanner.
+     */
+    private void warmup() {
+        FollowPathCommand.warmupCommand().schedule();
+        PathfindingCommand.warmupCommand().schedule();
+    }
+
+    /**
      * Get the instance of the PathPlanner class.
      *
      * @return PathPlanner The instance of the PathPlanner class.
@@ -132,6 +140,7 @@ public class PathPlanner {
      * Generate a swerve setpoint with the desired chassis speeds.
      *
      * @param speeds The desired chassis speeds.
+     *
      * @return SwerveModuleState[] The desired swerve module states.
      */
     public static SwerveModuleState[] generateSwerveSetpoint(ChassisSpeeds speeds) {
@@ -139,20 +148,13 @@ public class PathPlanner {
             return null;
         }
 
-        PATHPLANNER.previousSetpoint = PATHPLANNER.swerveSetpointGenerator.generateSetpoint(PATHPLANNER.previousSetpoint,
+        PATHPLANNER.previousSetpoint = PATHPLANNER.swerveSetpointGenerator.generateSetpoint(
+                PATHPLANNER.previousSetpoint,
                 // The previous setpoint
                 speeds, // The desired target speeds
                 0.02 // The loop time of the robot code, in seconds
-        );
+                                                                                           );
         return PATHPLANNER.previousSetpoint.moduleStates();
-    }
-
-    /**
-     * Warm up PathPlanner.
-     */
-    private void warmup() {
-        FollowPathCommand.warmupCommand().schedule();
-        PathfindingCommand.warmupCommand().schedule();
     }
 
     /**
@@ -169,6 +171,7 @@ public class PathPlanner {
      * Get the event trigger by name.
      *
      * @param name The name of the event trigger.
+     *
      * @return The event trigger with the specified name.
      */
     public Trigger getEventTrigger(String name) {
@@ -179,6 +182,7 @@ public class PathPlanner {
      * Get the point towards zone trigger by name.
      *
      * @param name The name of the point towards zone trigger.
+     *
      * @return The point towards zone trigger with the specified name.
      */
     public Trigger getPointTowardsZoneTrigger(String name) {
@@ -202,6 +206,7 @@ public class PathPlanner {
      * Create a path from a list of poses.
      *
      * @param poses The list of poses.
+     *
      * @return The path created from the list of poses.
      */
     public PathPlannerPath createPath(List<Pose2d> poses, GoalEndState goalEndState) {
@@ -213,6 +218,7 @@ public class PathPlanner {
      *
      * @param poses  The list of poses.
      * @param noFlip Whether to prevent the path from being flipped.
+     *
      * @return The path created from the list of poses.
      */
     public PathPlannerPath createPath(List<Pose2d> poses, GoalEndState goalEndState, boolean noFlip) {
@@ -221,7 +227,7 @@ public class PathPlanner {
         List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(poses);
 
         PathConstraints constraints = new PathConstraints(3.0, 3.0, 2 * Math.PI,
-                4 * Math.PI); // The constraints for this path.
+                                                          4 * Math.PI); // The constraints for this path.
 
         // Create the path using the waypoints created above
         PathPlannerPath path = new PathPlannerPath(waypoints, constraints, null, goalEndState);

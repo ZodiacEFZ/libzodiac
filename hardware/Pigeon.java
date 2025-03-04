@@ -32,6 +32,11 @@ public final class Pigeon implements Gyro {
     }
 
     @Override
+    public void reset() {
+        this.pigeon.reset();
+    }
+
+    @Override
     public Angle getYaw() {
         return this.pigeon.getYaw().getValue();
     }
@@ -49,10 +54,5 @@ public final class Pigeon implements Gyro {
     @Override
     public AngularVelocity getYawAngularVelocity() {
         return this.pigeon.getAngularVelocityZWorld().getValue();
-    }
-
-    @Override
-    public void reset() {
-        this.pigeon.reset();
     }
 }

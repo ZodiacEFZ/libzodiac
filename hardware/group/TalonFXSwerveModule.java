@@ -12,11 +12,11 @@ import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonFXMotor;
 
 public class TalonFXSwerveModule implements SwerveModule {
-    private final Distance wheelRadius;
+    private final Distance     wheelRadius;
     private final TalonFXMotor angle;
     private final TalonFXMotor drive;
-    private final MagEncoder encoder;
-    private Rotation2d lastAngle;
+    private final MagEncoder   encoder;
+    private       Rotation2d   lastAngle;
 
     public TalonFXSwerveModule(Config config, Swerve.Config parent) {
         this.drive = new TalonFXMotor(config.drive);
@@ -33,20 +33,10 @@ public class TalonFXSwerveModule implements SwerveModule {
         this.angle.setBrakeWhenNeutral(true);
         this.drive.setBrakeWhenNeutral(false);
 
-        this.encoder = new MagEncoder(config.encoder, config.encoderZero);
+        this.encoder   = new MagEncoder(config.encoder, config.encoderZero);
         this.lastAngle = this.getAngle();
 
         this.wheelRadius = parent.wheelRadius;
-    }
-
-    private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d angle) {
-        final var delta = desiredState.angle.minus(angle);
-        if (Math.abs(delta.getRadians()) > Math.PI / 2) {
-            return new SwerveModuleState(-desiredState.speedMetersPerSecond,
-                    desiredState.angle.plus(new Rotation2d(Math.PI)));
-        } else {
-            return desiredState;
-        }
     }
 
     private Rotation2d getAngle() {
@@ -84,27 +74,36 @@ public class TalonFXSwerveModule implements SwerveModule {
         // driving.
         optimizedDesiredState.cosineScale(currentAngle);
 
-        this.drive.setVelocity(Units.RadiansPerSecond.of(optimizedDesiredState.speedMetersPerSecond / this.wheelRadius.in(Units.Meter)));
+        this.drive.setVelocity(Units.RadiansPerSecond.of(
+                optimizedDesiredState.speedMetersPerSecond / this.wheelRadius.in(Units.Meter)));
 
-        if (Math.abs(optimizedDesiredState.speedMetersPerSecond) >= 0.03 && Math.abs(this.lastAngle
-                .minus(optimizedDesiredState.angle).getRadians()) >= Math.PI / 60) {
+        if (Math.abs(optimizedDesiredState.speedMetersPerSecond) >= 0.03 &&
+            Math.abs(this.lastAngle.minus(optimizedDesiredState.angle).getRadians()) >= Math.PI / 60) {
             this.lastAngle = optimizedDesiredState.angle;
         }
         this.angle.setPosition(this.lastAngle.getMeasure());
     }
 
+    private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d angle) {
+        final var delta = desiredState.angle.minus(angle);
+        if (Math.abs(delta.getRadians()) > Math.PI / 2) {
+            return new SwerveModuleState(-desiredState.speedMetersPerSecond,
+                                         desiredState.angle.plus(new Rotation2d(Math.PI)));
+        } else {
+            return desiredState;
+        }
+    }
+
     @Override
     public SwerveModuleState getState() {
-        return new SwerveModuleState(
-                this.drive.getVelocity().asFrequency().times(this.wheelRadius.times(2 * Math.PI)),
-                this.getAngle());
+        return new SwerveModuleState(this.drive.getVelocity().asFrequency().times(this.wheelRadius.times(2 * Math.PI)),
+                                     this.getAngle());
     }
 
     @Override
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(
-                this.wheelRadius.times(this.drive.getPosition().in(Units.Radians)),
-                this.getAngle());
+        return new SwerveModulePosition(this.wheelRadius.times(this.drive.getPosition().in(Units.Radians)),
+                                        this.getAngle());
     }
 
     public TalonFXMotor getAngleMotor() {
@@ -120,35 +119,35 @@ public class TalonFXSwerveModule implements SwerveModule {
         /**
          * CAN ID of angle motor.
          */
-        public int angle;
+        public int           angle;
         /**
          * CAN ID of drive motor.
          */
-        public int drive;
+        public int           drive;
         /**
          * CAN ID of absolute encoder.
          */
-        public int encoder;
+        public int           encoder;
         /**
          * Zero position of encoder in raw units.
          */
-        public double encoderZero;
+        public double        encoderZero;
         /**
          * Reversion state of angle motor.
          */
-        public boolean angleInverted = false;
+        public boolean       angleInverted = false;
         /**
          * Reversion state of drive motor.
          */
-        public boolean driveInverted = false;
+        public boolean       driveInverted = false;
         /**
          * PID arguments for drive motor.
          */
-        public PIDController drivePID = null;
+        public PIDController drivePID      = null;
         /**
          * PID arguments for angle motor.
          */
-        public PIDController anglePID = null;
+        public PIDController anglePID      = null;
 
         public Config withEncoderZero(double encoderZero) {
             this.encoderZero = encoderZero;

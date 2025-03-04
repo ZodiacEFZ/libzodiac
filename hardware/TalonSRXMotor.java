@@ -15,28 +15,31 @@ public final class TalonSRXMotor implements Motor {
     /**
      * The velocity time unit of the sensor.
      */
-    private static final TimeUnit VELOCITY_TIME_UNIT = Units.derive(Units.Seconds).splitInto(10).named("100ms")
-                                                            .symbol("*100ms").make();
+    private static final TimeUnit                VELOCITY_TIME_UNIT = Units.derive(Units.Seconds)
+                                                                           .splitInto(10)
+                                                                           .named("100ms")
+                                                                           .symbol("*100ms")
+                                                                           .make();
     /**
      * The motor controller.
      */
-    private final TalonSRX motor;
+    private final        TalonSRX                motor;
     /**
      * Zero position of the sensor in raw unit.
      */
-    public double positionZero = 0;
+    public               double                  positionZero       = 0;
     /**
      * The position unit of the sensor.
      */
-    private AngleUnit positionUnit = null;
+    private              AngleUnit               positionUnit       = null;
     /**
      * The velocity unit of the sensor.
      */
-    private AngularVelocityUnit velocityUnit = null;
+    private              AngularVelocityUnit     velocityUnit       = null;
     /**
      * The acceleration unit of the sensor.
      */
-    private AngularAccelerationUnit accelerationUnit = null;
+    private              AngularAccelerationUnit accelerationUnit   = null;
 
     /**
      * Construct a new Talon SRX motor.
@@ -53,7 +56,7 @@ public final class TalonSRXMotor implements Motor {
      * @param id The CAN ID of the motor controller.
      */
     public TalonSRXMotor(int id, double zero) {
-        this.motor = new TalonSRX(id);
+        this.motor        = new TalonSRX(id);
         this.positionZero = zero;
     }
 
@@ -93,19 +96,6 @@ public final class TalonSRXMotor implements Motor {
         this.motor.config_kP(0, kP);
         this.motor.config_kI(0, kI);
         this.motor.config_kD(0, kD);
-    }
-
-    /**
-     * Configure the unit of the sensor.
-     *
-     * @param unitsPerRotation Sensor unit per rotation.
-     */
-    public void setUnit(double unitsPerRotation) {
-        this.positionUnit = Units.derive(Units.Rotations).splitInto(unitsPerRotation).named("TalonSRXEncoderUnit")
-                                 .symbol("")
-                                 .make();
-        this.velocityUnit = this.positionUnit.per(VELOCITY_TIME_UNIT);
-        this.accelerationUnit = this.velocityUnit.per(Units.Seconds);
     }
 
     /**
@@ -159,6 +149,31 @@ public final class TalonSRXMotor implements Motor {
     }
 
     @Override
+    public Angle getPosition() {
+        return this.positionUnit().of(this.motor.getSelectedSensorPosition() - this.positionZero);
+    }
+
+    @Override
+    public void setPosition(Angle position) {
+        this.motor.set(TalonSRXControlMode.Position, position.in(this.positionUnit()));
+    }
+
+    @Override
+    public AngularVelocity getVelocity() {
+        return this.velocityUnit().of(this.motor.getSelectedSensorVelocity());
+    }
+
+    @Override
+    public void setVelocity(AngularVelocity angularVelocity) {
+        this.motor.set(TalonSRXControlMode.Velocity, angularVelocity.in(this.velocityUnit())); // units per 100ms
+    }
+
+    @Override
+    public Voltage getVoltage() {
+        return Units.Volts.of(this.motor.getMotorOutputVoltage());
+    }
+
+    @Override
     public Current getCurrent() {
         return Units.Amp.of(this.motor.getStatorCurrent());
     }
@@ -166,11 +181,6 @@ public final class TalonSRXMotor implements Motor {
     @Override
     public void setCurrent(Current current) {
         this.motor.set(TalonSRXControlMode.Current, current.in(Units.Amps));
-    }
-
-    @Override
-    public Voltage getVoltage() {
-        return Units.Volts.of(this.motor.getMotorOutputVoltage());
     }
 
     /**
@@ -184,7 +194,8 @@ public final class TalonSRXMotor implements Motor {
      * @param acceleration   The maximum acceleration of the motion magic.
      * @param sCurveStrength The strength of the S-curve.
      */
-    public void setMotionMagicConfig(double kP, double kI, double kD, double kF, AngularVelocity cruiseVelocity, AngularAcceleration acceleration, int sCurveStrength) {
+    public void setMotionMagicConfig(double kP, double kI, double kD, double kF, AngularVelocity cruiseVelocity,
+                                     AngularAcceleration acceleration, int sCurveStrength) {
         this.motor.config_kP(0, kP);
         this.motor.config_kI(0, kI);
         this.motor.config_kD(0, kD);
@@ -193,6 +204,41 @@ public final class TalonSRXMotor implements Motor {
         this.motor.configMotionCruiseVelocity(cruiseVelocity.in(this.velocityUnit()));
         this.motor.configMotionAcceleration(acceleration.in(this.accelerationUnit()));
         this.motor.configMotionSCurveStrength(sCurveStrength);
+    }
+
+    /**
+     * Get the velocity unit of the motor.
+     */
+    private AngularVelocityUnit velocityUnit() {
+        if (this.velocityUnit == null) {
+            this.setUnit(4096);
+        }
+        return this.velocityUnit;
+    }
+
+    /**
+     * Get the acceleration unit of the motor.
+     */
+    private AngularAccelerationUnit accelerationUnit() {
+        if (this.accelerationUnit == null) {
+            this.setUnit(4096);
+        }
+        return this.accelerationUnit;
+    }
+
+    /**
+     * Configure the unit of the sensor.
+     *
+     * @param unitsPerRotation Sensor unit per rotation.
+     */
+    public void setUnit(double unitsPerRotation) {
+        this.positionUnit     = Units.derive(Units.Rotations)
+                                     .splitInto(unitsPerRotation)
+                                     .named("TalonSRXEncoderUnit")
+                                     .symbol("")
+                                     .make();
+        this.velocityUnit     = this.positionUnit.per(VELOCITY_TIME_UNIT);
+        this.accelerationUnit = this.velocityUnit.per(Units.Seconds);
     }
 
     /*
@@ -205,6 +251,16 @@ public final class TalonSRXMotor implements Motor {
     }
 
     /**
+     * Get the position unit of the motor.
+     */
+    private AngleUnit positionUnit() {
+        if (this.positionUnit == null) {
+            this.setUnit(4096);
+        }
+        return this.positionUnit;
+    }
+
+    /**
      * Control the motor to turn to a specific position with motion magic.
      *
      * @param position    The position to turn to.
@@ -212,7 +268,7 @@ public final class TalonSRXMotor implements Motor {
      */
     public void MotionMagic(Angle position, double feedforward) {
         this.motor.set(TalonSRXControlMode.MotionMagic, position.in(this.positionUnit()),
-                DemandType.ArbitraryFeedForward, feedforward);
+                       DemandType.ArbitraryFeedForward, feedforward);
     }
 
     /**
@@ -237,16 +293,6 @@ public final class TalonSRXMotor implements Motor {
         this.motor.set(mode, demand0, demand1Type, demand1);
     }
 
-    @Override
-    public Angle getPosition() {
-        return this.positionUnit().of(this.motor.getSelectedSensorPosition()-this.positionZero);
-    }
-
-    @Override
-    public void setPosition(Angle position) {
-        this.motor.set(TalonSRXControlMode.Position, position.in(this.positionUnit()));
-    }
-
     /**
      * Set the position of the motor.
      *
@@ -255,36 +301,6 @@ public final class TalonSRXMotor implements Motor {
     public void setRelativeEncoderPosition(Angle position) {
         this.motor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
         this.motor.setSelectedSensorPosition(position.in(this.positionUnit()));
-    }
-
-    /**
-     * Get the position unit of the motor.
-     */
-    private AngleUnit positionUnit() {
-        if (this.positionUnit == null) {
-            this.setUnit(4096);
-        }
-        return this.positionUnit;
-    }
-
-    /**
-     * Get the velocity unit of the motor.
-     */
-    private AngularVelocityUnit velocityUnit() {
-        if (this.velocityUnit == null) {
-            this.setUnit(4096);
-        }
-        return this.velocityUnit;
-    }
-
-    /**
-     * Get the acceleration unit of the motor.
-     */
-    private AngularAccelerationUnit accelerationUnit() {
-        if (this.accelerationUnit == null) {
-            this.setUnit(4096);
-        }
-        return this.accelerationUnit;
     }
 
     /**
@@ -330,16 +346,6 @@ public final class TalonSRXMotor implements Motor {
     public void follow(TalonSRXMotor master, boolean invert) {
         this.motor.follow(master.motor);
         this.motor.setInverted(invert ? InvertType.OpposeMaster : InvertType.FollowMaster);
-    }
-
-    @Override
-    public AngularVelocity getVelocity() {
-        return this.velocityUnit().of(this.motor.getSelectedSensorVelocity());
-    }
-
-    @Override
-    public void setVelocity(AngularVelocity angularVelocity) {
-        this.motor.set(TalonSRXControlMode.Velocity, angularVelocity.in(this.velocityUnit())); // units per 100ms
     }
 
     /**
