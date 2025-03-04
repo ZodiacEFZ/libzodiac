@@ -61,28 +61,28 @@ public final class SparkMaxMotor implements Motor {
     }
 
     @Override
-    public void power(double percent) {
+    public void setPower(double percent) {
         this.motor.getClosedLoopController().setReference(percent, SparkBase.ControlType.kDutyCycle);
     }
 
     @Override
-    public void position(Angle position) {
+    public void setPosition(Angle position) {
         this.motor.getClosedLoopController().setReference(position.in(POSITION_UNIT), SparkBase.ControlType.kPosition);
     }
 
     @Override
-    public void velocity(AngularVelocity angularVelocity) {
+    public void setVelocity(AngularVelocity angularVelocity) {
         this.motor.getClosedLoopController()
                   .setReference(angularVelocity.in(VELOCITY_UNIT), SparkBase.ControlType.kVelocity);
     }
 
     @Override
-    public void voltage(Voltage voltage) {
+    public void setVoltage(Voltage voltage) {
         this.motor.setVoltage(voltage.in(Units.Volts));
     }
 
     @Override
-    public void current(Current current) {
+    public void setCurrent(Current current) {
         this.motor.getClosedLoopController().setReference(current.in(Units.Amps), SparkBase.ControlType.kCurrent);
     }
 

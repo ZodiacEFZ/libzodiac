@@ -5,10 +5,7 @@ import com.ctre.phoenix.motorcontrol.can.SlotConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.*;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.*;
 import frc.libzodiac.api.Motor;
 
 /**
@@ -18,7 +15,8 @@ public final class TalonSRXMotor implements Motor {
     /**
      * The velocity time unit of the sensor.
      */
-    private static final TimeUnit VELOCITY_TIME_UNIT = Units.derive(Units.Seconds).splitInto(10).named("100ms").symbol("*100ms").make();
+    private static final TimeUnit VELOCITY_TIME_UNIT = Units.derive(Units.Seconds).splitInto(10).named("100ms")
+                                                            .symbol("*100ms").make();
     /**
      * The motor controller.
      */
@@ -89,8 +87,9 @@ public final class TalonSRXMotor implements Motor {
      * @param unitsPerRotation Sensor unit per rotation.
      */
     public void setUnit(double unitsPerRotation) {
-        this.positionUnit = Units.derive(Units.Rotations).splitInto(unitsPerRotation).named("TalonSRXEncoderUnit").symbol("")
-                .make();
+        this.positionUnit = Units.derive(Units.Rotations).splitInto(unitsPerRotation).named("TalonSRXEncoderUnit")
+                                 .symbol("")
+                                 .make();
         this.velocityUnit = this.positionUnit.per(VELOCITY_TIME_UNIT);
         this.accelerationUnit = this.velocityUnit.per(Units.Seconds);
     }
@@ -118,23 +117,28 @@ public final class TalonSRXMotor implements Motor {
     }
 
     @Override
-    public void power(double percent) {
+    public double getPower() {
+        return this.motor.getMotorOutputPercent();
+    }
+
+    @Override
+    public void setPower(double percent) {
         this.motor.set(TalonSRXControlMode.PercentOutput, percent);
     }
 
     @Override
-    public void position(Angle position) {
-        this.motor.set(TalonSRXControlMode.Position, position.in(this.positionUnit()));
+    public Current getCurrent() {
+        return Units.Amp.of(this.motor.getStatorCurrent());
     }
 
     @Override
-    public void velocity(AngularVelocity angularVelocity) {
-        this.motor.set(TalonSRXControlMode.Velocity, angularVelocity.in(this.velocityUnit())); // units per 100ms
-    }
-
-    @Override
-    public void current(Current current) {
+    public void setCurrent(Current current) {
         this.motor.set(TalonSRXControlMode.Current, current.in(Units.Amps));
+    }
+
+    @Override
+    public Voltage getVoltage() {
+        return Units.Volts.of(this.motor.getMotorOutputVoltage());
     }
 
     /**
@@ -201,11 +205,14 @@ public final class TalonSRXMotor implements Motor {
         this.motor.set(mode, demand0, demand1Type, demand1);
     }
 
-    /**
-     * Get the position of the motor.
-     */
+    @Override
     public Angle getPosition() {
         return this.positionUnit().of(this.motor.getSelectedSensorPosition());
+    }
+
+    @Override
+    public void setPosition(Angle position) {
+        this.motor.set(TalonSRXControlMode.Position, position.in(this.positionUnit()));
     }
 
     /**
@@ -293,11 +300,14 @@ public final class TalonSRXMotor implements Motor {
         this.motor.setInverted(invert ? InvertType.OpposeMaster : InvertType.FollowMaster);
     }
 
-    /**
-     * Get the velocity of the motor.
-     */
+    @Override
     public AngularVelocity getVelocity() {
         return this.velocityUnit().of(this.motor.getSelectedSensorVelocity());
+    }
+
+    @Override
+    public void setVelocity(AngularVelocity angularVelocity) {
+        this.motor.set(TalonSRXControlMode.Velocity, angularVelocity.in(this.velocityUnit())); // units per 100ms
     }
 
     /**

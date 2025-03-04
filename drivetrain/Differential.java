@@ -191,8 +191,8 @@ public class Differential extends SubsystemBase implements Drivetrain {
                 speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
         SmartDashboard.putNumber("Right Desired Speed", speeds.rightMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
 
-        this.leftLeader.velocity(Units.RadiansPerSecond.of(speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter)));
-        this.rightLeader.velocity(Units.RadiansPerSecond.of(speeds.rightMetersPerSecond / this.config.wheelRadius.in(Units.Meter)));
+        this.leftLeader.setVelocity(Units.RadiansPerSecond.of(speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter)));
+        this.rightLeader.setVelocity(Units.RadiansPerSecond.of(speeds.rightMetersPerSecond / this.config.wheelRadius.in(Units.Meter)));
     }
 
     /**
@@ -220,8 +220,8 @@ public class Differential extends SubsystemBase implements Drivetrain {
     public void driveDirectPower(ChassisSpeeds chassisSpeeds) {
         var wheelSpeeds = this.kinematics.toWheelSpeeds(chassisSpeeds);
         final var MAX_SPEED = this.config.maxSpeed.in(Units.MetersPerSecond);
-        this.leftLeader.power(wheelSpeeds.leftMetersPerSecond / MAX_SPEED);
-        this.rightLeader.power(wheelSpeeds.rightMetersPerSecond / MAX_SPEED);
+        this.leftLeader.setPower(wheelSpeeds.leftMetersPerSecond / MAX_SPEED);
+        this.rightLeader.setPower(wheelSpeeds.rightMetersPerSecond / MAX_SPEED);
     }
 
     @Override

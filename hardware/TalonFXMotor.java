@@ -120,24 +120,22 @@ public final class TalonFXMotor implements Motor {
     }
 
     @Override
-    public void power(double percent) {
+    public double getPower() {
+        return this.motor.get();
+    }
+
+    @Override
+    public void setPower(double percent) {
         this.motor.set(percent);
     }
 
     @Override
-    public void position(Angle position) {
-        this.motor.setControl(new PositionDutyCycle(position));
+    public Voltage getVoltage() {
+        return this.motor.getMotorVoltage().getValue();
     }
 
     @Override
-    public void velocity(AngularVelocity angularVelocity) {
-        // Our practice suggest that `VelocityVoltage` api produces a somehow more
-        // stable output than `VelocityDutyCycle`.
-        this.motor.setControl(new VelocityVoltage(angularVelocity));
-    }
-
-    @Override
-    public void voltage(Voltage voltage) {
+    public void setVoltage(Voltage voltage) {
         this.motor.setControl(new VoltageOut(voltage.in(Units.Volts)));
     }
 
@@ -150,13 +148,14 @@ public final class TalonFXMotor implements Motor {
         this.motor.setControl(new MusicTone(frequency.in(Units.Hertz)).withUpdateFreqHz(50));
     }
 
-    /**
-     * Get the position of the motor.
-     *
-     * @return the position of the motor.
-     */
+    @Override
     public Angle getPosition() {
         return this.motor.getPosition().getValue();
+    }
+
+    @Override
+    public void setPosition(Angle position) {
+        this.motor.setControl(new PositionDutyCycle(position));
     }
 
     /**
@@ -175,13 +174,21 @@ public final class TalonFXMotor implements Motor {
         this.motor.setPosition(0);
     }
 
-    /**
-     * Get the velocity of the motor.
-     *
-     * @return the velocity of the motor.
-     */
+    @Override
     public AngularVelocity getVelocity() {
         return this.motor.getVelocity().getValue();
+    }
+
+    @Override
+    public void setVelocity(AngularVelocity angularVelocity) {
+        // Our practice suggest that `VelocityVoltage` api produces a somehow more
+        // stable output than `VelocityDutyCycle`.
+        this.motor.setControl(new VelocityVoltage(angularVelocity));
+    }
+
+    @Override
+    public Current getCurrent() {
+        return this.motor.getTorqueCurrent().getValue();
     }
 
     /**
@@ -265,7 +272,7 @@ public final class TalonFXMotor implements Motor {
      */
     public void MotionMagicVelocity(AngularVelocity angularVelocity, AngularAcceleration acceleration, Voltage feedforward) {
         this.motor.setControl(new MotionMagicVelocityVoltage(angularVelocity).withAcceleration(acceleration)
-                .withFeedForward(feedforward));
+                                                                             .withFeedForward(feedforward));
     }
 
     /**
@@ -456,7 +463,7 @@ public final class TalonFXMotor implements Motor {
         private void setInstrumentAllTracks(Collection<ParentDevice> instruments) {
             var instrumentsList = instruments.stream().toList();
             IntStream.range(0, instrumentsList.size())
-                    .forEach(i -> this.orchestra.addInstrument(instrumentsList.get(i), i % this.track));
+                     .forEach(i -> this.orchestra.addInstrument(instrumentsList.get(i), i % this.track));
         }
 
         /**

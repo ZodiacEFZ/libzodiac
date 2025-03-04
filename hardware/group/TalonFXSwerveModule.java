@@ -40,8 +40,8 @@ public class TalonFXSwerveModule implements SwerveModule {
     }
 
     private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d angle) {
-        var delta = desiredState.angle.minus(angle);
-        if (Math.abs(new Rotation2d(delta.getCos(), delta.getSin()).getRadians()) > Math.PI / 2) {
+        final var delta = desiredState.angle.minus(angle);
+        if (Math.abs(delta.getRadians()) > Math.PI / 2) {
             return new SwerveModuleState(-desiredState.speedMetersPerSecond,
                     desiredState.angle.plus(new Rotation2d(Math.PI)));
         } else {
@@ -76,7 +76,7 @@ public class TalonFXSwerveModule implements SwerveModule {
 
     @Override
     public void setDesiredState(SwerveModuleState desired) {
-        var currentAngle = this.getAngle();
+        final var currentAngle = this.getAngle();
         // Optimize the reference state to avoid spinning further than 90 degrees
         var optimizedDesiredState = optimize(desired, currentAngle);
         // Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
@@ -84,25 +84,26 @@ public class TalonFXSwerveModule implements SwerveModule {
         // driving.
         optimizedDesiredState.cosineScale(currentAngle);
 
-        this.drive.velocity(Units.RadiansPerSecond.of(optimizedDesiredState.speedMetersPerSecond / this.wheelRadius.in(Units.Meter)));
+        this.drive.setVelocity(Units.RadiansPerSecond.of(optimizedDesiredState.speedMetersPerSecond / this.wheelRadius.in(Units.Meter)));
 
         if (Math.abs(optimizedDesiredState.speedMetersPerSecond) >= 0.03 && Math.abs(this.lastAngle
                 .minus(optimizedDesiredState.angle).getRadians()) >= Math.PI / 60) {
             this.lastAngle = optimizedDesiredState.angle;
         }
-        this.angle.position(this.lastAngle.getMeasure());
+        this.angle.setPosition(this.lastAngle.getMeasure());
     }
 
     @Override
     public SwerveModuleState getState() {
-        return new SwerveModuleState(this.drive.getVelocity()
-                                               .in(Units.RadiansPerSecond) * this.wheelRadius.in(Units.Meter),
+        return new SwerveModuleState(
+                this.drive.getVelocity().in(Units.RadiansPerSecond) * this.wheelRadius.in(Units.Meter),
                 this.getAngle());
     }
 
     @Override
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(this.drive.getPosition().in(Units.Radians) * this.wheelRadius.in(Units.Meter),
+        return new SwerveModulePosition(
+                this.drive.getPosition().in(Units.Radians) * this.wheelRadius.in(Units.Meter),
                 this.getAngle());
     }
 
