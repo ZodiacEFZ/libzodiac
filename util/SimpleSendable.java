@@ -22,7 +22,6 @@ import java.util.function.*;
  * workaround.
  */
 public interface SimpleSendable extends Sendable {
-
     @Override
     default void initSendable(SendableBuilder builder) {
         this.simpleSendableInit(builder);

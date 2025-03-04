@@ -44,8 +44,14 @@ public class Maths {
         return new Translation2d(distance, translation.getAngle());
     }
 
-    public static Translation2d limitTranslation(Translation2d translation) {
+    /**
+     * Limits the translation to a norm of 1
+     *
+     * @param translation The translation to limit
+     * @return The limited translation
+     */
+    public static Translation2d limitTranslation(Translation2d translation, double limit) {
         var norm = translation.getNorm();
-        return norm > 1 ? translation.div(norm) : translation;
+        return norm > limit ? translation.times(limit / norm) : translation;
     }
 }

@@ -17,37 +17,89 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 public class HIDUtils {
+    /**
+     * Represents the state of a button.
+     *
+     * @param raw      whether the button is currently pressed
+     * @param pressed  whether the button was pressed now but not pressed previously
+     * @param released whether the button was not pressed now but pressed previously
+     */
     private record ButtonState(boolean raw, boolean pressed, boolean released) {
+        /**
+         * Constructs a ButtonState from a raw value.
+         *
+         * @param value The raw value of the button state.
+         */
         private ButtonState(int value) {
             this((value & 0b100) != 0, (value & 0b010) != 0, (value & 0b001) != 0);
         }
 
-        public String toString() {
+        /**
+         * Get the raw value of the button state.
+         *
+         * @return The raw value of the button state.
+         */
+        public int toInt() {
             int rawBit = this.raw ? 1 : 0;
             int pressedBit = this.pressed ? 1 : 0;
             int releasedBit = this.released ? 1 : 0;
-            return Integer.toString(rawBit << 2 | pressedBit << 1 | releasedBit);
+            return rawBit << 2 | pressedBit << 1 | releasedBit;
+        }
+
+        /**
+         * Get the raw value of the button state as a string.
+         *
+         * @return The raw value of the button state as a string.
+         */
+        public String toString() {
+            return Integer.toString(this.toInt());
         }
     }
 
+    /**
+     * Represents the state of a HID device.
+     *
+     * @param time    the time at which the state was recorded
+     * @param buttons the state of the buttons
+     * @param axes    the values of the axes
+     * @param pov     the angles of the POV
+     */
     private record HIDState(double time, ButtonState[] buttons, double[] axes, int[] pov) {
+        /**
+         * Get the state as a string.
+         *
+         * @return The state as a string.
+         */
         public String toString() {
             return time + "," + Arrays.toString(this.buttons) + "," +
                     Arrays.toString(this.axes) + "," + Arrays.toString(this.pov);
         }
     }
 
+    /**
+     * Represents a record of HID states.
+     */
     public static class HIDRecord {
         private final ArrayList<HIDState> states = new ArrayList<>();
 
+        /**
+         * Constructs a HIDRecord.
+         */
         private HIDRecord() {
         }
 
+        /**
+         * Constructs a HIDRecord.
+         *
+         * @param string The record as a string. If the string starts with "B85", it will be decoded as a Base85 string.
+         *               Otherwise, it will be parsed as a raw string.
+         */
         public HIDRecord(String string) {
             if (string.startsWith("B85")) {
                 try {
                     string = Base85.getZ85Decoder().decode(string);
                 } catch (Exception ignored) {
+                    // The string is not valid Base85, so it will be parsed as a raw string
                 }
             }
             String[] stateStrings = string.split("\\|");
@@ -61,18 +113,36 @@ public class HIDUtils {
             }
         }
 
+        /**
+         * Add a state to the record.
+         *
+         * @param state The state to add.
+         */
         private void add(HIDState state) {
             this.states.add(state);
         }
 
+        /**
+         * Clear the record.
+         */
         private void clear() {
             this.states.clear();
         }
 
+        /**
+         * Get the record as a Base85 string.
+         *
+         * @return The record as a Base85 string.
+         */
         public String toString() {
             return this.toZ85String();
         }
 
+        /**
+         * Get the record as a raw string.
+         *
+         * @return The record as a raw string.
+         */
         public String toRawString() {
             StringBuilder builder = new StringBuilder();
             IntStream.range(0, states.size()).forEachOrdered(i -> {
@@ -84,21 +154,37 @@ public class HIDUtils {
             return builder.toString();
         }
 
+        /**
+         * Get the record as a Base85 string.
+         *
+         * @return The record as a Base85 string.
+         */
         public String toZ85String() {
             return "B85" + Base85.getZ85Encoder().encode(this.toRawString());
         }
     }
 
+    /**
+     * A class for recording HID states.
+     */
     public static class HIDRecorder extends SubsystemBase {
+        final Timer timer = new Timer();
         private final GenericHID device;
         private final HIDRecord record = new HIDRecord();
-        final Timer timer = new Timer();
         private boolean recording = false;
 
+        /**
+         * Constructs a HIDRecorder.
+         *
+         * @param device The HID device to record.
+         */
         public HIDRecorder(GenericHID device) {
             this.device = device;
         }
 
+        /**
+         * Start recording.
+         */
         public void startRecording() {
             this.record.clear();
             this.timer.reset();
@@ -106,12 +192,22 @@ public class HIDUtils {
             this.recording = true;
         }
 
+        /**
+         * Stop recording.
+         *
+         * @return The record.
+         */
         public HIDRecord stopRecording() {
             this.recording = false;
             this.timer.stop();
             return this.record;
         }
 
+        /**
+         * Get the record.
+         *
+         * @return The record.
+         */
         public HIDRecord getRecord() {
             return this.record;
         }
@@ -130,6 +226,9 @@ public class HIDUtils {
         }
     }
 
+    /**
+     * A class for playing back HID records.
+     */
     public static class HIDPlayback {
         private final Timer timer = new Timer();
         private final HIDRecord record;
@@ -137,16 +236,31 @@ public class HIDUtils {
         private int index = 0;
         private boolean playing = false;
 
+        /**
+         * Constructs a HIDPlayback.
+         *
+         * @param serializedRecord The record as a string. If the string starts with "B85", it will be decoded as a Base85 string.
+         */
         public HIDPlayback(String serializedRecord) {
             this.record = new HIDRecord(serializedRecord);
             this.presented = new boolean[this.record.states.size()];
         }
 
+        /**
+         * Constructs a HIDPlayback.
+         *
+         * @param record The record.
+         */
         public HIDPlayback(HIDRecord record) {
             this.record = record;
             this.presented = new boolean[this.record.states.size()];
         }
 
+        /**
+         * Constructs a HIDPlayback.
+         *
+         * @param playback The playback to copy.
+         */
         public HIDPlayback(HIDPlayback playback) {
             this.record = playback.record;
             this.presented = new boolean[this.record.states.size()];
@@ -154,6 +268,9 @@ public class HIDUtils {
             this.playing = false;
         }
 
+        /**
+         * Start playing the record.
+         */
         public void start() {
             this.timer.reset();
             this.timer.start();
@@ -161,11 +278,19 @@ public class HIDUtils {
             this.playing = true;
         }
 
+        /**
+         * Stop playing the record.
+         */
         public void reset() {
             this.timer.reset();
             this.playing = false;
         }
 
+        /**
+         * Get the current state.
+         *
+         * @return The current state.
+         */
         private HIDState getCurrentState() {
             if (this.playing) {
                 double time = this.timer.get();
@@ -290,14 +415,29 @@ public class HIDUtils {
     }
 
     public static class XboxPlayback extends HIDPlayback {
+        /**
+         * Constructs a XboxPlayback.
+         *
+         * @param serializedRecord The record as a string. If the string starts with "B85", it will be decoded as a Base85 string.
+         */
         public XboxPlayback(String serializedRecord) {
             super(serializedRecord);
         }
 
+        /**
+         * Constructs a XboxPlayback.
+         *
+         * @param record The record.
+         */
         public XboxPlayback(HIDRecord record) {
             super(record);
         }
 
+        /**
+         * Constructs a XboxPlayback.
+         *
+         * @param playback The playback to copy.
+         */
         public XboxPlayback(HIDPlayback playback) {
             super(playback);
         }
@@ -641,14 +781,29 @@ public class HIDUtils {
                 axisMagnitudeGreaterThanCache = new HashMap<>();
         private final Map<EventLoop, Map<Integer, Trigger>> povCache = new HashMap<>();
 
+        /**
+         * Constructs a CommandHIDPlayback.
+         *
+         * @param serializedRecord The record as a string. If the string starts with "B85", it will be decoded as a Base85 string.
+         */
         public CommandHIDPlayback(String serializedRecord) {
             this.playback = new HIDPlayback(serializedRecord);
         }
 
+        /**
+         * Constructs a CommandHIDPlayback.
+         *
+         * @param record The record.
+         */
         public CommandHIDPlayback(HIDRecord record) {
             this.playback = new HIDPlayback(record);
         }
 
+        /**
+         * Constructs a CommandHIDPlayback.
+         *
+         * @param playback The playback to copy.
+         */
         public CommandHIDPlayback(HIDPlayback playback) {
             this.playback = playback;
         }
@@ -915,21 +1070,41 @@ public class HIDUtils {
     public static class CommandXboxPlayback extends CommandHIDPlayback {
         private final XboxPlayback playback;
 
+        /**
+         * Constructs a CommandXboxPlayback.
+         *
+         * @param serializedRecord The record as a string. If the string starts with "B85", it will be decoded as a Base85 string.
+         */
         public CommandXboxPlayback(String serializedRecord) {
             super(serializedRecord);
             this.playback = new XboxPlayback(serializedRecord);
         }
 
+        /**
+         * Constructs a CommandXboxPlayback.
+         *
+         * @param record The record.
+         */
         public CommandXboxPlayback(HIDRecord record) {
             super(record);
             this.playback = new XboxPlayback(record);
         }
 
+        /**
+         * Constructs a CommandXboxPlayback.
+         *
+         * @param playback The playback to copy.
+         */
         public CommandXboxPlayback(HIDPlayback playback) {
             super(playback);
             this.playback = new XboxPlayback(playback);
         }
 
+        /**
+         * Constructs a CommandXboxPlayback.
+         *
+         * @param playback The playback to copy.
+         */
         public CommandXboxPlayback(XboxPlayback playback) {
             super(playback);
             this.playback = playback;

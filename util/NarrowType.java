@@ -1,7 +1,6 @@
 package frc.libzodiac.util;
 
 public final class NarrowType {
-
     public static boolean isVoid(Class<?> type) {
         return type.getName().equals(void.class.getName());
     }
@@ -41,5 +40,4 @@ public final class NarrowType {
     public static boolean isString(Class<?> type) {
         return type.getName().equals(String.class.getName());
     }
-
 }
