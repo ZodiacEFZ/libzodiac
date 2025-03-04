@@ -15,10 +15,10 @@ public final class MagEncoder {
      * The unit of the CTRE MagEncoder.
      */
     private static final AngleUnit CTRE_MAG_ENCODER_UNIT = Units.derive(Units.Rotations)
-                                                                .splitInto(4096)
-                                                                .named("MagEncoderUnit")
-                                                                .symbol("")
-                                                                .make();
+                                                                   .splitInto(4096)
+                                                                   .named("MagEncoderUnit")
+                                                                   .symbol("")
+                                                                   .make();
 
     /**
      * The encoder.

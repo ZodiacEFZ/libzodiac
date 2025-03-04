@@ -82,8 +82,8 @@ public final class TalonFXMotor implements Motor {
         MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs();
         this.motor.getConfigurator().refresh(motorOutputConfigs);
         this.motor.getConfigurator()
-                  .apply(motorOutputConfigs.withInverted(
-                          inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive));
+                .apply(motorOutputConfigs.withInverted(
+                        inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive));
     }
 
     @Override
@@ -272,9 +272,9 @@ public final class TalonFXMotor implements Motor {
      * @param feedforward     the feedforward to apply.
      */
     public void MotionMagicVelocity(AngularVelocity angularVelocity, AngularAcceleration acceleration,
-                                    Voltage feedforward) {
+            Voltage feedforward) {
         this.motor.setControl(new MotionMagicVelocityVoltage(angularVelocity).withAcceleration(acceleration)
-                                                                             .withFeedForward(feedforward));
+                                      .withFeedForward(feedforward));
     }
 
     /**
@@ -397,7 +397,7 @@ public final class TalonFXMotor implements Motor {
         /**
          * The orchestra.
          */
-        private final Orchestra                orchestra;
+        private final Orchestra orchestra;
         /**
          * The instruments.
          */
@@ -405,17 +405,17 @@ public final class TalonFXMotor implements Motor {
         /**
          * The music file to play.
          */
-        private       String                   path;
+        private String path;
         /**
          * The track count.
          */
-        private       int                      track;
+        private int track;
 
         /**
          * Construct a new music player.
          */
         public MusicPlayer() {
-            this.orchestra   = new Orchestra();
+            this.orchestra = new Orchestra();
             this.instruments = new java.util.ArrayList<>();
         }
 
@@ -451,7 +451,7 @@ public final class TalonFXMotor implements Motor {
          * @param track the track count.
          */
         public void loadMusic(String path, int track) {
-            this.path  = path;
+            this.path = path;
             this.track = track;
             this.setInstrumentAllTracks(this.instruments);
             this.orchestra.loadMusic(path);
@@ -465,7 +465,7 @@ public final class TalonFXMotor implements Motor {
         private void setInstrumentAllTracks(Collection<ParentDevice> instruments) {
             var instrumentsList = instruments.stream().toList();
             IntStream.range(0, instrumentsList.size())
-                     .forEach(i -> this.orchestra.addInstrument(instrumentsList.get(i), i % this.track));
+                    .forEach(i -> this.orchestra.addInstrument(instrumentsList.get(i), i % this.track));
         }
 
         /**

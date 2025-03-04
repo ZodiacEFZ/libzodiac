@@ -49,8 +49,8 @@ public class HIDUtils {
          * @return The raw value of the button state.
          */
         public int toInt() {
-            int rawBit      = this.raw ? 1 : 0;
-            int pressedBit  = this.pressed ? 1 : 0;
+            int rawBit = this.raw ? 1 : 0;
+            int pressedBit = this.pressed ? 1 : 0;
             int releasedBit = this.released ? 1 : 0;
             return rawBit << 2 | pressedBit << 1 | releasedBit;
         }
@@ -72,7 +72,7 @@ public class HIDUtils {
          */
         public String toString() {
             return time + "," + Arrays.toString(this.buttons) + "," + Arrays.toString(this.axes) + "," +
-                   Arrays.toString(this.pov);
+                           Arrays.toString(this.pov);
         }
     }
 
@@ -104,14 +104,14 @@ public class HIDUtils {
             }
             String[] stateStrings = string.split("\\|");
             for (String stateString : stateStrings) {
-                String[]      parts   = stateString.split(",");
-                double        time    = Double.parseDouble(parts[0]);
+                String[] parts = stateString.split(",");
+                double time = Double.parseDouble(parts[0]);
                 ButtonState[] buttons = Arrays.stream(parts[1].split(","))
-                                              .mapToInt(Integer::parseInt)
-                                              .mapToObj(ButtonState::new)
-                                              .toArray(ButtonState[]::new);
-                double[]      axes    = Arrays.stream(parts[2].split(",")).mapToDouble(Double::parseDouble).toArray();
-                int[]         pov     = Arrays.stream(parts[3].split(",")).mapToInt(Integer::parseInt).toArray();
+                                                .mapToInt(Integer::parseInt)
+                                                .mapToObj(ButtonState::new)
+                                                .toArray(ButtonState[]::new);
+                double[] axes = Arrays.stream(parts[2].split(",")).mapToDouble(Double::parseDouble).toArray();
+                int[] pov = Arrays.stream(parts[3].split(",")).mapToInt(Integer::parseInt).toArray();
                 this.states.add(new HIDState(time, buttons, axes, pov));
             }
         }
@@ -171,10 +171,10 @@ public class HIDUtils {
      * A class for recording HID states.
      */
     public static class HIDRecorder extends SubsystemBase {
-        final         Timer      timer     = new Timer();
+        final Timer timer = new Timer();
         private final GenericHID device;
-        private final HIDRecord  record    = new HIDRecord();
-        private       boolean    recording = false;
+        private final HIDRecord record = new HIDRecord();
+        private boolean recording = false;
 
         /**
          * Constructs a HIDRecorder.
@@ -219,11 +219,11 @@ public class HIDUtils {
         public void periodic() {
             if (recording) {
                 ButtonState[] buttons = new ButtonState[device.getButtonCount()];
-                double[]      axes    = new double[device.getAxisCount()];
-                int[]         pov     = new int[device.getPOVCount()];
+                double[] axes = new double[device.getAxisCount()];
+                int[] pov = new int[device.getPOVCount()];
                 Arrays.setAll(buttons,
-                              i -> new ButtonState(this.device.getRawButton(i), this.device.getRawButtonPressed(i),
-                                                   this.device.getRawButtonReleased(i)));
+                        i -> new ButtonState(this.device.getRawButton(i), this.device.getRawButtonPressed(i),
+                                this.device.getRawButtonReleased(i)));
                 Arrays.setAll(axes, this.device::getRawAxis);
                 Arrays.setAll(pov, this.device::getPOV);
                 this.record.add(new HIDState(this.timer.get(), buttons, axes, pov));
@@ -235,11 +235,11 @@ public class HIDUtils {
      * A class for playing back HID records.
      */
     public static class HIDPlayback {
-        private final Timer     timer   = new Timer();
+        private final Timer timer = new Timer();
         private final HIDRecord record;
         private final boolean[] presented;
-        private       int       index   = 0;
-        private       boolean   playing = false;
+        private int index = 0;
+        private boolean playing = false;
 
         /**
          * Constructs a HIDPlayback.
@@ -248,7 +248,7 @@ public class HIDUtils {
          *                         Base85 string.
          */
         public HIDPlayback(String serializedRecord) {
-            this.record    = new HIDRecord(serializedRecord);
+            this.record = new HIDRecord(serializedRecord);
             this.presented = new boolean[this.record.states.size()];
         }
 
@@ -258,7 +258,7 @@ public class HIDUtils {
          * @param record The record.
          */
         public HIDPlayback(HIDRecord record) {
-            this.record    = record;
+            this.record = record;
             this.presented = new boolean[this.record.states.size()];
         }
 
@@ -268,10 +268,10 @@ public class HIDUtils {
          * @param playback The playback to copy.
          */
         public HIDPlayback(HIDPlayback playback) {
-            this.record    = playback.record;
+            this.record = playback.record;
             this.presented = new boolean[this.record.states.size()];
-            this.index     = 0;
-            this.playing   = false;
+            this.index = 0;
+            this.playing = false;
         }
 
         /**
@@ -280,7 +280,7 @@ public class HIDUtils {
         public void start() {
             this.timer.reset();
             this.timer.start();
-            this.index   = 0;
+            this.index = 0;
             this.playing = true;
         }
 
@@ -784,11 +784,11 @@ public class HIDUtils {
     public static class CommandHIDPlayback {
         private final HIDPlayback playback;
 
-        private final Map<EventLoop, Map<Integer, Trigger>>               buttonCache                   = new HashMap<>();
-        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> axisLessThanCache             = new HashMap<>();
-        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> axisGreaterThanCache          = new HashMap<>();
+        private final Map<EventLoop, Map<Integer, Trigger>> buttonCache = new HashMap<>();
+        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> axisLessThanCache = new HashMap<>();
+        private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> axisGreaterThanCache = new HashMap<>();
         private final Map<EventLoop, Map<Pair<Integer, Double>, Trigger>> axisMagnitudeGreaterThanCache = new HashMap<>();
-        private final Map<EventLoop, Map<Integer, Trigger>>               povCache                      = new HashMap<>();
+        private final Map<EventLoop, Map<Integer, Trigger>> povCache = new HashMap<>();
 
         /**
          * Constructs a CommandHIDPlayback.
@@ -887,7 +887,7 @@ public class HIDUtils {
             var cache = povCache.computeIfAbsent(loop, k -> new HashMap<>());
             // angle can be -1, so use 3600 instead of 360
             return cache.computeIfAbsent(pov * 3600 + angle,
-                                         k -> new Trigger(loop, () -> playback.getPOV(pov) == angle));
+                    k -> new Trigger(loop, () -> playback.getPOV(pov) == angle));
         }
 
         /**
@@ -999,7 +999,7 @@ public class HIDUtils {
         public Trigger axisLessThan(int axis, double threshold, EventLoop loop) {
             var cache = axisLessThanCache.computeIfAbsent(loop, k -> new HashMap<>());
             return cache.computeIfAbsent(Pair.of(axis, threshold),
-                                         k -> new Trigger(loop, () -> getRawAxis(axis) < threshold));
+                    k -> new Trigger(loop, () -> getRawAxis(axis) < threshold));
         }
 
         /**
@@ -1039,7 +1039,7 @@ public class HIDUtils {
         public Trigger axisGreaterThan(int axis, double threshold, EventLoop loop) {
             var cache = axisGreaterThanCache.computeIfAbsent(loop, k -> new HashMap<>());
             return cache.computeIfAbsent(Pair.of(axis, threshold),
-                                         k -> new Trigger(loop, () -> getRawAxis(axis) > threshold));
+                    k -> new Trigger(loop, () -> getRawAxis(axis) > threshold));
         }
 
         /**
@@ -1068,7 +1068,7 @@ public class HIDUtils {
         public Trigger axisMagnitudeGreaterThan(int axis, double threshold, EventLoop loop) {
             var cache = axisMagnitudeGreaterThanCache.computeIfAbsent(loop, k -> new HashMap<>());
             return cache.computeIfAbsent(Pair.of(axis, threshold),
-                                         k -> new Trigger(loop, () -> Math.abs(getRawAxis(axis)) > threshold));
+                    k -> new Trigger(loop, () -> Math.abs(getRawAxis(axis)) > threshold));
         }
     }
 

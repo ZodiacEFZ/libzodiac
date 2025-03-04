@@ -34,7 +34,7 @@ public interface SimpleSendable extends Sendable {
     default void simpleSendableInit(SendableBuilder builder) {
         builder.setSmartDashboardType(this.title());
         final var childClass = this.getClass();
-        final var entries    = new Entries();
+        final var entries = new Entries();
         for (final var method : childClass.getDeclaredMethods()) {
             if (method.isAnnotationPresent(SendableGetter.class)) {
                 entries.addGetter(this, method);
@@ -115,14 +115,18 @@ public interface SimpleSendable extends Sendable {
     }
 
     final class Entries {
-        final HashMap<String, Tuple2<BooleanSupplier, BooleanConsumer>>   boolEntries   = new HashMap<>();
-        final HashMap<String, Tuple2<LongSupplier, LongConsumer>>         intEntries    = new HashMap<>();
-        final HashMap<String, Tuple2<FloatSupplier, FloatConsumer>>       floatEntries  = new HashMap<>();
-        final HashMap<String, Tuple2<DoubleSupplier, DoubleConsumer>>     doubleEntries = new HashMap<>();
+        final HashMap<String, Tuple2<BooleanSupplier, BooleanConsumer>> boolEntries = new HashMap<>();
+        final HashMap<String, Tuple2<LongSupplier, LongConsumer>> intEntries = new HashMap<>();
+        final HashMap<String, Tuple2<FloatSupplier, FloatConsumer>> floatEntries = new HashMap<>();
+        final HashMap<String, Tuple2<DoubleSupplier, DoubleConsumer>> doubleEntries = new HashMap<>();
         final HashMap<String, Tuple2<Supplier<String>, Consumer<String>>> stringEntries = new HashMap<>();
 
         static <T> Supplier<T> wrap(Class<T> desiredType, Supplier<Object> supplier) {
             return () -> desiredType.cast(supplier.get());
+        }
+
+        static <T> Consumer<T> wrap(Consumer<Object> setter) {
+            return setter::accept;
         }
 
         void addGetter(Object obj, Method method) {
@@ -134,7 +138,7 @@ public interface SimpleSendable extends Sendable {
 
             final var returnType = method.getReturnType();
             final var getterInfo = method.getAnnotation(SendableGetter.class);
-            final var name       = getterInfo.name().isEmpty() ? method.getName() : getterInfo.name();
+            final var name = getterInfo.name().isEmpty() ? method.getName() : getterInfo.name();
             final Supplier<Object> raw = () -> {
                 try {
                     return method.invoke(obj);
@@ -160,7 +164,7 @@ public interface SimpleSendable extends Sendable {
 
         void add(String name, BooleanSupplier getter) throws NullPointerException {
             this.boolEntries.put(name,
-                                 new Tuple2<>(getter, this.exists(name) ? this.boolEntries.get(name).x2() : null));
+                    new Tuple2<>(getter, this.exists(name) ? this.boolEntries.get(name).x2() : null));
         }
 
         void add(String name, LongSupplier getter) throws NullPointerException {
@@ -169,22 +173,22 @@ public interface SimpleSendable extends Sendable {
 
         void add(String name, FloatSupplier getter) throws NullPointerException {
             this.floatEntries.put(name,
-                                  new Tuple2<>(getter, this.exists(name) ? this.floatEntries.get(name).x2() : null));
+                    new Tuple2<>(getter, this.exists(name) ? this.floatEntries.get(name).x2() : null));
         }
 
         void add(String name, DoubleSupplier getter) throws NullPointerException {
             this.doubleEntries.put(name,
-                                   new Tuple2<>(getter, this.exists(name) ? this.doubleEntries.get(name).x2() : null));
+                    new Tuple2<>(getter, this.exists(name) ? this.doubleEntries.get(name).x2() : null));
         }
 
         void add(String name, Supplier<String> getter) throws NullPointerException {
             this.stringEntries.put(name,
-                                   new Tuple2<>(getter, this.exists(name) ? this.stringEntries.get(name).x2() : null));
+                    new Tuple2<>(getter, this.exists(name) ? this.stringEntries.get(name).x2() : null));
         }
 
         boolean exists(String name) {
             return intEntries.containsKey(name) || boolEntries.containsKey(name) || floatEntries.containsKey(name) ||
-                   doubleEntries.containsKey(name) || stringEntries.containsKey(name);
+                           doubleEntries.containsKey(name) || stringEntries.containsKey(name);
         }
 
         void addSetter(Object obj, Method method) {
@@ -196,9 +200,9 @@ public interface SimpleSendable extends Sendable {
             // setters shall return void
             assert NarrowType.isVoid(method.getReturnType());
 
-            final var takeType   = method.getParameterTypes()[0];
+            final var takeType = method.getParameterTypes()[0];
             final var setterInfo = method.getAnnotation(SendableSetter.class);
-            final var name       = setterInfo.name().isEmpty() ? method.getName() : setterInfo.name();
+            final var name = setterInfo.name().isEmpty() ? method.getName() : setterInfo.name();
             final Consumer<Object> raw = x -> {
                 try {
                     method.invoke(obj, x);
@@ -235,7 +239,7 @@ public interface SimpleSendable extends Sendable {
 
         void add(String name, BooleanConsumer setter) throws NullPointerException {
             this.boolEntries.put(name,
-                                 new Tuple2<>(this.exists(name) ? this.boolEntries.get(name).x1() : null, setter));
+                    new Tuple2<>(this.exists(name) ? this.boolEntries.get(name).x1() : null, setter));
         }
 
         void add(String name, LongConsumer setter) throws NullPointerException {
@@ -244,30 +248,26 @@ public interface SimpleSendable extends Sendable {
 
         void add(String name, FloatConsumer setter) throws NullPointerException {
             this.floatEntries.put(name,
-                                  new Tuple2<>(this.exists(name) ? this.floatEntries.get(name).x1() : null, setter));
+                    new Tuple2<>(this.exists(name) ? this.floatEntries.get(name).x1() : null, setter));
         }
 
         void add(String name, DoubleConsumer setter) throws NullPointerException {
             this.doubleEntries.put(name,
-                                   new Tuple2<>(this.exists(name) ? this.doubleEntries.get(name).x1() : null, setter));
+                    new Tuple2<>(this.exists(name) ? this.doubleEntries.get(name).x1() : null, setter));
         }
 
         void add(String name, Consumer<String> setter) throws NullPointerException {
             this.stringEntries.put(name,
-                                   new Tuple2<>(this.exists(name) ? this.stringEntries.get(name).x1() : null, setter));
-        }
-
-        static <T> Consumer<T> wrap(Consumer<Object> setter) {
-            return setter::accept;
+                    new Tuple2<>(this.exists(name) ? this.stringEntries.get(name).x1() : null, setter));
         }
 
         void addProperty(Object obj, Field field) {
             // to bypass visibility control by java
             field.setAccessible(true);
 
-            final var fieldType    = field.getType();
+            final var fieldType = field.getType();
             final var propertyInfo = field.getAnnotation(SendableProperty.class);
-            final var name         = propertyInfo.name().isEmpty() ? field.getName() : propertyInfo.name();
+            final var name = propertyInfo.name().isEmpty() ? field.getName() : propertyInfo.name();
             if (propertyInfo.access() != SendableProperty.AccessType.In) {
                 final Supplier<Object> raw = () -> {
                     try {
@@ -319,7 +319,7 @@ public interface SimpleSendable extends Sendable {
                             fieldType.getConstructor(String.class);
                         } catch (NoSuchMethodException ignored) {
                             throw new UnsupportedOperationException("Type " + fieldType.getName() +
-                                                                    " is neither assignable nor constructible from string");
+                                                                            " is neither assignable nor constructible from string");
                         }
                     }
                     this.add(name, setter);

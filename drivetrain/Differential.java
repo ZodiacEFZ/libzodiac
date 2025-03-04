@@ -55,8 +55,8 @@ public final class Differential extends SubsystemBase implements Drivetrain {
     /**
      * The kinematics and pose estimator for the robot.
      */
-    private final DifferentialDriveKinematics    kinematics;
-    private final Field2d                        field = new Field2d();
+    private final DifferentialDriveKinematics kinematics;
+    private final Field2d field = new Field2d();
     private final DifferentialDrivePoseEstimator poseEstimator;
 
     /**
@@ -83,14 +83,14 @@ public final class Differential extends SubsystemBase implements Drivetrain {
      * Construct a differential drive object.
      */
     public Differential(Config config) {
-        this.config      = config;
-        this.leftLeader  = new TalonSRXMotor(config.leftLeader);
+        this.config = config;
+        this.leftLeader = new TalonSRXMotor(config.leftLeader);
         this.rightLeader = new TalonSRXMotor(config.rightLeader);
-        this.gyro        = config.gyro;
-        this.headingPID  = config.headingPID;
-        this.kinematics  = new DifferentialDriveKinematics(config.robotWidth);
+        this.gyro = config.gyro;
+        this.headingPID = config.headingPID;
+        this.kinematics = new DifferentialDriveKinematics(config.robotWidth);
 
-        final var leftFollower  = new TalonSRXMotor(config.leftFollower);
+        final var leftFollower = new TalonSRXMotor(config.leftFollower);
         final var rightFollower = new TalonSRXMotor(config.rightFollower);
 
         /*
@@ -123,8 +123,7 @@ public final class Differential extends SubsystemBase implements Drivetrain {
 
         var wheelPositions = this.getWheelPositions();
         this.poseEstimator = new DifferentialDrivePoseEstimator(this.kinematics, this.getGyroYaw(),
-                                                                wheelPositions.leftMeters, wheelPositions.rightMeters,
-                                                                config.initialPose);
+                wheelPositions.leftMeters, wheelPositions.rightMeters, config.initialPose);
     }
 
     /**
@@ -169,9 +168,9 @@ public final class Differential extends SubsystemBase implements Drivetrain {
     public void setSpeeds(DifferentialDriveWheelSpeeds speeds) {
         // DEBUG
         SmartDashboard.putNumber("Left Desired Speed",
-                                 speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
+                speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
         SmartDashboard.putNumber("Right Desired Speed",
-                                 speeds.rightMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
+                speeds.rightMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
 
         this.leftLeader.setVelocity(
                 Units.RadiansPerSecond.of(speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter)));
@@ -189,7 +188,7 @@ public final class Differential extends SubsystemBase implements Drivetrain {
      * @return The command that drives the robot with the given linear velocity and angular velocity.
      */
     public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity,
-                                   BooleanSupplier driveDirectAngle, BooleanSupplier directPower) {
+            BooleanSupplier driveDirectAngle, BooleanSupplier directPower) {
         return run(() -> {
             if (directPower.getAsBoolean()) {
                 this.driveDirectPower(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get());
@@ -200,8 +199,8 @@ public final class Differential extends SubsystemBase implements Drivetrain {
     }
 
     public void driveDirectPower(ChassisSpeeds chassisSpeeds) {
-        var       wheelSpeeds = this.kinematics.toWheelSpeeds(chassisSpeeds);
-        final var MAX_SPEED   = this.config.maxSpeed.in(Units.MetersPerSecond);
+        var wheelSpeeds = this.kinematics.toWheelSpeeds(chassisSpeeds);
+        final var MAX_SPEED = this.config.maxSpeed.in(Units.MetersPerSecond);
         this.leftLeader.setPower(wheelSpeeds.leftMetersPerSecond / MAX_SPEED);
         this.rightLeader.setPower(wheelSpeeds.rightMetersPerSecond / MAX_SPEED);
     }
@@ -237,9 +236,9 @@ public final class Differential extends SubsystemBase implements Drivetrain {
         SmartDashboard.putData("Differential Drive", differentialBuilder -> {
             differentialBuilder.setSmartDashboardType("DifferentialDrive");
             differentialBuilder.addDoubleProperty("Left Motor Speed", () -> this.getWheelSpeeds().leftMetersPerSecond,
-                                                  null);
+                    null);
             differentialBuilder.addDoubleProperty("Right Motor Speed", () -> this.getWheelSpeeds().rightMetersPerSecond,
-                                                  null);
+                    null);
         });
         SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading).ignoringDisable(true));
     }
@@ -288,6 +287,13 @@ public final class Differential extends SubsystemBase implements Drivetrain {
     }
 
     /**
+     * Set whether the robot is in direct power mode.
+     */
+    public void setDirectPower(boolean directPower) {
+        this.directPower = directPower;
+    }
+
+    /**
      * Returns the current yaw of the robot. The yaw of 0 is the robot facing directly away from your alliance station
      * wall.
      *
@@ -324,13 +330,6 @@ public final class Differential extends SubsystemBase implements Drivetrain {
      */
     public Rotation2d getYaw() {
         return this.getPose().getRotation();
-    }
-
-    /**
-     * Set whether the robot is in direct power mode.
-     */
-    public void setDirectPower(boolean directPower) {
-        this.directPower = directPower;
     }
 
     /**
@@ -373,8 +372,8 @@ public final class Differential extends SubsystemBase implements Drivetrain {
         this.targetHeading =
                 headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
         return MathUtil.applyDeadband(MathUtil.clamp(
-                                              this.headingPID.calculate(this.getYawRelative().minus(this.targetHeading).getRadians(), 0), -1, 1),
-                                      0.05);
+                        this.headingPID.calculate(this.getYawRelative().minus(this.targetHeading).getRadians(), 0), -1, 1),
+                0.05);
     }
 
     /**
@@ -385,8 +384,9 @@ public final class Differential extends SubsystemBase implements Drivetrain {
      */
     public ChassisSpeeds getChassisSpeeds(double velocity, double rotation) {
         return new ChassisSpeeds((this.slowMode ? this.config.maxSpeed.div(2) : this.config.maxSpeed).times(velocity),
-                                 Units.MetersPerSecond.of(0), (this.slowMode ? this.config.maxAngularVelocity.div(1.5) :
-                                                                       this.config.maxAngularVelocity).times(rotation));
+                Units.MetersPerSecond.of(0),
+                (this.slowMode ? this.config.maxAngularVelocity.div(1.5) : this.config.maxAngularVelocity).times(
+                        rotation));
     }
 
     @Override
@@ -462,11 +462,11 @@ public final class Differential extends SubsystemBase implements Drivetrain {
         /**
          * The width of the robot in meters.
          */
-        public Distance        robotWidth;
+        public Distance robotWidth;
         /**
          * The maximum speed of the robot in m/s.
          */
-        public LinearVelocity  maxSpeed;
+        public LinearVelocity maxSpeed;
         /**
          * The maximum turning speed of the robot in rad/s.
          */
@@ -474,39 +474,39 @@ public final class Differential extends SubsystemBase implements Drivetrain {
         /**
          * The radius of the wheels in meters.
          */
-        public Distance        wheelRadius;
+        public Distance wheelRadius;
         /**
          * The IDs of the motors.
          */
-        public int             leftLeader;
-        public int             leftFollower;
-        public int             rightLeader;
-        public int             rightFollower;
+        public int leftLeader;
+        public int leftFollower;
+        public int rightLeader;
+        public int rightFollower;
         /**
          * Whether the motors are inverted.
          */
-        public boolean         leftLeaderInverted    = false;
-        public boolean         leftFollowerInverted  = false;
-        public boolean         rightLeaderInverted   = false;
-        public boolean         rightFollowerInverted = false;
+        public boolean leftLeaderInverted = false;
+        public boolean leftFollowerInverted = false;
+        public boolean rightLeaderInverted = false;
+        public boolean rightFollowerInverted = false;
         /**
          * Whether the encoders are phase inverted.
          */
-        public boolean         leftEncoderPhase;
-        public boolean         rightEncoderPhase;
+        public boolean leftEncoderPhase;
+        public boolean rightEncoderPhase;
         /**
          * The ID of the gyro.
          */
-        public Gyro            gyro;
+        public Gyro gyro;
         /**
          * The PID controller for the motors.
          */
-        public PIDController   pidController;
+        public PIDController pidController;
         /**
          * The PID controller for the heading.
          */
-        public PIDController   headingPID;
-        public Pose2d          initialPose;
+        public PIDController headingPID;
+        public Pose2d initialPose;
 
         public Differential build() {
             return new Differential(this);
@@ -610,27 +610,27 @@ public final class Differential extends SubsystemBase implements Drivetrain {
         /**
          * The drivetrain.
          */
-        private final Differential       drivetrain;
+        private final Differential drivetrain;
         /**
          * The velocity supplier.
          */
-        private final DoubleSupplier     velocity;
+        private final DoubleSupplier velocity;
         /**
          * The deadband.
          */
-        private       double             deadband     = 0;
+        private double deadband = 0;
         /**
          * The rotation type.
          */
-        private       RotationType       rotationType = RotationType.NONE;
+        private RotationType rotationType = RotationType.NONE;
         /**
          * The heading supplier.
          */
-        private       Rotation2dSupplier heading;
+        private Rotation2dSupplier heading;
         /**
          * The rotation supplier.
          */
-        private       DoubleSupplier     rotation;
+        private DoubleSupplier rotation;
 
         /**
          * Constructs an input stream for the drivetrain.
@@ -640,7 +640,7 @@ public final class Differential extends SubsystemBase implements Drivetrain {
          */
         public InputStream(Differential drivetrain, DoubleSupplier velocity) {
             this.drivetrain = drivetrain;
-            this.velocity   = velocity;
+            this.velocity = velocity;
         }
 
         /**
@@ -651,7 +651,7 @@ public final class Differential extends SubsystemBase implements Drivetrain {
          * @return The input stream.
          */
         public InputStream rotation(DoubleSupplier rotation) {
-            this.rotation     = rotation;
+            this.rotation = rotation;
             this.rotationType = InputStream.RotationType.ROTATION;
             return this;
         }
@@ -676,7 +676,7 @@ public final class Differential extends SubsystemBase implements Drivetrain {
          * @return The input stream.
          */
         public InputStream heading(Rotation2dSupplier heading) {
-            this.heading      = heading;
+            this.heading = heading;
             this.rotationType = InputStream.RotationType.HEADING;
             return this;
         }

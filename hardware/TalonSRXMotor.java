@@ -15,31 +15,31 @@ public final class TalonSRXMotor implements Motor {
     /**
      * The velocity time unit of the sensor.
      */
-    private static final TimeUnit                VELOCITY_TIME_UNIT = Units.derive(Units.Seconds)
-                                                                           .splitInto(10)
-                                                                           .named("100ms")
-                                                                           .symbol("*100ms")
-                                                                           .make();
+    private static final TimeUnit VELOCITY_TIME_UNIT = Units.derive(Units.Seconds)
+                                                               .splitInto(10)
+                                                               .named("100ms")
+                                                               .symbol("*100ms")
+                                                               .make();
     /**
      * The motor controller.
      */
-    private final        TalonSRX                motor;
+    private final TalonSRX motor;
     /**
      * Zero position of the sensor in raw unit.
      */
-    public               double                  positionZero       = 0;
+    public double positionZero = 0;
     /**
      * The position unit of the sensor.
      */
-    private              AngleUnit               positionUnit       = null;
+    private AngleUnit positionUnit = null;
     /**
      * The velocity unit of the sensor.
      */
-    private              AngularVelocityUnit     velocityUnit       = null;
+    private AngularVelocityUnit velocityUnit = null;
     /**
      * The acceleration unit of the sensor.
      */
-    private              AngularAccelerationUnit accelerationUnit   = null;
+    private AngularAccelerationUnit accelerationUnit = null;
 
     /**
      * Construct a new Talon SRX motor.
@@ -56,7 +56,7 @@ public final class TalonSRXMotor implements Motor {
      * @param id The CAN ID of the motor controller.
      */
     public TalonSRXMotor(int id, double zero) {
-        this.motor        = new TalonSRX(id);
+        this.motor = new TalonSRX(id);
         this.positionZero = zero;
     }
 
@@ -195,7 +195,7 @@ public final class TalonSRXMotor implements Motor {
      * @param sCurveStrength The strength of the S-curve.
      */
     public void setMotionMagicConfig(double kP, double kI, double kD, double kF, AngularVelocity cruiseVelocity,
-                                     AngularAcceleration acceleration, int sCurveStrength) {
+            AngularAcceleration acceleration, int sCurveStrength) {
         this.motor.config_kP(0, kP);
         this.motor.config_kI(0, kI);
         this.motor.config_kD(0, kD);
@@ -232,12 +232,12 @@ public final class TalonSRXMotor implements Motor {
      * @param unitsPerRotation Sensor unit per rotation.
      */
     public void setUnit(double unitsPerRotation) {
-        this.positionUnit     = Units.derive(Units.Rotations)
-                                     .splitInto(unitsPerRotation)
-                                     .named("TalonSRXEncoderUnit")
-                                     .symbol("")
-                                     .make();
-        this.velocityUnit     = this.positionUnit.per(VELOCITY_TIME_UNIT);
+        this.positionUnit = Units.derive(Units.Rotations)
+                                    .splitInto(unitsPerRotation)
+                                    .named("TalonSRXEncoderUnit")
+                                    .symbol("")
+                                    .make();
+        this.velocityUnit = this.positionUnit.per(VELOCITY_TIME_UNIT);
         this.accelerationUnit = this.velocityUnit.per(Units.Seconds);
     }
 
@@ -268,7 +268,7 @@ public final class TalonSRXMotor implements Motor {
      */
     public void MotionMagic(Angle position, double feedforward) {
         this.motor.set(TalonSRXControlMode.MotionMagic, position.in(this.positionUnit()),
-                       DemandType.ArbitraryFeedForward, feedforward);
+                DemandType.ArbitraryFeedForward, feedforward);
     }
 
     /**
