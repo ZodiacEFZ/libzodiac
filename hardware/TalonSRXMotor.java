@@ -22,6 +22,10 @@ public final class TalonSRXMotor implements Motor {
      */
     private final TalonSRX motor;
     /**
+     * Zero position of the sensor in raw unit.
+     */
+    public double positionZero = 0;
+    /**
      * The position unit of the sensor.
      */
     private AngleUnit positionUnit = null;
@@ -41,6 +45,16 @@ public final class TalonSRXMotor implements Motor {
      */
     public TalonSRXMotor(int id) {
         this.motor = new TalonSRX(id);
+    }
+
+    /**
+     * Construct a new Talon SRX motor.
+     *
+     * @param id The CAN ID of the motor controller.
+     */
+    public TalonSRXMotor(int id, double zero) {
+        this.motor = new TalonSRX(id);
+        this.positionZero = zero;
     }
 
     /**
@@ -92,6 +106,24 @@ public final class TalonSRXMotor implements Motor {
                                  .make();
         this.velocityUnit = this.positionUnit.per(VELOCITY_TIME_UNIT);
         this.accelerationUnit = this.velocityUnit.per(Units.Seconds);
+    }
+
+    /**
+     * Configure the zero position of the encoder.
+     *
+     * @param zero the zero position in raw units.
+     */
+    public void setZero(double zero) {
+        this.positionZero = zero;
+    }
+
+    /**
+     * Reset the encoder.
+     */
+    public void resetEncoder() {
+        this.positionZero = 0;
+        this.motor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
+        this.motor.setSelectedSensorPosition(0);
     }
 
     @Override
@@ -207,7 +239,7 @@ public final class TalonSRXMotor implements Motor {
 
     @Override
     public Angle getPosition() {
-        return this.positionUnit().of(this.motor.getSelectedSensorPosition());
+        return this.positionUnit().of(this.motor.getSelectedSensorPosition()-this.positionZero);
     }
 
     @Override
@@ -344,6 +376,11 @@ public final class TalonSRXMotor implements Motor {
         this.motor.configClosedLoopPeakOutput(0, peakOutput);
     }
 
+    /**
+     * Set the allowable error of the motor
+     *
+     * @param allowableError The allowable error.
+     */
     public void allowableError(double allowableError) {
         this.motor.configAllowableClosedloopError(0, allowableError);
     }

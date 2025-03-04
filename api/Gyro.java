@@ -15,9 +15,16 @@ public interface Gyro {
     void reset();
 
     /**
-     * Get the heading angle of robot.
+     * Get the yaw of the robot.
      *
-     * @return the measured {@link Rotation2d}
+     * @return The yaw of the robot.
+     */
+    Angle getYaw();
+
+    /**
+     * Get the yaw of the robot in Rotation2d.
+     *
+     * @return The yaw of the robot in Rotation2d.
      */
     Rotation2d getRotation2d();
 

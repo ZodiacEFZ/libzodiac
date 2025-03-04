@@ -3,6 +3,7 @@ package frc.libzodiac.hardware;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.MAXMotionConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
@@ -20,6 +21,15 @@ public final class SparkMaxMotor implements Motor {
     public static final AngularVelocityUnit VELOCITY_UNIT = Units.Rotations.per(Units.Minutes);
 
     private final SparkMax motor;
+
+    /**
+     * Construct a new Spark Max brushless motor.
+     *
+     * @param id the CAN ID of the motor.
+     */
+    public SparkMaxMotor(int id) {
+        this.motor = new SparkMax(id, SparkLowLevel.MotorType.kBrushless);
+    }
 
     /**
      * Construct a new Spark Max motor.
@@ -86,11 +96,21 @@ public final class SparkMaxMotor implements Motor {
         this.motor.getClosedLoopController().setReference(current.in(Units.Amps), SparkBase.ControlType.kCurrent);
     }
 
+    /**
+     * Control the motor to turn to a specific position with MAX Motion.
+     *
+     * @param position the position to turn to.
+     */
     public void MAXMotionPosition(Angle position) {
         this.motor.getClosedLoopController()
                   .setReference(position.in(POSITION_UNIT), SparkBase.ControlType.kMAXMotionPositionControl);
     }
 
+    /**
+     * Control the motor to turn at a specific velocity with MAX Motion.
+     *
+     * @param angularVelocity the velocity to turn at.
+     */
     public void MAXMotionVelocity(AngularVelocity angularVelocity) {
         this.motor.getClosedLoopController()
                   .setReference(angularVelocity.in(VELOCITY_UNIT), SparkBase.ControlType.kMAXMotionVelocityControl);
@@ -124,8 +144,23 @@ public final class SparkMaxMotor implements Motor {
      *
      * @param config the motor config
      */
-    public void applyConfig(SparkBaseConfig config) {
+    public void applyConfiguration(SparkMaxConfig config) {
         this.motor.configure(config, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
     }
 
+    public void applyConfiguration(MAXMotionConfig maxMotionConfig) {
+        var config = new SparkMaxConfig();
+        config.closedLoop.maxMotion.apply(maxMotionConfig);
+        this.motor.configure(config, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
+    }
+
+    public Angle getPosition() {
+        return Units.Rotations.of(this.motor.getEncoder().getPosition());
+    }
+
+    public void setSensorToMechanismRatio(double ratio) {
+        var config = new SparkMaxConfig();
+        config.encoder.positionConversionFactor(1 / ratio);
+        this.motor.configure(config, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
+    }
 }

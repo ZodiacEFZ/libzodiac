@@ -8,20 +8,32 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.libzodiac.api.Gyro;
 
+/**
+ * The CTRE Pigeon 2 gyro.
+ */
 public final class Pigeon implements Gyro {
     final Pigeon2 pigeon;
 
+    /**
+     * Construct a new Pigeon.
+     *
+     * @param id The CAN ID of the Pigeon 2.
+     */
     public Pigeon(int id) {
         this.pigeon = new Pigeon2(id);
         this.factoryDefault();
     }
 
-    public Angle getYaw() {
-        return this.pigeon.getYaw().getValue();
-    }
-
+    /**
+     * Factory default the gyro.
+     */
     public void factoryDefault() {
         this.pigeon.getConfigurator().apply(new Pigeon2Configuration());
+    }
+
+    @Override
+    public Angle getYaw() {
+        return this.pigeon.getYaw().getValue();
     }
 
     @Override

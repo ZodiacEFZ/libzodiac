@@ -24,7 +24,7 @@ public final class MagEncoder {
     private final TalonSRX encoder;
 
     /**
-     * Zero position of the sensor in raw unit (the 4096 unit).
+     * Zero position of the sensor in raw unit (4096 per rotation).
      */
     public double zero = 0;
 
