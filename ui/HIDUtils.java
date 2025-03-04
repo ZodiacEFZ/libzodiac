@@ -72,7 +72,7 @@ public class HIDUtils {
          */
         public String toString() {
             return time + "," + Arrays.toString(this.buttons) + "," + Arrays.toString(this.axes) + "," +
-                           Arrays.toString(this.pov);
+                   Arrays.toString(this.pov);
         }
     }
 
@@ -107,9 +107,9 @@ public class HIDUtils {
                 String[] parts = stateString.split(",");
                 double time = Double.parseDouble(parts[0]);
                 ButtonState[] buttons = Arrays.stream(parts[1].split(","))
-                                                .mapToInt(Integer::parseInt)
-                                                .mapToObj(ButtonState::new)
-                                                .toArray(ButtonState[]::new);
+                                              .mapToInt(Integer::parseInt)
+                                              .mapToObj(ButtonState::new)
+                                              .toArray(ButtonState[]::new);
                 double[] axes = Arrays.stream(parts[2].split(",")).mapToDouble(Double::parseDouble).toArray();
                 int[] pov = Arrays.stream(parts[3].split(",")).mapToInt(Integer::parseInt).toArray();
                 this.states.add(new HIDState(time, buttons, axes, pov));
@@ -222,8 +222,8 @@ public class HIDUtils {
                 double[] axes = new double[device.getAxisCount()];
                 int[] pov = new int[device.getPOVCount()];
                 Arrays.setAll(buttons,
-                        i -> new ButtonState(this.device.getRawButton(i), this.device.getRawButtonPressed(i),
-                                this.device.getRawButtonReleased(i)));
+                              i -> new ButtonState(this.device.getRawButton(i), this.device.getRawButtonPressed(i),
+                                                   this.device.getRawButtonReleased(i)));
                 Arrays.setAll(axes, this.device::getRawAxis);
                 Arrays.setAll(pov, this.device::getPOV);
                 this.record.add(new HIDState(this.timer.get(), buttons, axes, pov));
@@ -887,7 +887,7 @@ public class HIDUtils {
             var cache = povCache.computeIfAbsent(loop, k -> new HashMap<>());
             // angle can be -1, so use 3600 instead of 360
             return cache.computeIfAbsent(pov * 3600 + angle,
-                    k -> new Trigger(loop, () -> playback.getPOV(pov) == angle));
+                                         k -> new Trigger(loop, () -> playback.getPOV(pov) == angle));
         }
 
         /**
@@ -999,7 +999,7 @@ public class HIDUtils {
         public Trigger axisLessThan(int axis, double threshold, EventLoop loop) {
             var cache = axisLessThanCache.computeIfAbsent(loop, k -> new HashMap<>());
             return cache.computeIfAbsent(Pair.of(axis, threshold),
-                    k -> new Trigger(loop, () -> getRawAxis(axis) < threshold));
+                                         k -> new Trigger(loop, () -> getRawAxis(axis) < threshold));
         }
 
         /**
@@ -1039,7 +1039,7 @@ public class HIDUtils {
         public Trigger axisGreaterThan(int axis, double threshold, EventLoop loop) {
             var cache = axisGreaterThanCache.computeIfAbsent(loop, k -> new HashMap<>());
             return cache.computeIfAbsent(Pair.of(axis, threshold),
-                    k -> new Trigger(loop, () -> getRawAxis(axis) > threshold));
+                                         k -> new Trigger(loop, () -> getRawAxis(axis) > threshold));
         }
 
         /**
@@ -1068,7 +1068,7 @@ public class HIDUtils {
         public Trigger axisMagnitudeGreaterThan(int axis, double threshold, EventLoop loop) {
             var cache = axisMagnitudeGreaterThanCache.computeIfAbsent(loop, k -> new HashMap<>());
             return cache.computeIfAbsent(Pair.of(axis, threshold),
-                    k -> new Trigger(loop, () -> Math.abs(getRawAxis(axis)) > threshold));
+                                         k -> new Trigger(loop, () -> Math.abs(getRawAxis(axis)) > threshold));
         }
     }
 

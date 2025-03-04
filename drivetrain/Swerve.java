@@ -69,13 +69,13 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.gyro = config.gyro;
 
         this.kinematics = new SwerveDriveKinematics(new Translation2d(this.config.robotLength.in(Units.Meters) / 2,
-                this.config.robotWidth.in(Units.Meters) / 2),
-                new Translation2d(this.config.robotLength.in(Units.Meters) / 2,
-                        -this.config.robotWidth.in(Units.Meters) / 2),
-                new Translation2d(-this.config.robotLength.in(Units.Meters) / 2,
-                        this.config.robotWidth.in(Units.Meters) / 2),
-                new Translation2d(-this.config.robotLength.in(Units.Meters) / 2,
-                        -this.config.robotWidth.in(Units.Meters) / 2));
+                                                                      this.config.robotWidth.in(Units.Meters) / 2),
+                                                    new Translation2d(this.config.robotLength.in(Units.Meters) / 2,
+                                                                      -this.config.robotWidth.in(Units.Meters) / 2),
+                                                    new Translation2d(-this.config.robotLength.in(Units.Meters) / 2,
+                                                                      this.config.robotWidth.in(Units.Meters) / 2),
+                                                    new Translation2d(-this.config.robotLength.in(Units.Meters) / 2,
+                                                                      -this.config.robotWidth.in(Units.Meters) / 2));
 
         this.gyro.reset();
 
@@ -85,7 +85,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         Timer.delay(0.5);
 
         this.poseEstimator = new SwerveDrivePoseEstimator(this.kinematics, this.getGyroYaw(), this.getModulePositions(),
-                config.initialPose);
+                                                          config.initialPose);
     }
 
     /**
@@ -142,23 +142,23 @@ public class Swerve extends SubsystemBase implements Drivetrain {
             swerveBuilder.setSmartDashboardType("SwerveDrive");
 
             swerveBuilder.addDoubleProperty("Front Left Angle", () -> this.frontLeft.getState().angle.getRadians(),
-                    null);
+                                            null);
             swerveBuilder.addDoubleProperty("Front Left Velocity", () -> this.frontLeft.getState().speedMetersPerSecond,
-                    null);
+                                            null);
 
             swerveBuilder.addDoubleProperty("Front Right Angle", () -> this.frontRight.getState().angle.getRadians(),
-                    null);
+                                            null);
             swerveBuilder.addDoubleProperty("Front Right Velocity",
-                    () -> this.frontRight.getState().speedMetersPerSecond, null);
+                                            () -> this.frontRight.getState().speedMetersPerSecond, null);
 
             swerveBuilder.addDoubleProperty("Back Left Angle", () -> this.rearLeft.getState().angle.getRadians(), null);
             swerveBuilder.addDoubleProperty("Back Left Velocity", () -> this.rearLeft.getState().speedMetersPerSecond,
-                    null);
+                                            null);
 
             swerveBuilder.addDoubleProperty("Back Right Angle", () -> this.rearRight.getState().angle.getRadians(),
-                    null);
+                                            null);
             swerveBuilder.addDoubleProperty("Back Right Velocity", () -> this.rearRight.getState().speedMetersPerSecond,
-                    null);
+                                            null);
 
             swerveBuilder.addDoubleProperty("Robot Angle", () -> this.getYawRelative().getRadians(), null);
         });
@@ -232,9 +232,9 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
         final var velocity = Maths.limitTranslation(translation, 1)
-                                     .times(this.config.maxSpeed.in(Units.MetersPerSecond));
+                                  .times(this.config.maxSpeed.in(Units.MetersPerSecond));
         return new ChassisSpeeds(velocity.getX(), velocity.getY(),
-                rotation * this.config.maxAngularVelocity.in(Units.RadiansPerSecond));
+                                 rotation * this.config.maxAngularVelocity.in(Units.RadiansPerSecond));
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
@@ -250,9 +250,9 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity,
-            BooleanSupplier driveDirectAngle, BooleanSupplier fieldRelative) {
+                                   BooleanSupplier driveDirectAngle, BooleanSupplier fieldRelative) {
         return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get(),
-                fieldRelative.getAsBoolean()));
+                                    fieldRelative.getAsBoolean()));
     }
 
     public void centerModules() {
@@ -336,7 +336,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
                 new PIDConstants(10, 0, 0, 1),
                 // Rotation PID constants
                 new PIDConstants(this.config.headingPID.getP(), this.config.headingPID.getI(),
-                        this.config.headingPID.getD()));
+                                 this.config.headingPID.getD()));
     }
 
     @Override

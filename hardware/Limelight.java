@@ -55,7 +55,7 @@ public class Limelight {
         this.poseEstimator = drivetrain.getPoseEstimator();
 
         IntStream.rangeClosed(5800 + LIMELIGHTS.size() * 10, 5809 + LIMELIGHTS.size() * 10)
-                .forEachOrdered(port -> PortForwarder.add(port, this.name + ".local", port));
+                 .forEachOrdered(port -> PortForwarder.add(port, this.name + ".local", port));
 
         LIMELIGHTS.add(this);
     }
@@ -74,7 +74,8 @@ public class Limelight {
      */
     private void updateOdometry() {
         LimelightHelpers.SetRobotOrientation(this.name,
-                this.poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+                                             this.poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0,
+                                             0, 0, 0);
         final var poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(this.name);
 
         // FIXME: poseEstimate == null
@@ -92,9 +93,9 @@ public class Limelight {
         }
 
         final var minDistance = Arrays.stream(poseEstimate.rawFiducials)
-                                        .map(x -> x.distToCamera)
-                                        .min(Comparator.naturalOrder())
-                                        .orElseThrow();
+                                      .map(x -> x.distToCamera)
+                                      .min(Comparator.naturalOrder())
+                                      .orElseThrow();
         var visionMeasurementStdDevs = VecBuilder.fill(.7, .7, 9999999);
         if (minDistance < 1) {
             visionMeasurementStdDevs = VecBuilder.fill(.3, .3, 9999999);
@@ -102,7 +103,7 @@ public class Limelight {
             visionMeasurementStdDevs = VecBuilder.fill(.5, .5, 9999999);
         }
         this.poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds,
-                visionMeasurementStdDevs);
+                                                visionMeasurementStdDevs);
 
     }
 

@@ -82,8 +82,8 @@ public final class TalonFXMotor implements Motor {
         MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs();
         this.motor.getConfigurator().refresh(motorOutputConfigs);
         this.motor.getConfigurator()
-                .apply(motorOutputConfigs.withInverted(
-                        inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive));
+                  .apply(motorOutputConfigs.withInverted(
+                          inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive));
     }
 
     @Override
@@ -272,9 +272,9 @@ public final class TalonFXMotor implements Motor {
      * @param feedforward     the feedforward to apply.
      */
     public void MotionMagicVelocity(AngularVelocity angularVelocity, AngularAcceleration acceleration,
-            Voltage feedforward) {
+                                    Voltage feedforward) {
         this.motor.setControl(new MotionMagicVelocityVoltage(angularVelocity).withAcceleration(acceleration)
-                                      .withFeedForward(feedforward));
+                                                                             .withFeedForward(feedforward));
     }
 
     /**
@@ -465,7 +465,7 @@ public final class TalonFXMotor implements Motor {
         private void setInstrumentAllTracks(Collection<ParentDevice> instruments) {
             var instrumentsList = instruments.stream().toList();
             IntStream.range(0, instrumentsList.size())
-                    .forEach(i -> this.orchestra.addInstrument(instrumentsList.get(i), i % this.track));
+                     .forEach(i -> this.orchestra.addInstrument(instrumentsList.get(i), i % this.track));
         }
 
         /**

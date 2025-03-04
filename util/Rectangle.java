@@ -12,7 +12,7 @@ public class Rectangle {
     private final Translation2d topRight;
 
     public Rectangle(Translation2d bottomLeft, Translation2d bottomRight, Translation2d topLeft,
-            Translation2d topRight) {
+                     Translation2d topRight) {
         this.bottomLeft = bottomLeft;
         this.bottomRight = bottomRight;
         this.topLeft = topLeft;
@@ -63,7 +63,7 @@ public class Rectangle {
 
     public Rectangle translate(Translation2d translation) {
         return new Rectangle(this.bottomLeft.plus(translation), this.bottomRight.plus(translation),
-                this.topLeft.plus(translation), this.topRight.plus(translation));
+                             this.topLeft.plus(translation), this.topRight.plus(translation));
     }
 
     public Rectangle scale(double scale) {
@@ -101,9 +101,9 @@ public class Rectangle {
 
     public boolean contains(Translation2d point) {
         return this.crossProduct(this.topLeft, this.bottomLeft, point) *
-                       this.crossProduct(this.bottomRight, this.topRight, point) >= 0 &&
-                       this.crossProduct(this.bottomLeft, this.bottomRight, point) *
-                               this.crossProduct(this.topRight, this.topLeft, point) >= 0;
+               this.crossProduct(this.bottomRight, this.topRight, point) >= 0 &&
+               this.crossProduct(this.bottomLeft, this.bottomRight, point) *
+               this.crossProduct(this.topRight, this.topLeft, point) >= 0;
     }
 
     private double crossProduct(Translation2d a, Translation2d b, Translation2d c) {

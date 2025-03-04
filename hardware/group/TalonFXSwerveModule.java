@@ -39,16 +39,6 @@ public class TalonFXSwerveModule implements SwerveModule {
         this.wheelRadius = parent.wheelRadius;
     }
 
-    private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d angle) {
-        final var delta = desiredState.angle.minus(angle);
-        if (Math.abs(delta.getRadians()) > Math.PI / 2) {
-            return new SwerveModuleState(-desiredState.speedMetersPerSecond,
-                    desiredState.angle.plus(new Rotation2d(Math.PI)));
-        } else {
-            return desiredState;
-        }
-    }
-
     private Rotation2d getAngle() {
         return new Rotation2d(this.angle.getPosition());
     }
@@ -88,22 +78,32 @@ public class TalonFXSwerveModule implements SwerveModule {
                 optimizedDesiredState.speedMetersPerSecond / this.wheelRadius.in(Units.Meter)));
 
         if (Math.abs(optimizedDesiredState.speedMetersPerSecond) >= 0.03 &&
-                    Math.abs(this.lastAngle.minus(optimizedDesiredState.angle).getRadians()) >= Math.PI / 60) {
+            Math.abs(this.lastAngle.minus(optimizedDesiredState.angle).getRadians()) >= Math.PI / 60) {
             this.lastAngle = optimizedDesiredState.angle;
         }
         this.angle.setPosition(this.lastAngle.getMeasure());
     }
 
+    private static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d angle) {
+        final var delta = desiredState.angle.minus(angle);
+        if (Math.abs(delta.getRadians()) > Math.PI / 2) {
+            return new SwerveModuleState(-desiredState.speedMetersPerSecond,
+                                         desiredState.angle.plus(new Rotation2d(Math.PI)));
+        } else {
+            return desiredState;
+        }
+    }
+
     @Override
     public SwerveModuleState getState() {
         return new SwerveModuleState(this.drive.getVelocity().asFrequency().times(this.wheelRadius.times(2 * Math.PI)),
-                this.getAngle());
+                                     this.getAngle());
     }
 
     @Override
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(this.wheelRadius.times(this.drive.getPosition().in(Units.Radians)),
-                this.getAngle());
+                                        this.getAngle());
     }
 
     public TalonFXMotor getAngleMotor() {

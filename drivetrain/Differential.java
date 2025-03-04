@@ -123,7 +123,8 @@ public final class Differential extends SubsystemBase implements Drivetrain {
 
         var wheelPositions = this.getWheelPositions();
         this.poseEstimator = new DifferentialDrivePoseEstimator(this.kinematics, this.getGyroYaw(),
-                wheelPositions.leftMeters, wheelPositions.rightMeters, config.initialPose);
+                                                                wheelPositions.leftMeters, wheelPositions.rightMeters,
+                                                                config.initialPose);
     }
 
     /**
@@ -168,9 +169,9 @@ public final class Differential extends SubsystemBase implements Drivetrain {
     public void setSpeeds(DifferentialDriveWheelSpeeds speeds) {
         // DEBUG
         SmartDashboard.putNumber("Left Desired Speed",
-                speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
+                                 speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
         SmartDashboard.putNumber("Right Desired Speed",
-                speeds.rightMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
+                                 speeds.rightMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
 
         this.leftLeader.setVelocity(
                 Units.RadiansPerSecond.of(speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter)));
@@ -188,7 +189,7 @@ public final class Differential extends SubsystemBase implements Drivetrain {
      * @return The command that drives the robot with the given linear velocity and angular velocity.
      */
     public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity,
-            BooleanSupplier driveDirectAngle, BooleanSupplier directPower) {
+                                   BooleanSupplier driveDirectAngle, BooleanSupplier directPower) {
         return run(() -> {
             if (directPower.getAsBoolean()) {
                 this.driveDirectPower(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get());
@@ -236,9 +237,9 @@ public final class Differential extends SubsystemBase implements Drivetrain {
         SmartDashboard.putData("Differential Drive", differentialBuilder -> {
             differentialBuilder.setSmartDashboardType("DifferentialDrive");
             differentialBuilder.addDoubleProperty("Left Motor Speed", () -> this.getWheelSpeeds().leftMetersPerSecond,
-                    null);
+                                                  null);
             differentialBuilder.addDoubleProperty("Right Motor Speed", () -> this.getWheelSpeeds().rightMetersPerSecond,
-                    null);
+                                                  null);
         });
         SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading).ignoringDisable(true));
     }
@@ -372,8 +373,8 @@ public final class Differential extends SubsystemBase implements Drivetrain {
         this.targetHeading =
                 headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
         return MathUtil.applyDeadband(MathUtil.clamp(
-                        this.headingPID.calculate(this.getYawRelative().minus(this.targetHeading).getRadians(), 0), -1, 1),
-                0.05);
+                                              this.headingPID.calculate(this.getYawRelative().minus(this.targetHeading).getRadians(), 0), -1, 1),
+                                      0.05);
     }
 
     /**
@@ -384,9 +385,8 @@ public final class Differential extends SubsystemBase implements Drivetrain {
      */
     public ChassisSpeeds getChassisSpeeds(double velocity, double rotation) {
         return new ChassisSpeeds((this.slowMode ? this.config.maxSpeed.div(2) : this.config.maxSpeed).times(velocity),
-                Units.MetersPerSecond.of(0),
-                (this.slowMode ? this.config.maxAngularVelocity.div(1.5) : this.config.maxAngularVelocity).times(
-                        rotation));
+                                 Units.MetersPerSecond.of(0), (this.slowMode ? this.config.maxAngularVelocity.div(1.5) :
+                                                                       this.config.maxAngularVelocity).times(rotation));
     }
 
     @Override

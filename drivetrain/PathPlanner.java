@@ -84,7 +84,7 @@ public class PathPlanner {
         if (state.isPresent()) {
             this.swerveSetpointGenerator = new SwerveSetpointGenerator(config, this.drivetrain.getMaxAngularVelocity());
             this.previousSetpoint = new SwerveSetpoint(this.drivetrain.getRobotRelativeSpeeds(), state.get(),
-                    DriveFeedforwards.zeros(config.numModules));
+                                                       DriveFeedforwards.zeros(config.numModules));
         } else {
             this.swerveSetpointGenerator = null;
         }
@@ -93,17 +93,18 @@ public class PathPlanner {
          * Configure the auto builder.
          */
         AutoBuilder.configure(this.drivetrain::getPose, // Robot pose supplier
-                this.drivetrain::setPose,
-                // Method to reset odometry (will be called if your auto has a starting pose)
-                this.drivetrain::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                (ChassisSpeeds speeds, DriveFeedforwards feedforwards) -> this.drivetrain.driveRobotRelative(speeds),
-                // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also, optionally outputs individual module feedforwards
-                this.drivetrain.getPathFollowingController(), // The path following controller
-                config, // The robot configuration
-                // TODO: Test this with different alliance colors
-                GameUtil::isRedAlliance, this.drivetrain
-                // Reference to this subsystem to set requirements
-        );
+                              this.drivetrain::setPose,
+                              // Method to reset odometry (will be called if your auto has a starting pose)
+                              this.drivetrain::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                              (ChassisSpeeds speeds, DriveFeedforwards feedforwards) -> this.drivetrain.driveRobotRelative(
+                                      speeds),
+                              // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also, optionally outputs individual module feedforwards
+                              this.drivetrain.getPathFollowingController(), // The path following controller
+                              config, // The robot configuration
+                              // TODO: Test this with different alliance colors
+                              GameUtil::isRedAlliance, this.drivetrain
+                              // Reference to this subsystem to set requirements
+                             );
     }
 
     /**
@@ -116,6 +117,14 @@ public class PathPlanner {
             PATHPLANNER = new PathPlanner(drivetrain);
             PATHPLANNER.warmup();
         }
+    }
+
+    /**
+     * Warm up PathPlanner.
+     */
+    private void warmup() {
+        FollowPathCommand.warmupCommand().schedule();
+        PathfindingCommand.warmupCommand().schedule();
     }
 
     /**
@@ -144,16 +153,8 @@ public class PathPlanner {
                 // The previous setpoint
                 speeds, // The desired target speeds
                 0.02 // The loop time of the robot code, in seconds
-        );
+                                                                                           );
         return PATHPLANNER.previousSetpoint.moduleStates();
-    }
-
-    /**
-     * Warm up PathPlanner.
-     */
-    private void warmup() {
-        FollowPathCommand.warmupCommand().schedule();
-        PathfindingCommand.warmupCommand().schedule();
     }
 
     /**
@@ -226,7 +227,7 @@ public class PathPlanner {
         List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(poses);
 
         PathConstraints constraints = new PathConstraints(3.0, 3.0, 2 * Math.PI,
-                4 * Math.PI); // The constraints for this path.
+                                                          4 * Math.PI); // The constraints for this path.
 
         // Create the path using the waypoints created above
         PathPlannerPath path = new PathPlannerPath(waypoints, constraints, null, goalEndState);
