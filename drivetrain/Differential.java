@@ -33,7 +33,7 @@ import java.util.function.Supplier;
 /**
  * A differential drive drivetrain.
  */
-public class Differential extends SubsystemBase implements Drivetrain {
+public final class Differential extends SubsystemBase implements Drivetrain {
     public final Config config;
 
     /**
@@ -133,8 +133,8 @@ public class Differential extends SubsystemBase implements Drivetrain {
      */
     private DifferentialDriveWheelPositions getWheelPositions() {
         return new DifferentialDriveWheelPositions(
-                this.leftLeader.getPosition().in(Units.Radians) * this.config.wheelRadius.in(Units.Meter),
-                this.rightLeader.getPosition().in(Units.Radians) * this.config.wheelRadius.in(Units.Meter));
+                this.config.wheelRadius.times(this.leftLeader.getPosition().in(Units.Radians)),
+                this.config.wheelRadius.times(this.rightLeader.getPosition().in(Units.Radians)));
     }
 
     /**
@@ -442,9 +442,10 @@ public class Differential extends SubsystemBase implements Drivetrain {
      * @return The current wheel speeds.
      */
     private DifferentialDriveWheelSpeeds getWheelSpeeds() {
+
         return new DifferentialDriveWheelSpeeds(
-                this.leftLeader.getVelocity().in(Units.RadiansPerSecond) * this.config.wheelRadius.in(Units.Meter),
-                this.rightLeader.getVelocity().in(Units.RadiansPerSecond) * this.config.wheelRadius.in(Units.Meter));
+                this.leftLeader.getVelocity().asFrequency().times(this.config.wheelRadius.times(2 * Math.PI)),
+                this.rightLeader.getVelocity().asFrequency().times(this.config.wheelRadius.times(2 * Math.PI)));
     }
 
     /**

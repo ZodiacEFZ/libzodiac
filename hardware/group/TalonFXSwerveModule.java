@@ -96,14 +96,14 @@ public class TalonFXSwerveModule implements SwerveModule {
     @Override
     public SwerveModuleState getState() {
         return new SwerveModuleState(
-                this.drive.getVelocity().in(Units.RadiansPerSecond) * this.wheelRadius.in(Units.Meter),
+                this.drive.getVelocity().asFrequency().times(this.wheelRadius.times(2 * Math.PI)),
                 this.getAngle());
     }
 
     @Override
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
-                this.drive.getPosition().in(Units.Radians) * this.wheelRadius.in(Units.Meter),
+                this.wheelRadius.times(this.drive.getPosition().in(Units.Radians)),
                 this.getAngle());
     }
 
