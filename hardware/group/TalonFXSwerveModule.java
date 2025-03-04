@@ -119,32 +119,40 @@ public class TalonFXSwerveModule implements SwerveModule {
         /**
          * CAN ID of angle motor.
          */
-        int angle;
+        public int angle;
         /**
          * CAN ID of drive motor.
          */
-        int drive;
+        public int drive;
         /**
          * CAN ID of absolute encoder.
          */
-        int encoder;
-        int encoderZero;
+        public int encoder;
+        /**
+         * Zero position of encoder in raw units.
+         */
+        public double encoderZero;
         /**
          * Reversion state of angle motor.
          */
-        boolean angleInverted = false;
+        public boolean angleInverted = false;
         /**
          * Reversion state of drive motor.
          */
-        boolean driveInverted = false;
+        public boolean driveInverted = false;
         /**
          * PID arguments for drive motor.
          */
-        PIDController drivePID = null;
+        public PIDController drivePID = null;
         /**
          * PID arguments for angle motor.
          */
-        PIDController anglePID = null;
+        public PIDController anglePID = null;
+
+        public Config withEncoderZero(double encoderZero) {
+            this.encoderZero = encoderZero;
+            return this;
+        }
 
         public Config withAngleInverted(boolean angleInverted) {
             this.angleInverted = angleInverted;
@@ -172,11 +180,6 @@ public class TalonFXSwerveModule implements SwerveModule {
 
         public Config withEncoder(int encoder) {
             this.encoder = encoder;
-            return this;
-        }
-
-        public Config withEncoderZero(int encoderZero) {
-            this.encoderZero = encoderZero;
             return this;
         }
 
