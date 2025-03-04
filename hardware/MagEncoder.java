@@ -47,7 +47,7 @@ public final class MagEncoder {
      * @param can_id the CAN ID of the encoder.
      */
     public MagEncoder(int can_id) {
-        this(can_id, 0);
+        this.encoder = new TalonSRX(can_id);
     }
 
     /**
