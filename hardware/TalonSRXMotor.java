@@ -155,7 +155,7 @@ public final class TalonSRXMotor implements Motor {
 
     @Override
     public void setPosition(Angle position) {
-        this.motor.set(TalonSRXControlMode.Position, position.in(this.positionUnit()));
+        this.motor.set(TalonSRXControlMode.Position, position.in(this.positionUnit()) + this.positionZero);
     }
 
     @Override
@@ -257,7 +257,7 @@ public final class TalonSRXMotor implements Motor {
      * @param position The position to turn to.
      */
     public void MotionMagic(Angle position) {
-        this.motor.set(TalonSRXControlMode.MotionMagic, position.in(this.positionUnit()));
+        this.motor.set(TalonSRXControlMode.MotionMagic, position.in(this.positionUnit()) + this.positionZero);
     }
 
     /**
@@ -267,7 +267,7 @@ public final class TalonSRXMotor implements Motor {
      * @param feedforward The feedforward value.
      */
     public void MotionMagic(Angle position, double feedforward) {
-        this.motor.set(TalonSRXControlMode.MotionMagic, position.in(this.positionUnit()),
+        this.motor.set(TalonSRXControlMode.MotionMagic, position.in(this.positionUnit()) + this.positionZero,
                        DemandType.ArbitraryFeedForward, feedforward);
     }
 
@@ -389,5 +389,25 @@ public final class TalonSRXMotor implements Motor {
      */
     public void allowableError(double allowableError) {
         this.motor.configAllowableClosedloopError(0, allowableError);
+    }
+
+    public void setSoftwareLimitSwitch(Angle reverseLimitSwitch, Angle forwardLimitSwitch) {
+        this.setSoftwareLimitSwitch(reverseLimitSwitch.in(this.positionUnit()) + this.positionZero,
+                                    forwardLimitSwitch.in(this.positionUnit()) + this.positionZero);
+    }
+
+    public void setSoftwareLimitSwitch(Double reverseLimitSwitch, Double forwardLimitSwitch) {
+        if (reverseLimitSwitch == null) {
+            this.motor.configReverseSoftLimitEnable(false);
+        } else {
+            this.motor.configReverseSoftLimitEnable(true);
+            this.motor.configReverseSoftLimitThreshold(reverseLimitSwitch);
+        }
+        if (forwardLimitSwitch == null) {
+            this.motor.configForwardSoftLimitEnable(false);
+        } else {
+            this.motor.configForwardSoftLimitEnable(true);
+            this.motor.configForwardSoftLimitThreshold(forwardLimitSwitch);
+        }
     }
 }
