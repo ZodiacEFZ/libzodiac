@@ -103,7 +103,7 @@ public final class TalonSRXMotor implements Motor {
      *
      * @param zero the zero position in raw units.
      */
-    public void setZero(double zero) {
+    public void setEncoderZero(double zero) {
         this.positionZero = zero;
     }
 
