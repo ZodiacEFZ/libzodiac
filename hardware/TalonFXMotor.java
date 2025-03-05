@@ -358,10 +358,6 @@ public final class TalonFXMotor implements Motor {
         this.motor.getConfigurator().apply(configs);
     }
 
-    public void applyConfiguration(SoftwareLimitSwitchConfigs configs) {
-        this.motor.getConfigurator().apply(configs);
-    }
-
     public void applyConfiguration(MotionMagicConfigs configs) {
         this.motor.getConfigurator().apply(configs);
     }
@@ -387,6 +383,27 @@ public final class TalonFXMotor implements Motor {
     }
 
     public void applyConfiguration(SlotConfigs configs) {
+        this.motor.getConfigurator().apply(configs);
+    }
+
+    public void setSoftwareLimitSwitch(Angle reverseLimitSwitch, Angle forwardLimitSwitch) {
+        var config = new SoftwareLimitSwitchConfigs();
+        if (reverseLimitSwitch != null) {
+            config.withReverseSoftLimitEnable(true);
+            config.withReverseSoftLimitThreshold(reverseLimitSwitch);
+        } else {
+            config.withReverseSoftLimitEnable(false);
+        }
+        if (forwardLimitSwitch != null) {
+            config.withForwardSoftLimitEnable(true);
+            config.withForwardSoftLimitThreshold(forwardLimitSwitch);
+        } else {
+            config.withForwardSoftLimitEnable(false);
+        }
+        this.applyConfiguration(config);
+    }
+
+    public void applyConfiguration(SoftwareLimitSwitchConfigs configs) {
         this.motor.getConfigurator().apply(configs);
     }
 

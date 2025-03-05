@@ -58,7 +58,7 @@ public final class MagEncoder {
      * @param inverted the phase of the encoder.
      */
     public void setInverted(boolean inverted) {
-        this.encoder.setSensorPhase(inverted);
+        this.encoder.setInverted(inverted);
     }
 
     /**
