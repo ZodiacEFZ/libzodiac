@@ -107,8 +107,8 @@ public final class Differential extends SubsystemBase implements Drivetrain {
         this.leftLeader.setPhase(config.leftEncoderPhase);
         this.rightLeader.setPhase(config.rightEncoderPhase);
 
-        this.leftLeader.resetPosition();
-        this.rightLeader.resetPosition();
+        this.leftLeader.resetRelativeEncoderPosition();
+        this.rightLeader.resetRelativeEncoderPosition();
 
         // Motors should drive forward when given positive voltage
         this.leftLeader.setInverted(config.leftLeaderInverted);

@@ -61,6 +61,10 @@ public final class MagEncoder {
         this.encoder.setInverted(inverted);
     }
 
+    public void setContinuous(boolean continuous) {
+        this.encoder.configFeedbackNotContinuous(!continuous, 0);
+    }
+
     /**
      * Configure the zero position of the encoder.
      *
@@ -70,6 +74,12 @@ public final class MagEncoder {
         this.zero = zero;
     }
 
+    public void setPosition(Angle position) {
+        this.zero = 0;
+        this.encoder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
+        this.encoder.setSelectedSensorPosition(position.in(CTRE_MAG_ENCODER_UNIT));
+    }
+
     /**
      * Reset the encoder.
      */
@@ -77,6 +87,10 @@ public final class MagEncoder {
         this.zero = 0;
         this.encoder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
         this.encoder.setSelectedSensorPosition(0);
+    }
+
+    public void setSensor(FeedbackDevice sensor) {
+        this.encoder.configSelectedFeedbackSensor(sensor);
     }
 
     /**

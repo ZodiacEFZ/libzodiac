@@ -299,6 +299,7 @@ public final class TalonSRXMotor implements Motor {
      * @param position the position to set.
      */
     public void setRelativeEncoderPosition(Angle position) {
+        this.positionZero = 0;
         this.motor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
         this.motor.setSelectedSensorPosition(position.in(this.positionUnit()));
     }
@@ -307,6 +308,7 @@ public final class TalonSRXMotor implements Motor {
      * Reset the position of the motor.
      */
     public void resetRelativeEncoderPosition() {
+        this.positionZero = 0;
         this.motor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
         this.motor.setSelectedSensorPosition(0);
     }
@@ -318,14 +320,6 @@ public final class TalonSRXMotor implements Motor {
      */
     public void setSensor(FeedbackDevice sensor) {
         this.motor.configSelectedFeedbackSensor(sensor);
-    }
-
-    /**
-     * Reset the position of the motor.
-     */
-    public void resetPosition() {
-        this.motor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
-        this.motor.setSelectedSensorPosition(0);
     }
 
     /**
