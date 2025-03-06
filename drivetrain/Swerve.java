@@ -120,6 +120,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     public void zeroHeading() {
         var pose = this.getPose();
         this.setPose(new Pose2d(pose.getTranslation(), GameUtil.toPose2dYaw(new Rotation2d())));
+        this.targetHeading = new Rotation2d();
     }
 
     @Override
@@ -384,6 +385,10 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.frontRight.brake();
         this.rearLeft.brake();
         this.rearRight.brake();
+    }
+
+    public void setTargetHeading(Rotation2d targetHeading) {
+        this.targetHeading = targetHeading;
     }
 
     public static class Config {
