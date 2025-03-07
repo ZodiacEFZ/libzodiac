@@ -58,4 +58,33 @@ public class Maths {
         var norm = translation.getNorm();
         return norm > limit ? translation.times(limit / norm) : translation;
     }
+
+    /**
+     * Solve an angle in a certain triangle using law of cosine.
+     *
+     * @param opposite  length of opposite edge
+     * @param adjacent1 length of an adjacent edge
+     * @param adjacent2 length of an adjacent edge
+     *
+     * @return the angle in radians
+     */
+    public static double resolveAngle(double opposite, double adjacent1, double adjacent2) {
+        final var cos =
+                (opposite * opposite - adjacent1 * adjacent1 - adjacent2 * adjacent2) / (2 * adjacent1 * adjacent2);
+        return Math.acos(cos);
+    }
+
+    /**
+     * Solve the opposite edge of certain angle using law of cosine.
+     *
+     * @param angle     the angle in radians
+     * @param adjacent1 length of an adjacent edge
+     * @param adjacent2 length of an adjacent edge
+     *
+     * @return length of the opposite edge
+     */
+    public static double resolveEdge(double angle, double adjacent1, double adjacent2) {
+        final var sqr = adjacent1 * adjacent1 + adjacent2 * adjacent2 - 2 * adjacent1 * adjacent2 * Math.cos(angle);
+        return Math.sqrt(sqr);
+    }
 }
