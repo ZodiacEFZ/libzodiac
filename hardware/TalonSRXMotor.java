@@ -116,6 +116,14 @@ public final class TalonSRXMotor implements Motor {
         this.motor.setSelectedSensorPosition(0);
     }
 
+    public void resetAbsoluteToRelative() {
+        this.setRelativeEncoderPosition(this.getPosition());
+    }
+
+    public void setEncoderContinuous(boolean continuous) {
+        this.motor.configFeedbackNotContinuous(!continuous, 0);
+    }
+
     @Override
     public void setInverted(boolean inverted) {
         this.motor.setInverted(inverted);
@@ -395,13 +403,13 @@ public final class TalonSRXMotor implements Motor {
             this.motor.configReverseSoftLimitEnable(false);
         } else {
             this.motor.configReverseSoftLimitEnable(true);
-            this.motor.configReverseSoftLimitThreshold(reverseLimitSwitch);
+            this.motor.configReverseSoftLimitThreshold(reverseLimitSwitch + this.positionZero);
         }
         if (forwardLimitSwitch == null) {
             this.motor.configForwardSoftLimitEnable(false);
         } else {
             this.motor.configForwardSoftLimitEnable(true);
-            this.motor.configForwardSoftLimitThreshold(forwardLimitSwitch);
+            this.motor.configForwardSoftLimitThreshold(forwardLimitSwitch + this.positionZero);
         }
     }
 }

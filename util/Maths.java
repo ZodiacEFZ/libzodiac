@@ -1,6 +1,9 @@
 package frc.libzodiac.util;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Angle;
 
 /**
  * A class to hold mathematical functions
@@ -86,5 +89,23 @@ public class Maths {
     public static double resolveEdge(double angle, double adjacent1, double adjacent2) {
         final var sqr = adjacent1 * adjacent1 + adjacent2 * adjacent2 - 2 * adjacent1 * adjacent2 * Math.cos(angle);
         return Math.sqrt(sqr);
+    }
+
+    /**
+     * Limits the angle to be within [min, min + 2Pi)
+     *
+     * @param angle The angle to limit
+     * @param min   The minimum angle, in the range of [-2Pi, 0]
+     *
+     * @return The limited angle
+     */
+    public static Angle limitAngle(Angle angle, Angle min) {
+        angle = limitAngle(angle);
+        return angle.lt(min) ? angle.plus(Units.Radians.of(Math.PI * 2)) : angle;
+    }
+
+    public static Angle limitAngle(Angle angle) {
+        var rad = angle.in(Units.Radians);
+        return new Rotation2d(Math.cos(rad), Math.sin(rad)).getMeasure();
     }
 }

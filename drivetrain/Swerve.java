@@ -233,7 +233,8 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
         final var velocity = Maths.limitTranslation(translation, 1)
-                                  .times(this.config.maxSpeed.in(Units.MetersPerSecond));
+                                  .times((this.slowMode ? this.config.maxSpeed.div(3) : this.config.maxSpeed).in(
+                                          Units.MetersPerSecond));
         return new ChassisSpeeds(velocity.getX(), velocity.getY(),
                                  rotation * this.config.maxAngularVelocity.in(Units.RadiansPerSecond));
     }

@@ -6,11 +6,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
+import frc.libzodiac.api.Encoder;
 
 /**
  * The <i>CTRE MagEncoder</i>.
  */
-public final class MagEncoder {
+public final class MagEncoder implements Encoder {
     /**
      * The unit of the CTRE MagEncoder.
      */
@@ -52,11 +53,7 @@ public final class MagEncoder {
         this.encoder = new TalonSRX(can_id);
     }
 
-    /**
-     * Set the phase of the encoder.
-     *
-     * @param inverted the phase of the encoder.
-     */
+    @Override
     public void setInverted(boolean inverted) {
         this.encoder.setInverted(inverted);
     }
@@ -65,24 +62,23 @@ public final class MagEncoder {
         this.encoder.configFeedbackNotContinuous(!continuous, 0);
     }
 
-    /**
-     * Configure the zero position of the encoder.
-     *
-     * @param zero the zero position in raw units.
-     */
+    public void resetAbsoluteToRelative() {
+        this.setPosition(this.get());
+    }
+
+    @Override
     public void setZero(double zero) {
         this.zero = zero;
     }
 
+    @Override
     public void setPosition(Angle position) {
         this.zero = 0;
         this.encoder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
         this.encoder.setSelectedSensorPosition(position.in(CTRE_MAG_ENCODER_UNIT));
     }
 
-    /**
-     * Reset the encoder.
-     */
+    @Override
     public void reset() {
         this.zero = 0;
         this.encoder.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
@@ -93,20 +89,12 @@ public final class MagEncoder {
         this.encoder.configSelectedFeedbackSensor(sensor);
     }
 
-    /**
-     * Get the angle of the encoder in {@link Rotation2d}.
-     *
-     * @return the angle of the encoder in  {@link Rotation2d}.
-     */
+    @Override
     public Rotation2d getRotation2d() {
         return new Rotation2d(this.get());
     }
 
-    /**
-     * Get the angle of the encoder.
-     *
-     * @return the angle of the encoder.
-     */
+    @Override
     public Angle get() {
         return CTRE_MAG_ENCODER_UNIT.of(this.encoder.getSelectedSensorPosition() - this.zero);
     }

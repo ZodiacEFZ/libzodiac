@@ -6,6 +6,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
+import frc.libzodiac.api.Encoder;
 import frc.libzodiac.api.SwerveModule;
 import frc.libzodiac.drivetrain.Swerve;
 import frc.libzodiac.hardware.MagEncoder;
@@ -15,7 +16,7 @@ public class TalonFXSwerveModule implements SwerveModule {
     private final Distance wheelRadius;
     private final TalonFXMotor angle;
     private final TalonFXMotor drive;
-    private final MagEncoder encoder;
+    private final Encoder encoder;
     private Rotation2d lastAngle;
 
     public TalonFXSwerveModule(Config config, Swerve.Config parent) {
@@ -33,7 +34,7 @@ public class TalonFXSwerveModule implements SwerveModule {
         this.angle.setBrakeWhenNeutral(true);
         this.drive.setBrakeWhenNeutral(false);
 
-        this.encoder = new MagEncoder(config.encoder, config.encoderZero);
+        this.encoder = config.encoder;
         this.lastAngle = this.getAngle();
 
         this.wheelRadius = parent.wheelRadius;
@@ -125,13 +126,9 @@ public class TalonFXSwerveModule implements SwerveModule {
          */
         public int drive;
         /**
-         * CAN ID of absolute encoder.
+         * The absolute encoder.
          */
-        public int encoder;
-        /**
-         * Zero position of encoder in raw units.
-         */
-        public double encoderZero;
+        public Encoder encoder;
         /**
          * Reversion state of angle motor.
          */
@@ -148,11 +145,6 @@ public class TalonFXSwerveModule implements SwerveModule {
          * PID arguments for angle motor.
          */
         public PIDController anglePID = null;
-
-        public Config withEncoderZero(double encoderZero) {
-            this.encoderZero = encoderZero;
-            return this;
-        }
 
         public Config withAngleInverted(boolean angleInverted) {
             this.angleInverted = angleInverted;
@@ -178,7 +170,7 @@ public class TalonFXSwerveModule implements SwerveModule {
             return this;
         }
 
-        public Config withEncoder(int encoder) {
+        public Config withEncoder(Encoder encoder) {
             this.encoder = encoder;
             return this;
         }
