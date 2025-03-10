@@ -58,14 +58,6 @@ public final class MagEncoder implements Encoder {
         this.encoder.setInverted(inverted);
     }
 
-    public void setContinuous(boolean continuous) {
-        this.encoder.configFeedbackNotContinuous(!continuous, 0);
-    }
-
-    public void resetAbsoluteToRelative() {
-        this.setPosition(this.get());
-    }
-
     @Override
     public void setZero(double zero) {
         this.zero = zero;
@@ -85,10 +77,6 @@ public final class MagEncoder implements Encoder {
         this.encoder.setSelectedSensorPosition(0);
     }
 
-    public void setSensor(FeedbackDevice sensor) {
-        this.encoder.configSelectedFeedbackSensor(sensor);
-    }
-
     @Override
     public Rotation2d getRotation2d() {
         return new Rotation2d(this.get());
@@ -97,5 +85,17 @@ public final class MagEncoder implements Encoder {
     @Override
     public Angle get() {
         return CTRE_MAG_ENCODER_UNIT.of(this.encoder.getSelectedSensorPosition() - this.zero);
+    }
+
+    public void setContinuous(boolean continuous) {
+        this.encoder.configFeedbackNotContinuous(!continuous, 0);
+    }
+
+    public void resetAbsoluteToRelative() {
+        this.setPosition(this.get());
+    }
+
+    public void setSensor(FeedbackDevice sensor) {
+        this.encoder.configSelectedFeedbackSensor(sensor);
     }
 }

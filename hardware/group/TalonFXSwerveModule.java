@@ -9,7 +9,6 @@ import edu.wpi.first.units.measure.Distance;
 import frc.libzodiac.api.Encoder;
 import frc.libzodiac.api.SwerveModule;
 import frc.libzodiac.drivetrain.Swerve;
-import frc.libzodiac.hardware.MagEncoder;
 import frc.libzodiac.hardware.TalonFXMotor;
 
 public class TalonFXSwerveModule implements SwerveModule {
