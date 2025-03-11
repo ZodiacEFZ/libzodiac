@@ -6,7 +6,8 @@ public final class NarrowType {
     }
 
     public static boolean isBool(Class<?> type) {
-        return type.getName().equals(boolean.class.getName()) || type.getName().equals(Boolean.class.getName());
+        return type.getName().equals(boolean.class.getName()) ||
+               type.getName().equals(Boolean.class.getName());
     }
 
     public static boolean isAnyInt(Class<?> type) {
@@ -14,15 +15,18 @@ public final class NarrowType {
     }
 
     public static boolean isShort(Class<?> type) {
-        return type.getName().equals(short.class.getName()) || type.getName().equals(Short.class.getName());
+        return type.getName().equals(short.class.getName()) ||
+               type.getName().equals(Short.class.getName());
     }
 
     public static boolean isInt(Class<?> type) {
-        return type.getName().equals(int.class.getName()) || type.getName().equals(Integer.class.getName());
+        return type.getName().equals(int.class.getName()) ||
+               type.getName().equals(Integer.class.getName());
     }
 
     public static boolean isLong(Class<?> type) {
-        return type.getName().equals(long.class.getName()) || type.getName().equals(Long.class.getName());
+        return type.getName().equals(long.class.getName()) ||
+               type.getName().equals(Long.class.getName());
     }
 
     public static boolean isAnyFloat(Class<?> type) {
@@ -30,11 +34,13 @@ public final class NarrowType {
     }
 
     public static boolean isFloat(Class<?> type) {
-        return type.getName().equals(float.class.getName()) || type.getName().equals(Float.class.getName());
+        return type.getName().equals(float.class.getName()) ||
+               type.getName().equals(Float.class.getName());
     }
 
     public static boolean isDouble(Class<?> type) {
-        return type.getName().equals(double.class.getName()) || type.getName().equals(Double.class.getName());
+        return type.getName().equals(double.class.getName()) ||
+               type.getName().equals(Double.class.getName());
     }
 
     public static boolean isString(Class<?> type) {

@@ -78,7 +78,8 @@ public class TalonFXSwerveModule implements SwerveModule {
                 optimizedDesiredState.speedMetersPerSecond / this.wheelRadius.in(Units.Meter)));
 
         if (Math.abs(optimizedDesiredState.speedMetersPerSecond) >= 0.03 &&
-            Math.abs(this.lastAngle.minus(optimizedDesiredState.angle).getRadians()) >= Math.PI / 60) {
+            Math.abs(this.lastAngle.minus(optimizedDesiredState.angle).getRadians()) >=
+            Math.PI / 60) {
             this.lastAngle = optimizedDesiredState.angle;
         }
         this.angle.setPosition(this.lastAngle.getMeasure());
@@ -96,14 +97,16 @@ public class TalonFXSwerveModule implements SwerveModule {
 
     @Override
     public SwerveModuleState getState() {
-        return new SwerveModuleState(this.drive.getVelocity().asFrequency().times(this.wheelRadius.times(2 * Math.PI)),
-                                     this.getAngle());
+        return new SwerveModuleState(
+                this.drive.getVelocity().asFrequency().times(this.wheelRadius.times(2 * Math.PI)),
+                this.getAngle());
     }
 
     @Override
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(this.wheelRadius.times(this.drive.getPosition().in(Units.Radians)),
-                                        this.getAngle());
+        return new SwerveModulePosition(
+                this.wheelRadius.times(this.drive.getPosition().in(Units.Radians)),
+                this.getAngle());
     }
 
     public TalonFXMotor getAngleMotor() {

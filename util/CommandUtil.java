@@ -28,8 +28,10 @@ public class CommandUtil {
      *
      * @return The command that rumbles the controller
      */
-    public static Command rumbleControllerCommand(GenericHID controller, double intensity, double duration) {
-        return Commands.runOnce(() -> controller.setRumble(GenericHID.RumbleType.kBothRumble, intensity))
+    public static Command rumbleControllerCommand(GenericHID controller, double intensity,
+                                                  double duration) {
+        return Commands.runOnce(
+                               () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, intensity))
                        .repeatedly()
                        .withTimeout(duration)
                        .finallyDo(() -> controller.setRumble(GenericHID.RumbleType.kBothRumble, 0))

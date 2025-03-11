@@ -32,9 +32,9 @@ import java.util.List;
  */
 public class PathPlanner {
     /**
-     * This boolean determines whether the swerve setpoint generator is enabled. If it is enabled, the setpoint
-     * generator will be used to generate swerve module states from robot-relative chassis speeds. If it is disabled,
-     * the setpoint generator will not be used.
+     * This boolean determines whether the swerve setpoint generator is enabled. If it is enabled,
+     * the setpoint generator will be used to generate swerve module states from robot-relative
+     * chassis speeds. If it is disabled, the setpoint generator will not be used.
      */
     private static final boolean SWERVE_SETPOINT_GENERATOR_ENABLED = true;
     /**
@@ -85,8 +85,10 @@ public class PathPlanner {
          */
         final var state = this.drivetrain.getModuleStates();
         if (state.isPresent()) {
-            this.swerveSetpointGenerator = new SwerveSetpointGenerator(config, this.drivetrain.getMaxAngularVelocity());
-            this.previousSetpoint = new SwerveSetpoint(this.drivetrain.getRobotRelativeSpeeds(), state.get(),
+            this.swerveSetpointGenerator = new SwerveSetpointGenerator(config,
+                                                                       this.drivetrain.getMaxAngularVelocity());
+            this.previousSetpoint = new SwerveSetpoint(this.drivetrain.getRobotRelativeSpeeds(),
+                                                       state.get(),
                                                        DriveFeedforwards.zeros(config.numModules));
         } else {
             this.swerveSetpointGenerator = null;
@@ -98,11 +100,13 @@ public class PathPlanner {
         AutoBuilder.configure(this.drivetrain::getPose, // Robot pose supplier
                               this.drivetrain::setPose,
                               // Method to reset odometry (will be called if your auto has a starting pose)
-                              this.drivetrain::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                              this.drivetrain::getRobotRelativeSpeeds,
+                              // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
                               (ChassisSpeeds speeds, DriveFeedforwards feedforwards) -> this.drivetrain.driveRobotRelative(
                                       speeds),
                               // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also, optionally outputs individual module feedforwards
-                              this.drivetrain.getPathFollowingController(), // The path following controller
+                              this.drivetrain.getPathFollowingController(),
+                              // The path following controller
                               config, // The robot configuration
                               // TODO: Test this with different alliance colors
                               GameUtil::isRedAlliance, this.drivetrain
@@ -147,7 +151,8 @@ public class PathPlanner {
      * @return SwerveModuleState[] The desired swerve module states.
      */
     public static SwerveModuleState[] generateSwerveSetpoint(ChassisSpeeds speeds) {
-        if (!SWERVE_SETPOINT_GENERATOR_ENABLED || PATHPLANNER == null || PATHPLANNER.swerveSetpointGenerator == null) {
+        if (!SWERVE_SETPOINT_GENERATOR_ENABLED || PATHPLANNER == null ||
+            PATHPLANNER.swerveSetpointGenerator == null) {
             return null;
         }
 
@@ -224,7 +229,8 @@ public class PathPlanner {
      *
      * @return The path created from the list of poses.
      */
-    public PathPlannerPath createPath(List<Pose2d> poses, GoalEndState goalEndState, boolean noFlip) {
+    public PathPlannerPath createPath(List<Pose2d> poses, GoalEndState goalEndState,
+                                      boolean noFlip) {
         // Create a list of waypoints from poses. Each pose represents one waypoint.
         // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
         List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(poses);
@@ -253,7 +259,8 @@ public class PathPlanner {
         return this.getFindPathCommand(targetPose, goalEndVelocity, false);
     }
 
-    public Command getFindPathCommand(Pose2d targetPose, LinearVelocity goalEndVelocity, boolean noFlip) {
+    public Command getFindPathCommand(Pose2d targetPose, LinearVelocity goalEndVelocity,
+                                      boolean noFlip) {
         if (noFlip) {
             return AutoBuilder.pathfindToPose(targetPose, this.constraints, goalEndVelocity);
         }

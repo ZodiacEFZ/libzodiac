@@ -6,8 +6,8 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
 /**
- * Defines a large collection of APIs to operate various motors so that motors can be controlled under a unified generic
- * way.
+ * Defines a large collection of APIs to operate various motors so that motors can be controlled
+ * under a unified generic way.
  */
 public interface Motor {
     /**
@@ -55,7 +55,8 @@ public interface Motor {
      * @throws UnsupportedOperationException if the motor does not support such type of control
      */
     default void setPower(double percent) {
-        throw new UnsupportedOperationException("the motor does not support output by percent power");
+        throw new UnsupportedOperationException(
+                "the motor does not support output by percent power");
     }
 
     /**
@@ -100,7 +101,8 @@ public interface Motor {
      * @throws UnsupportedOperationException if the motor does not support such type of control
      */
     default void setVelocity(AngularVelocity angularVelocity) {
-        throw new UnsupportedOperationException("the motor does not support output by angular velocity");
+        throw new UnsupportedOperationException(
+                "the motor does not support output by angular velocity");
     }
 
     /**

@@ -72,8 +72,8 @@ public class Maths {
      * @return the angle in radians
      */
     public static double resolveAngle(double opposite, double adjacent1, double adjacent2) {
-        final var cos =
-                (opposite * opposite - adjacent1 * adjacent1 - adjacent2 * adjacent2) / (2 * adjacent1 * adjacent2);
+        final var cos = (opposite * opposite - adjacent1 * adjacent1 - adjacent2 * adjacent2) /
+                        (2 * adjacent1 * adjacent2);
         return Math.acos(cos);
     }
 
@@ -87,7 +87,8 @@ public class Maths {
      * @return length of the opposite edge
      */
     public static double resolveEdge(double angle, double adjacent1, double adjacent2) {
-        final var sqr = adjacent1 * adjacent1 + adjacent2 * adjacent2 - 2 * adjacent1 * adjacent2 * Math.cos(angle);
+        final var sqr = adjacent1 * adjacent1 + adjacent2 * adjacent2 -
+                        2 * adjacent1 * adjacent2 * Math.cos(angle);
         return Math.sqrt(sqr);
     }
 

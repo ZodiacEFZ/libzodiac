@@ -17,8 +17,8 @@ import java.util.function.*;
 /**
  * Provides simple, declarative way to implement <code>Sendable</code>. <br/>
  * <b>Note</b> {@link SubsystemBase} implements {@link Sendable}, which conflicts with
- * this. Override <code>initSendable</code> manually and call <code>simpleSendableInit</code> method provided as a
- * workaround.
+ * this. Override <code>initSendable</code> manually and call <code>simpleSendableInit</code> method
+ * provided as a workaround.
  */
 public interface SimpleSendable extends Sendable {
     @Override
@@ -27,7 +27,8 @@ public interface SimpleSendable extends Sendable {
     }
 
     /**
-     * Initialize this {@link Sendable} object, retrieving {@link SendableProperty} annotations on fields.
+     * Initialize this {@link Sendable} object, retrieving {@link SendableProperty} annotations on
+     * fields.
      *
      * @param builder {@link SendableBuilder} passed on initialization
      */
@@ -83,8 +84,8 @@ public interface SimpleSendable extends Sendable {
     @Documented
     @interface SendableProperty {
         /**
-         * Name of its NetworkTable entry. Empty by default. If the name is empty, field name is automatically used as
-         * fallback.
+         * Name of its NetworkTable entry. Empty by default. If the name is empty, field name is
+         * automatically used as fallback.
          *
          * @return the name
          */
@@ -159,32 +160,42 @@ public interface SimpleSendable extends Sendable {
         }
 
         void add(String name, BooleanSupplier getter) throws NullPointerException {
-            this.boolEntries.put(name,
-                                 new Tuple2<>(getter, this.exists(name) ? this.boolEntries.get(name).x2() : null));
+            this.boolEntries.put(name, new Tuple2<>(getter, this.exists(name) ?
+                                                                    this.boolEntries.get(name)
+                                                                                    .x2() : null));
         }
 
         void add(String name, LongSupplier getter) throws NullPointerException {
-            this.intEntries.put(name, new Tuple2<>(getter, this.exists(name) ? this.intEntries.get(name).x2() : null));
+            this.intEntries.put(name, new Tuple2<>(getter, this.exists(name) ?
+                                                                   this.intEntries.get(name).x2() :
+                                                                   null));
         }
 
         void add(String name, FloatSupplier getter) throws NullPointerException {
-            this.floatEntries.put(name,
-                                  new Tuple2<>(getter, this.exists(name) ? this.floatEntries.get(name).x2() : null));
+            this.floatEntries.put(name, new Tuple2<>(getter, this.exists(name) ?
+                                                                     this.floatEntries.get(name)
+                                                                                      .x2() :
+                                                                     null));
         }
 
         void add(String name, DoubleSupplier getter) throws NullPointerException {
-            this.doubleEntries.put(name,
-                                   new Tuple2<>(getter, this.exists(name) ? this.doubleEntries.get(name).x2() : null));
+            this.doubleEntries.put(name, new Tuple2<>(getter, this.exists(name) ?
+                                                                      this.doubleEntries.get(name)
+                                                                                        .x2() :
+                                                                      null));
         }
 
         void add(String name, Supplier<String> getter) throws NullPointerException {
-            this.stringEntries.put(name,
-                                   new Tuple2<>(getter, this.exists(name) ? this.stringEntries.get(name).x2() : null));
+            this.stringEntries.put(name, new Tuple2<>(getter, this.exists(name) ?
+                                                                      this.stringEntries.get(name)
+                                                                                        .x2() :
+                                                                      null));
         }
 
         boolean exists(String name) {
-            return intEntries.containsKey(name) || boolEntries.containsKey(name) || floatEntries.containsKey(name) ||
-                   doubleEntries.containsKey(name) || stringEntries.containsKey(name);
+            return intEntries.containsKey(name) || boolEntries.containsKey(name) ||
+                   floatEntries.containsKey(name) || doubleEntries.containsKey(name) ||
+                   stringEntries.containsKey(name);
         }
 
         void addSetter(Object obj, Method method) {
@@ -225,8 +236,8 @@ public interface SimpleSendable extends Sendable {
                     try {
                         takeType.getConstructor(String.class);
                     } catch (NoSuchMethodException ignored) {
-                        throw new UnsupportedOperationException(
-                                "Type " + takeType.getName() + " is neither assignable nor constructible from string");
+                        throw new UnsupportedOperationException("Type " + takeType.getName() +
+                                                                " is neither assignable nor constructible from string");
                     }
                 }
                 this.add(name, setter);
@@ -234,27 +245,28 @@ public interface SimpleSendable extends Sendable {
         }
 
         void add(String name, BooleanConsumer setter) throws NullPointerException {
-            this.boolEntries.put(name,
-                                 new Tuple2<>(this.exists(name) ? this.boolEntries.get(name).x1() : null, setter));
+            this.boolEntries.put(name, new Tuple2<>(
+                    this.exists(name) ? this.boolEntries.get(name).x1() : null, setter));
         }
 
         void add(String name, LongConsumer setter) throws NullPointerException {
-            this.intEntries.put(name, new Tuple2<>(this.exists(name) ? this.intEntries.get(name).x1() : null, setter));
+            this.intEntries.put(name, new Tuple2<>(
+                    this.exists(name) ? this.intEntries.get(name).x1() : null, setter));
         }
 
         void add(String name, FloatConsumer setter) throws NullPointerException {
-            this.floatEntries.put(name,
-                                  new Tuple2<>(this.exists(name) ? this.floatEntries.get(name).x1() : null, setter));
+            this.floatEntries.put(name, new Tuple2<>(
+                    this.exists(name) ? this.floatEntries.get(name).x1() : null, setter));
         }
 
         void add(String name, DoubleConsumer setter) throws NullPointerException {
-            this.doubleEntries.put(name,
-                                   new Tuple2<>(this.exists(name) ? this.doubleEntries.get(name).x1() : null, setter));
+            this.doubleEntries.put(name, new Tuple2<>(
+                    this.exists(name) ? this.doubleEntries.get(name).x1() : null, setter));
         }
 
         void add(String name, Consumer<String> setter) throws NullPointerException {
-            this.stringEntries.put(name,
-                                   new Tuple2<>(this.exists(name) ? this.stringEntries.get(name).x1() : null, setter));
+            this.stringEntries.put(name, new Tuple2<>(
+                    this.exists(name) ? this.stringEntries.get(name).x1() : null, setter));
         }
 
         static <T> Consumer<T> wrap(Consumer<Object> setter) {

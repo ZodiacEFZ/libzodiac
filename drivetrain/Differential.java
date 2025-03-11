@@ -113,8 +113,10 @@ public final class Differential extends SubsystemBase implements Drivetrain {
         // Motors should drive forward when given positive voltage
         this.leftLeader.setInverted(config.leftLeaderInverted);
         this.rightLeader.setInverted(config.rightLeaderInverted);
-        leftFollower.follow(this.leftLeader, config.leftFollowerInverted != config.leftLeaderInverted);
-        rightFollower.follow(this.rightLeader, config.rightFollowerInverted != config.rightLeaderInverted);
+        leftFollower.follow(this.leftLeader,
+                            config.leftFollowerInverted != config.leftLeaderInverted);
+        rightFollower.follow(this.rightLeader,
+                             config.rightFollowerInverted != config.rightLeaderInverted);
 
         this.leftLeader.setBrakeWhenNeutral(true);
         this.rightLeader.setBrakeWhenNeutral(true);
@@ -123,7 +125,8 @@ public final class Differential extends SubsystemBase implements Drivetrain {
 
         var wheelPositions = this.getWheelPositions();
         this.poseEstimator = new DifferentialDrivePoseEstimator(this.kinematics, this.getGyroYaw(),
-                                                                wheelPositions.leftMeters, wheelPositions.rightMeters,
+                                                                wheelPositions.leftMeters,
+                                                                wheelPositions.rightMeters,
                                                                 config.initialPose);
     }
 
@@ -168,15 +171,15 @@ public final class Differential extends SubsystemBase implements Drivetrain {
      */
     public void setSpeeds(DifferentialDriveWheelSpeeds speeds) {
         // DEBUG
-        SmartDashboard.putNumber("Left Desired Speed",
-                                 speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
-        SmartDashboard.putNumber("Right Desired Speed",
-                                 speeds.rightMetersPerSecond / this.config.wheelRadius.in(Units.Meter));
+        SmartDashboard.putNumber("Left Desired Speed", speeds.leftMetersPerSecond /
+                                                       this.config.wheelRadius.in(Units.Meter));
+        SmartDashboard.putNumber("Right Desired Speed", speeds.rightMetersPerSecond /
+                                                        this.config.wheelRadius.in(Units.Meter));
 
-        this.leftLeader.setVelocity(
-                Units.RadiansPerSecond.of(speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter)));
-        this.rightLeader.setVelocity(
-                Units.RadiansPerSecond.of(speeds.rightMetersPerSecond / this.config.wheelRadius.in(Units.Meter)));
+        this.leftLeader.setVelocity(Units.RadiansPerSecond.of(
+                speeds.leftMetersPerSecond / this.config.wheelRadius.in(Units.Meter)));
+        this.rightLeader.setVelocity(Units.RadiansPerSecond.of(
+                speeds.rightMetersPerSecond / this.config.wheelRadius.in(Units.Meter)));
     }
 
     /**
@@ -186,15 +189,19 @@ public final class Differential extends SubsystemBase implements Drivetrain {
      * @param angularVelocity  Angular Velocity Mode Input.
      * @param driveDirectAngle Whether the robot should drive directly towards a target angle.
      *
-     * @return The command that drives the robot with the given linear velocity and angular velocity.
+     * @return The command that drives the robot with the given linear velocity and angular
+     * velocity.
      */
-    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity,
+    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle,
+                                   Supplier<ChassisSpeeds> angularVelocity,
                                    BooleanSupplier driveDirectAngle, BooleanSupplier directPower) {
         return run(() -> {
             if (directPower.getAsBoolean()) {
-                this.driveDirectPower(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get());
+                this.driveDirectPower(driveDirectAngle.getAsBoolean() ? directAngle.get() :
+                                              angularVelocity.get());
             } else {
-                this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get());
+                this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() :
+                                   angularVelocity.get());
             }
         });
     }
@@ -236,12 +243,15 @@ public final class Differential extends SubsystemBase implements Drivetrain {
         builder.addDoubleProperty("Heading", () -> -this.getYawRelative().getDegrees(), null);
         SmartDashboard.putData("Differential Drive", differentialBuilder -> {
             differentialBuilder.setSmartDashboardType("DifferentialDrive");
-            differentialBuilder.addDoubleProperty("Left Motor Speed", () -> this.getWheelSpeeds().leftMetersPerSecond,
+            differentialBuilder.addDoubleProperty("Left Motor Speed",
+                                                  () -> this.getWheelSpeeds().leftMetersPerSecond,
                                                   null);
-            differentialBuilder.addDoubleProperty("Right Motor Speed", () -> this.getWheelSpeeds().rightMetersPerSecond,
+            differentialBuilder.addDoubleProperty("Right Motor Speed",
+                                                  () -> this.getWheelSpeeds().rightMetersPerSecond,
                                                   null);
         });
-        SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading).ignoringDisable(true));
+        SmartDashboard.putData("Reset Heading",
+                               Commands.runOnce(this::zeroHeading).ignoringDisable(true));
     }
 
     /**
@@ -295,8 +305,8 @@ public final class Differential extends SubsystemBase implements Drivetrain {
     }
 
     /**
-     * Returns the current yaw of the robot. The yaw of 0 is the robot facing directly away from your alliance station
-     * wall.
+     * Returns the current yaw of the robot. The yaw of 0 is the robot facing directly away from
+     * your alliance station wall.
      *
      * @return The current yaw.
      */
@@ -311,9 +321,14 @@ public final class Differential extends SubsystemBase implements Drivetrain {
      */
     private DifferentialDriveWheelSpeeds getWheelSpeeds() {
 
-        return new DifferentialDriveWheelSpeeds(
-                this.leftLeader.getVelocity().asFrequency().times(this.config.wheelRadius.times(2 * Math.PI)),
-                this.rightLeader.getVelocity().asFrequency().times(this.config.wheelRadius.times(2 * Math.PI)));
+        return new DifferentialDriveWheelSpeeds(this.leftLeader.getVelocity()
+                                                               .asFrequency()
+                                                               .times(this.config.wheelRadius.times(
+                                                                       2 * Math.PI)),
+                                                this.rightLeader.getVelocity()
+                                                                .asFrequency()
+                                                                .times(this.config.wheelRadius.times(
+                                                                        2 * Math.PI)));
     }
 
     /**
@@ -325,7 +340,8 @@ public final class Differential extends SubsystemBase implements Drivetrain {
     }
 
     /**
-     * Returns the current yaw of the robot. The yaw of 0 is the robot facing the red alliance wall.
+     * Returns the current yaw of the robot. The yaw of 0 is the robot facing the red alliance
+     * wall.
      *
      * @return The current yaw.
      */
@@ -370,11 +386,10 @@ public final class Differential extends SubsystemBase implements Drivetrain {
      * @return The rotation.
      */
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
-        this.targetHeading =
-                headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
-        return MathUtil.applyDeadband(MathUtil.clamp(
-                                              this.headingPID.calculate(this.getYawRelative().minus(this.targetHeading).getRadians(), 0), -1, 1),
-                                      0.05);
+        this.targetHeading = headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading :
+                                     headingSupplier.get();
+        return MathUtil.applyDeadband(MathUtil.clamp(this.headingPID.calculate(
+                this.getYawRelative().minus(this.targetHeading).getRadians(), 0), -1, 1), 0.05);
     }
 
     /**
@@ -384,9 +399,11 @@ public final class Differential extends SubsystemBase implements Drivetrain {
      * @param rotation Angular velocity in [-1, 1].
      */
     public ChassisSpeeds getChassisSpeeds(double velocity, double rotation) {
-        return new ChassisSpeeds((this.slowMode ? this.config.maxSpeed.div(2) : this.config.maxSpeed).times(velocity),
-                                 Units.MetersPerSecond.of(0), (this.slowMode ? this.config.maxAngularVelocity.div(1.5) :
-                                                                       this.config.maxAngularVelocity).times(rotation));
+        return new ChassisSpeeds(
+                (this.slowMode ? this.config.maxSpeed.div(2) : this.config.maxSpeed).times(
+                        velocity), Units.MetersPerSecond.of(0),
+                (this.slowMode ? this.config.maxAngularVelocity.div(1.5) :
+                         this.config.maxAngularVelocity).times(rotation));
     }
 
     @Override
@@ -688,10 +705,12 @@ public final class Differential extends SubsystemBase implements Drivetrain {
          */
         @Override
         public ChassisSpeeds get() {
-            var velocity = Maths.square(MathUtil.applyDeadband(this.velocity.getAsDouble(), this.deadband));
+            var velocity = Maths.square(
+                    MathUtil.applyDeadband(this.velocity.getAsDouble(), this.deadband));
             var rotation = switch (this.rotationType) {
                 case HEADING -> this.drivetrain.calculateRotation(this.heading);
-                case ROTATION -> Maths.square(MathUtil.applyDeadband(this.rotation.getAsDouble(), this.deadband));
+                case ROTATION -> Maths.square(
+                        MathUtil.applyDeadband(this.rotation.getAsDouble(), this.deadband));
                 case NONE -> 0;
             };
             return this.drivetrain.getChassisSpeeds(velocity, rotation);

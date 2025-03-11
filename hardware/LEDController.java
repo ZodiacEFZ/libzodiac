@@ -61,8 +61,11 @@ public class LEDController extends SubsystemBase {
             this.bufferView = LEDController.INSTANCE.buffer.createView(start, end);
             this.setDefaultCommand(this.getApplyPatternCommand(LEDPattern.rainbow(255, 255)
                                                                          .scrollAtAbsoluteSpeed(
-                                                                                 Units.MetersPerSecond.of(0.5),
-                                                                                 Units.Meters.of(1.0 / 60))));
+                                                                                 Units.MetersPerSecond.of(
+                                                                                         0.5),
+                                                                                 Units.Meters.of(
+                                                                                         1.0 /
+                                                                                         60))));
         }
 
         public Command getApplyPatternCommand(LEDPattern pattern) {

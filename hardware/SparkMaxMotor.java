@@ -38,7 +38,8 @@ public final class SparkMaxMotor implements Motor {
      * @param brushed whether the motor is brushed or brushless.
      */
     public SparkMaxMotor(int id, boolean brushed) {
-        this.motor = new SparkMax(id, brushed ? SparkLowLevel.MotorType.kBrushed : SparkLowLevel.MotorType.kBrushless);
+        this.motor = new SparkMax(id, brushed ? SparkLowLevel.MotorType.kBrushed :
+                                              SparkLowLevel.MotorType.kBrushless);
     }
 
     /**
@@ -56,7 +57,8 @@ public final class SparkMaxMotor implements Motor {
 
     @Override
     public void invert() {
-        this.applyConfiguration(new SparkMaxConfig().inverted(!this.motor.configAccessor.getInverted()));
+        this.applyConfiguration(
+                new SparkMaxConfig().inverted(!this.motor.configAccessor.getInverted()));
     }
 
     @Override
@@ -73,7 +75,8 @@ public final class SparkMaxMotor implements Motor {
 
     @Override
     public void setPower(double percent) {
-        this.motor.getClosedLoopController().setReference(percent, SparkBase.ControlType.kDutyCycle);
+        this.motor.getClosedLoopController()
+                  .setReference(percent, SparkBase.ControlType.kDutyCycle);
     }
 
     public Angle getPosition() {
@@ -82,7 +85,8 @@ public final class SparkMaxMotor implements Motor {
 
     @Override
     public void setPosition(Angle position) {
-        this.motor.getClosedLoopController().setReference(position.in(POSITION_UNIT), SparkBase.ControlType.kPosition);
+        this.motor.getClosedLoopController()
+                  .setReference(position.in(POSITION_UNIT), SparkBase.ControlType.kPosition);
     }
 
     @Override
@@ -98,7 +102,8 @@ public final class SparkMaxMotor implements Motor {
 
     @Override
     public void setCurrent(Current current) {
-        this.motor.getClosedLoopController().setReference(current.in(Units.Amps), SparkBase.ControlType.kCurrent);
+        this.motor.getClosedLoopController()
+                  .setReference(current.in(Units.Amps), SparkBase.ControlType.kCurrent);
     }
 
     /**
@@ -118,7 +123,8 @@ public final class SparkMaxMotor implements Motor {
      */
     public void MAXMotionPosition(Angle position) {
         this.motor.getClosedLoopController()
-                  .setReference(position.in(POSITION_UNIT), SparkBase.ControlType.kMAXMotionPositionControl);
+                  .setReference(position.in(POSITION_UNIT),
+                                SparkBase.ControlType.kMAXMotionPositionControl);
     }
 
     /**
@@ -128,7 +134,8 @@ public final class SparkMaxMotor implements Motor {
      */
     public void MAXMotionVelocity(AngularVelocity angularVelocity) {
         this.motor.getClosedLoopController()
-                  .setReference(angularVelocity.in(VELOCITY_UNIT), SparkBase.ControlType.kMAXMotionVelocityControl);
+                  .setReference(angularVelocity.in(VELOCITY_UNIT),
+                                SparkBase.ControlType.kMAXMotionVelocityControl);
     }
 
     /**

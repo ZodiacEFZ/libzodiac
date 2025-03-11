@@ -52,7 +52,8 @@ public final class TalonFXMotor implements Motor {
     public void setAllowMusicDurDisable(boolean allowMusicDurDisable) {
         AudioConfigs audioConfigs = new AudioConfigs();
         this.motor.getConfigurator().refresh(audioConfigs);
-        this.motor.getConfigurator().apply(audioConfigs.withAllowMusicDurDisable(allowMusicDurDisable));
+        this.motor.getConfigurator()
+                  .apply(audioConfigs.withAllowMusicDurDisable(allowMusicDurDisable));
     }
 
     /**
@@ -67,14 +68,15 @@ public final class TalonFXMotor implements Motor {
     }
 
     /**
-     * Set the motor to be continuous or not. {@link TalonFXMotor#setSensorToMechanismRatio(double)} must be called
-     * before this method.
+     * Set the motor to be continuous or not. {@link TalonFXMotor#setSensorToMechanismRatio(double)}
+     * must be called before this method.
      *
      * @param continuous whether the motor is continuous or not.
      */
     public void setContinuous(boolean continuous) {
         // ContinuousWarp is the only field in ClosedLoopGeneralConfigs so we don't need to use refresh to get the current value.
-        this.motor.getConfigurator().apply(new ClosedLoopGeneralConfigs().withContinuousWrap(continuous));
+        this.motor.getConfigurator()
+                  .apply(new ClosedLoopGeneralConfigs().withContinuousWrap(continuous));
     }
 
     @Override
@@ -83,7 +85,8 @@ public final class TalonFXMotor implements Motor {
         this.motor.getConfigurator().refresh(motorOutputConfigs);
         this.motor.getConfigurator()
                   .apply(motorOutputConfigs.withInverted(
-                          inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive));
+                          inverted ? InvertedValue.Clockwise_Positive :
+                                  InvertedValue.CounterClockwise_Positive));
     }
 
     @Override
@@ -250,7 +253,8 @@ public final class TalonFXMotor implements Motor {
      * @param angularVelocity the velocity to turn at.
      * @param acceleration    the acceleration to apply.
      */
-    public void MotionMagicVelocity(AngularVelocity angularVelocity, AngularAcceleration acceleration) {
+    public void MotionMagicVelocity(AngularVelocity angularVelocity,
+                                    AngularAcceleration acceleration) {
         this.motor.setControl(new MotionMagicVelocityVoltage(angularVelocity));
     }
 
@@ -261,7 +265,8 @@ public final class TalonFXMotor implements Motor {
      * @param feedforward     the feedforward to apply.
      */
     public void MotionMagicVelocity(AngularVelocity angularVelocity, Voltage feedforward) {
-        this.motor.setControl(new MotionMagicVelocityVoltage(angularVelocity).withFeedForward(feedforward));
+        this.motor.setControl(
+                new MotionMagicVelocityVoltage(angularVelocity).withFeedForward(feedforward));
     }
 
     /**
@@ -271,10 +276,11 @@ public final class TalonFXMotor implements Motor {
      * @param acceleration    the acceleration to apply.
      * @param feedforward     the feedforward to apply.
      */
-    public void MotionMagicVelocity(AngularVelocity angularVelocity, AngularAcceleration acceleration,
-                                    Voltage feedforward) {
-        this.motor.setControl(new MotionMagicVelocityVoltage(angularVelocity).withAcceleration(acceleration)
-                                                                             .withFeedForward(feedforward));
+    public void MotionMagicVelocity(AngularVelocity angularVelocity,
+                                    AngularAcceleration acceleration, Voltage feedforward) {
+        this.motor.setControl(
+                new MotionMagicVelocityVoltage(angularVelocity).withAcceleration(acceleration)
+                                                               .withFeedForward(feedforward));
     }
 
     /**
@@ -482,7 +488,8 @@ public final class TalonFXMotor implements Motor {
         private void setInstrumentAllTracks(Collection<ParentDevice> instruments) {
             var instrumentsList = instruments.stream().toList();
             IntStream.range(0, instrumentsList.size())
-                     .forEach(i -> this.orchestra.addInstrument(instrumentsList.get(i), i % this.track));
+                     .forEach(i -> this.orchestra.addInstrument(instrumentsList.get(i),
+                                                                i % this.track));
         }
 
         /**

@@ -19,12 +19,13 @@ public class GameUtil {
      * @return Whether the robot is on the red alliance.
      */
     public static boolean isRedAlliance() {
-        return DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
+        return DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) ==
+               DriverStation.Alliance.Red;
     }
 
     /**
-     * Get alliance-relative rotation from Pose2d rotation. The yaw of 0 is the robot facing the opponents' alliance
-     * wall.
+     * Get alliance-relative rotation from Pose2d rotation. The yaw of 0 is the robot facing the
+     * opponents' alliance wall.
      *
      * @return The alliance-relative rotation.
      */
@@ -33,11 +34,13 @@ public class GameUtil {
     }
 
     /**
-     * Get Pose2d rotation from alliance-relative rotation. The yaw of 0 is the robot facing the red alliance wall.
+     * Get Pose2d rotation from alliance-relative rotation. The yaw of 0 is the robot facing the red
+     * alliance wall.
      *
      * @return The robot-relative yaw.
      */
     public static Rotation2d toPose2dYaw(Rotation2d allianceRelativeRotation) {
-        return isRedAlliance() ? allianceRelativeRotation.rotateBy(new Rotation2d(Math.PI)) : allianceRelativeRotation;
+        return isRedAlliance() ? allianceRelativeRotation.rotateBy(new Rotation2d(Math.PI)) :
+                       allianceRelativeRotation;
     }
 }

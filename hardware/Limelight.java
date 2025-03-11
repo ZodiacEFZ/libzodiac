@@ -73,9 +73,10 @@ public class Limelight {
      * Updates the odometry.
      */
     private void updateOdometry() {
-        LimelightHelpers.SetRobotOrientation(this.name,
-                                             this.poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0,
-                                             0, 0, 0);
+        LimelightHelpers.SetRobotOrientation(this.name, this.poseEstimator.getEstimatedPosition()
+                                                                          .getRotation()
+                                                                          .getDegrees(), 0, 0, 0, 0,
+                                             0);
         final var poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(this.name);
 
         // FIXME: poseEstimate == null

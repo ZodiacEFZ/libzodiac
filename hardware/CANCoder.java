@@ -27,8 +27,9 @@ public class CANCoder implements Encoder {
         var config = new MagnetSensorConfigs();
         this.encoder.getConfigurator().refresh(config);
         this.encoder.getConfigurator()
-                    .apply(config.withSensorDirection(inverted ? SensorDirectionValue.Clockwise_Positive :
-                                                              SensorDirectionValue.CounterClockwise_Positive));
+                    .apply(config.withSensorDirection(
+                            inverted ? SensorDirectionValue.Clockwise_Positive :
+                                    SensorDirectionValue.CounterClockwise_Positive));
     }
 
     @Override

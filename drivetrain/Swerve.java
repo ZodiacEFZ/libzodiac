@@ -67,14 +67,15 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.rearRight = config.rearRight.build(config);
         this.gyro = config.gyro;
 
-        this.kinematics = new SwerveDriveKinematics(new Translation2d(this.config.robotLength.in(Units.Meters) / 2,
-                                                                      this.config.robotWidth.in(Units.Meters) / 2),
-                                                    new Translation2d(this.config.robotLength.in(Units.Meters) / 2,
-                                                                      -this.config.robotWidth.in(Units.Meters) / 2),
-                                                    new Translation2d(-this.config.robotLength.in(Units.Meters) / 2,
-                                                                      this.config.robotWidth.in(Units.Meters) / 2),
-                                                    new Translation2d(-this.config.robotLength.in(Units.Meters) / 2,
-                                                                      -this.config.robotWidth.in(Units.Meters) / 2));
+        this.kinematics = new SwerveDriveKinematics(
+                new Translation2d(this.config.robotLength.in(Units.Meters) / 2,
+                                  this.config.robotWidth.in(Units.Meters) / 2),
+                new Translation2d(this.config.robotLength.in(Units.Meters) / 2,
+                                  -this.config.robotWidth.in(Units.Meters) / 2),
+                new Translation2d(-this.config.robotLength.in(Units.Meters) / 2,
+                                  this.config.robotWidth.in(Units.Meters) / 2),
+                new Translation2d(-this.config.robotLength.in(Units.Meters) / 2,
+                                  -this.config.robotWidth.in(Units.Meters) / 2));
 
         this.gyro.reset();
 
@@ -83,7 +84,8 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         this.resetEncoders();
         Timer.delay(0.5);
 
-        this.poseEstimator = new SwerveDrivePoseEstimator(this.kinematics, this.getGyroYaw(), this.getModulePositions(),
+        this.poseEstimator = new SwerveDrivePoseEstimator(this.kinematics, this.getGyroYaw(),
+                                                          this.getModulePositions(),
                                                           config.initialPose);
     }
 
@@ -108,8 +110,8 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     public SwerveModulePosition[] getModulePositions() {
         return new SwerveModulePosition[]{
-                this.frontLeft.getPosition(), this.frontRight.getPosition(), this.rearLeft.getPosition(),
-                this.rearRight.getPosition()
+                this.frontLeft.getPosition(), this.frontRight.getPosition(),
+                this.rearLeft.getPosition(), this.rearRight.getPosition()
         };
     }
 
@@ -141,28 +143,39 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         SmartDashboard.putData("Swerve Drive", swerveBuilder -> {
             swerveBuilder.setSmartDashboardType("SwerveDrive");
 
-            swerveBuilder.addDoubleProperty("Front Left Angle", () -> this.frontLeft.getState().angle.getRadians(),
+            swerveBuilder.addDoubleProperty("Front Left Angle",
+                                            () -> this.frontLeft.getState().angle.getRadians(),
                                             null);
-            swerveBuilder.addDoubleProperty("Front Left Velocity", () -> this.frontLeft.getState().speedMetersPerSecond,
+            swerveBuilder.addDoubleProperty("Front Left Velocity",
+                                            () -> this.frontLeft.getState().speedMetersPerSecond,
                                             null);
 
-            swerveBuilder.addDoubleProperty("Front Right Angle", () -> this.frontRight.getState().angle.getRadians(),
+            swerveBuilder.addDoubleProperty("Front Right Angle",
+                                            () -> this.frontRight.getState().angle.getRadians(),
                                             null);
             swerveBuilder.addDoubleProperty("Front Right Velocity",
-                                            () -> this.frontRight.getState().speedMetersPerSecond, null);
-
-            swerveBuilder.addDoubleProperty("Back Left Angle", () -> this.rearLeft.getState().angle.getRadians(), null);
-            swerveBuilder.addDoubleProperty("Back Left Velocity", () -> this.rearLeft.getState().speedMetersPerSecond,
+                                            () -> this.frontRight.getState().speedMetersPerSecond,
                                             null);
 
-            swerveBuilder.addDoubleProperty("Back Right Angle", () -> this.rearRight.getState().angle.getRadians(),
+            swerveBuilder.addDoubleProperty("Back Left Angle",
+                                            () -> this.rearLeft.getState().angle.getRadians(),
                                             null);
-            swerveBuilder.addDoubleProperty("Back Right Velocity", () -> this.rearRight.getState().speedMetersPerSecond,
+            swerveBuilder.addDoubleProperty("Back Left Velocity",
+                                            () -> this.rearLeft.getState().speedMetersPerSecond,
                                             null);
 
-            swerveBuilder.addDoubleProperty("Robot Angle", () -> this.getYawRelative().getRadians(), null);
+            swerveBuilder.addDoubleProperty("Back Right Angle",
+                                            () -> this.rearRight.getState().angle.getRadians(),
+                                            null);
+            swerveBuilder.addDoubleProperty("Back Right Velocity",
+                                            () -> this.rearRight.getState().speedMetersPerSecond,
+                                            null);
+
+            swerveBuilder.addDoubleProperty("Robot Angle", () -> this.getYawRelative().getRadians(),
+                                            null);
         });
-        SmartDashboard.putData("Reset Heading", Commands.runOnce(this::zeroHeading).ignoringDisable(true));
+        SmartDashboard.putData("Reset Heading",
+                               Commands.runOnce(this::zeroHeading).ignoringDisable(true));
     }
 
     public boolean getFieldCentric() {
@@ -196,8 +209,8 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     /**
-     * Returns the current yaw of the robot. The yaw of 0 is the robot facing directly away from your alliance station
-     * wall.
+     * Returns the current yaw of the robot. The yaw of 0 is the robot facing directly away from
+     * your alliance station wall.
      *
      * @return The current yaw.
      */
@@ -206,7 +219,8 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     /**
-     * Returns the current yaw of the robot. The yaw of 0 is the robot facing the red alliance wall.
+     * Returns the current yaw of the robot. The yaw of 0 is the robot facing the red alliance
+     * wall.
      *
      * @return The current yaw.
      */
@@ -227,15 +241,19 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     public void driveFieldOriented(ChassisSpeeds speeds) {
-        this.driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, this.getYawRelative()));
+        this.driveRobotRelative(
+                ChassisSpeeds.fromFieldRelativeSpeeds(speeds, this.getYawRelative()));
     }
 
     public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
         final var velocity = Maths.limitTranslation(translation, 1)
-                                  .times((this.slowMode ? this.config.constraints.maxVelocity().div(3) :
-                                                  this.config.constraints.maxVelocity()).in(Units.MetersPerSecond));
-        return new ChassisSpeeds(velocity.getX(), velocity.getY(),
-                                 rotation * this.config.constraints.maxAngularVelocity().in(Units.RadiansPerSecond));
+                                  .times((this.slowMode ?
+                                                  this.config.constraints.maxVelocity().div(3) :
+                                                  this.config.constraints.maxVelocity()).in(
+                                          Units.MetersPerSecond));
+        return new ChassisSpeeds(velocity.getX(), velocity.getY(), rotation *
+                                                                   this.config.constraints.maxAngularVelocity()
+                                                                                          .in(Units.RadiansPerSecond));
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
@@ -250,10 +268,13 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         }
     }
 
-    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle, Supplier<ChassisSpeeds> angularVelocity,
-                                   BooleanSupplier driveDirectAngle, BooleanSupplier fieldRelative) {
-        return run(() -> this.drive(driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get(),
-                                    fieldRelative.getAsBoolean()));
+    public Command getDriveCommand(Supplier<ChassisSpeeds> directAngle,
+                                   Supplier<ChassisSpeeds> angularVelocity,
+                                   BooleanSupplier driveDirectAngle,
+                                   BooleanSupplier fieldRelative) {
+        return run(() -> this.drive(
+                driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get(),
+                fieldRelative.getAsBoolean()));
     }
 
     public void centerModules() {
@@ -264,11 +285,10 @@ public class Swerve extends SubsystemBase implements Drivetrain {
     }
 
     private double calculateRotation(Rotation2dSupplier headingSupplier) {
-        this.targetHeading =
-                headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
-        return MathUtil.applyDeadband(MathUtil.clamp(
-                this.config.headingPID.calculate(this.getYawRelative().minus(this.targetHeading).getRadians(), 0), -1,
-                1), 0.02);
+        this.targetHeading = headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading :
+                                     headingSupplier.get();
+        return MathUtil.applyDeadband(MathUtil.clamp(this.config.headingPID.calculate(
+                this.getYawRelative().minus(this.targetHeading).getRadians(), 0), -1, 1), 0.02);
     }
 
     public Collection<TalonFXMotor> getTalonFXMotors() {
@@ -325,7 +345,8 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         states = PathPlanner.generateSwerveSetpoint(speeds);
         if (states == null) {
             states = this.kinematics.toSwerveModuleStates(speeds);
-            SwerveDriveKinematics.desaturateWheelSpeeds(states, this.config.constraints.maxVelocity());
+            SwerveDriveKinematics.desaturateWheelSpeeds(states,
+                                                        this.config.constraints.maxVelocity());
         }
         this.setModuleStates(states);
     }
@@ -414,11 +435,13 @@ public class Swerve extends SubsystemBase implements Drivetrain {
          */
         public PIDController headingPID;
         /**
-         * Angle motor's gear ratio, i.e. how many rotations of angle motor produce one revolution of wheel.
+         * Angle motor's gear ratio, i.e. how many rotations of angle motor produce one revolution
+         * of wheel.
          */
         public double angleGearRatio;
         /**
-         * Drive motor's gear ratio, i.e. how many rotations of drive motor produce one rotation of wheel.
+         * Drive motor's gear ratio, i.e. how many rotations of drive motor produce one rotation of
+         * wheel.
          */
         public double driveGearRatio;
         /**
@@ -530,10 +553,12 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
         @Override
         public ChassisSpeeds get() {
-            var translation = Maths.squareTranslation(Maths.applyDeadband(this.translation.get(), this.deadband));
+            var translation = Maths.squareTranslation(
+                    Maths.applyDeadband(this.translation.get(), this.deadband));
             var rotation = switch (this.rotationType) {
                 case HEADING -> this.drivetrain.calculateRotation(this.heading);
-                case ROTATION -> Maths.square(MathUtil.applyDeadband(this.rotation.getAsDouble(), this.deadband));
+                case ROTATION -> Maths.square(
+                        MathUtil.applyDeadband(this.rotation.getAsDouble(), this.deadband));
                 case NONE -> 0;
             };
             return this.drivetrain.calculateChassisSpeeds(translation, rotation);
