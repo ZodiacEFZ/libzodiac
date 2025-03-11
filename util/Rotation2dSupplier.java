@@ -27,9 +27,9 @@ public class Rotation2dSupplier implements Supplier<Rotation2d> {
         this.rotation2dSupplier = () -> this.translation.get().getAngle();
     }
 
-    public Rotation2dSupplier(Supplier<Rotation2d> rotation2dSupplier) {
-        this.translation = null;
+    public Rotation2dSupplier(Supplier<Rotation2d> rotation2dSupplier, Supplier<Double> norm) {
         this.rotation2dSupplier = rotation2dSupplier;
+        this.translation = new Translation2dSupplier(rotation2dSupplier, norm);
     }
 
     @Override
@@ -43,9 +43,6 @@ public class Rotation2dSupplier implements Supplier<Rotation2d> {
      * @return The translation.
      */
     public Translation2d asTranslation() {
-        if (this.translation == null) {
-            return new Translation2d(1, this.rotation2dSupplier.get());
-        }
         return this.translation.get();
     }
 }

@@ -268,7 +268,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
                 headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading : headingSupplier.get();
         return MathUtil.applyDeadband(MathUtil.clamp(
                 this.config.headingPID.calculate(this.getYawRelative().minus(this.targetHeading).getRadians(), 0), -1,
-                1), 0.05);
+                1), 0.02);
     }
 
     public Collection<TalonFXMotor> getTalonFXMotors() {
