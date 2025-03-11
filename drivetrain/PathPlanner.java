@@ -17,6 +17,7 @@ import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -48,6 +49,7 @@ public class PathPlanner {
      * The swerve setpoint generator.
      */
     private final SwerveSetpointGenerator swerveSetpointGenerator;
+    private final PathConstraints constraints;
     /**
      * The previous swerve setpoint.
      */
@@ -62,7 +64,7 @@ public class PathPlanner {
      *
      * @param drivetrain The drivetrain subsystem.
      */
-    private PathPlanner(Drivetrain drivetrain) {
+    private PathPlanner(Drivetrain drivetrain, PathConstraints constraints) {
         /*
          * Attempt to create a robot configuration from GUI settings.
          */
@@ -76,11 +78,12 @@ public class PathPlanner {
          */
         this.drivetrain = drivetrain;
 
-        final var state = this.drivetrain.getModuleStates();
+        this.constraints = constraints;
 
         /*
          * If the drivetrain is a swerve drivetrain, create a swerve setpoint generator.
          */
+        final var state = this.drivetrain.getModuleStates();
         if (state.isPresent()) {
             this.swerveSetpointGenerator = new SwerveSetpointGenerator(config, this.drivetrain.getMaxAngularVelocity());
             this.previousSetpoint = new SwerveSetpoint(this.drivetrain.getRobotRelativeSpeeds(), state.get(),
@@ -112,9 +115,9 @@ public class PathPlanner {
      *
      * @param drivetrain The drivetrain subsystem.
      */
-    public static void initInstance(Drivetrain drivetrain) {
+    public static void initInstance(Drivetrain drivetrain, PathConstraints constraints) {
         if (PATHPLANNER == null) {
-            PATHPLANNER = new PathPlanner(drivetrain);
+            PATHPLANNER = new PathPlanner(drivetrain, constraints);
             PATHPLANNER.warmup();
         }
     }
@@ -226,16 +229,39 @@ public class PathPlanner {
         // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
         List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(poses);
 
-        PathConstraints constraints = new PathConstraints(3.0, 3.0, 2 * Math.PI,
-                                                          4 * Math.PI); // The constraints for this path.
-
         // Create the path using the waypoints created above
-        PathPlannerPath path = new PathPlannerPath(waypoints, constraints, null, goalEndState);
+        PathPlannerPath path = new PathPlannerPath(waypoints, this.constraints, null, goalEndState);
 
         // Prevent the path from being flipped if the coordinates are already correct
         path.preventFlipping = noFlip;
 
         return path;
+    }
+
+    public Command getFindPathCommand(Pose2d targetPose) {
+        return this.getFindPathCommand(targetPose, false);
+    }
+
+    public Command getFindPathCommand(Pose2d targetPose, boolean noFlip) {
+        if (noFlip) {
+            return AutoBuilder.pathfindToPose(targetPose, this.constraints);
+        }
+        return AutoBuilder.pathfindToPoseFlipped(targetPose, this.constraints);
+    }
+
+    public Command getFindPathCommand(Pose2d targetPose, LinearVelocity goalEndVelocity) {
+        return this.getFindPathCommand(targetPose, goalEndVelocity, false);
+    }
+
+    public Command getFindPathCommand(Pose2d targetPose, LinearVelocity goalEndVelocity, boolean noFlip) {
+        if (noFlip) {
+            return AutoBuilder.pathfindToPose(targetPose, this.constraints, goalEndVelocity);
+        }
+        return AutoBuilder.pathfindToPoseFlipped(targetPose, this.constraints, goalEndVelocity);
+    }
+
+    public Command getFindPathAndFollowCommand(PathPlannerPath path) {
+        return AutoBuilder.pathfindThenFollowPath(path, this.constraints);
     }
 
     /**

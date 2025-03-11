@@ -2,6 +2,7 @@ package frc.libzodiac.drivetrain;
 
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -13,9 +14,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -233,10 +232,10 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
         final var velocity = Maths.limitTranslation(translation, 1)
-                                  .times((this.slowMode ? this.config.maxSpeed.div(3) : this.config.maxSpeed).in(
-                                          Units.MetersPerSecond));
+                                  .times((this.slowMode ? this.config.constraints.maxVelocity().div(3) :
+                                                  this.config.constraints.maxVelocity()).in(Units.MetersPerSecond));
         return new ChassisSpeeds(velocity.getX(), velocity.getY(),
-                                 rotation * this.config.maxAngularVelocity.in(Units.RadiansPerSecond));
+                                 rotation * this.config.constraints.maxAngularVelocity().in(Units.RadiansPerSecond));
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
@@ -326,7 +325,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
         states = PathPlanner.generateSwerveSetpoint(speeds);
         if (states == null) {
             states = this.kinematics.toSwerveModuleStates(speeds);
-            SwerveDriveKinematics.desaturateWheelSpeeds(states, this.config.maxSpeed);
+            SwerveDriveKinematics.desaturateWheelSpeeds(states, this.config.constraints.maxVelocity());
         }
         this.setModuleStates(states);
     }
@@ -348,7 +347,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
 
     @Override
     public double getMaxAngularVelocity() {
-        return this.config.maxAngularVelocity.in(Units.RadiansPerSecond);
+        return this.config.constraints.maxAngularVelocity().in(Units.RadiansPerSecond);
     }
 
     @Override
@@ -401,14 +400,7 @@ public class Swerve extends SubsystemBase implements Drivetrain {
          * Distance between front and back wheels on robot
          */
         public Distance robotLength;
-        /**
-         * Maximum linear velocity the chassis is allowed to attain.
-         */
-        public LinearVelocity maxSpeed;
-        /**
-         * Maximum angular velocity the chassis is allowed to attain.
-         */
-        public AngularVelocity maxAngularVelocity;
+        public PathConstraints constraints;
         public TalonFXSwerveModule.Config frontLeft;
         public TalonFXSwerveModule.Config rearLeft;
         public TalonFXSwerveModule.Config frontRight;
@@ -453,13 +445,8 @@ public class Swerve extends SubsystemBase implements Drivetrain {
             return this;
         }
 
-        public Config withMaxSpeed(LinearVelocity maxSpeed) {
-            this.maxSpeed = maxSpeed;
-            return this;
-        }
-
-        public Config withMaxAngularVelocity(AngularVelocity maxAngularVelocity) {
-            this.maxAngularVelocity = maxAngularVelocity;
+        public Config withConstraints(PathConstraints constraints) {
+            this.constraints = constraints;
             return this;
         }
 
