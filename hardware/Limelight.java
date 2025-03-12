@@ -1,16 +1,21 @@
 package frc.libzodiac.hardware;
 
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.PoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.AngularVelocity;
 import frc.libzodiac.api.Drivetrain;
-import frc.libzodiac.api.Gyro;
 import frc.libzodiac.hardware.limelight.LimelightHelpers;
+import frc.libzodiac.util.TriConsumer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 /**
@@ -25,14 +30,9 @@ public class Limelight {
      * The name of the Limelight.
      */
     private final String name;
-    /**
-     * The gyro of the drivetrain.
-     */
-    private final Gyro gyro;
-    /**
-     * The pose estimator of the drivetrain.
-     */
-    private final PoseEstimator<?> poseEstimator;
+    private final Supplier<AngularVelocity> angularVelocitySupplier;
+    private final Supplier<Pose2d> pose;
+    private final TriConsumer<Pose2d, Double, Matrix<N3, N1>> addVisionMeasurement;
 
     /**
      * Construct a new Limelight.
@@ -51,9 +51,9 @@ public class Limelight {
      */
     public Limelight(String name, Drivetrain drivetrain) {
         this.name = name;
-        this.gyro = drivetrain.getGyro();
-        this.poseEstimator = drivetrain.getPoseEstimator();
-
+        this.angularVelocitySupplier = drivetrain::getAngularVelocity;
+        this.pose = drivetrain::getPose;
+        this.addVisionMeasurement = drivetrain::addVisionMeasurement;
         IntStream.rangeClosed(5800 + LIMELIGHTS.size() * 10, 5809 + LIMELIGHTS.size() * 10)
                  .forEachOrdered(port -> PortForwarder.add(port, this.name + ".local", port));
 
@@ -73,10 +73,8 @@ public class Limelight {
      * Updates the odometry.
      */
     private void updateOdometry() {
-        LimelightHelpers.SetRobotOrientation(this.name, this.poseEstimator.getEstimatedPosition()
-                                                                          .getRotation()
-                                                                          .getDegrees(), 0, 0, 0, 0,
-                                             0);
+        LimelightHelpers.SetRobotOrientation(this.name, this.pose.get().getRotation().getDegrees(),
+                                             0, 0, 0, 0, 0);
         final var poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(this.name);
 
         // FIXME: poseEstimate == null
@@ -85,7 +83,7 @@ public class Limelight {
         }
 
         // if our angular velocity is greater than 2 rotations per second, ignore vision updates
-        if (Math.abs(this.gyro.getYawAngularVelocity().in(Units.RadiansPerSecond)) >= Math.PI) {
+        if (Math.abs(this.angularVelocitySupplier.get().in(Units.RadiansPerSecond)) >= Math.PI) {
             return;
         }
 
@@ -93,18 +91,18 @@ public class Limelight {
             return;
         }
 
-        final var minDistance = Arrays.stream(poseEstimate.rawFiducials)
-                                      .map(x -> x.distToCamera)
-                                      .min(Comparator.naturalOrder())
-                                      .orElseThrow();
+        final double minDistance = Arrays.stream(poseEstimate.rawFiducials)
+                                         .map(x -> x.distToCamera)
+                                         .min(Comparator.naturalOrder())
+                                         .orElseThrow();
         var visionMeasurementStdDevs = VecBuilder.fill(.7, .7, 9999999);
         if (minDistance < 1) {
             visionMeasurementStdDevs = VecBuilder.fill(.3, .3, 9999999);
         } else if (minDistance < 2) {
             visionMeasurementStdDevs = VecBuilder.fill(.5, .5, 9999999);
         }
-        this.poseEstimator.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds,
-                                                visionMeasurementStdDevs);
+        this.addVisionMeasurement.accept(poseEstimate.pose, poseEstimate.timestampSeconds,
+                                         visionMeasurementStdDevs);
 
     }
 

@@ -127,7 +127,7 @@ public final class TalonFXMotor implements Motor {
 
     @Override
     public void setPosition(Angle position) {
-        this.motor.setControl(new PositionDutyCycle(position));
+        this.motor.setControl(new PositionVoltage(position));
     }
 
     @Override
@@ -413,6 +413,10 @@ public final class TalonFXMotor implements Motor {
         this.motor.getConfigurator().apply(configs);
     }
 
+    public TalonFX getMotor() {
+        return this.motor;
+    }
+
     /**
      * The music player.
      */
@@ -447,6 +451,15 @@ public final class TalonFXMotor implements Motor {
          *
          * @param motor the instrument to add.
          */
+        public void addInstrument(TalonFX... motor) {
+            this.instruments.addAll(Arrays.stream(motor).toList());
+        }
+
+        /**
+         * Add an instrument to the music player.
+         *
+         * @param motor the instrument to add.
+         */
         public void addInstrument(TalonFXMotor... motor) {
             this.instruments.addAll(Arrays.stream(motor).map((m) -> m.motor).toList());
         }
@@ -456,8 +469,8 @@ public final class TalonFXMotor implements Motor {
          *
          * @param instruments the instruments to add.
          */
-        public void addInstrument(Collection<TalonFXMotor> instruments) {
-            this.instruments.addAll(instruments.stream().map((m) -> m.motor).toList());
+        public void addInstrument(Collection<TalonFX> instruments) {
+            this.instruments.addAll(instruments.stream().toList());
         }
 
         /**

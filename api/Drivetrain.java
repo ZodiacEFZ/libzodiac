@@ -1,10 +1,13 @@
 package frc.libzodiac.api;
 
 import com.pathplanner.lib.controllers.PathFollowingController;
-import edu.wpi.first.math.estimator.PoseEstimator;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
@@ -14,20 +17,6 @@ import java.util.Optional;
  * The drivetrain interface
  */
 public interface Drivetrain extends Subsystem {
-    /**
-     * Get the pose estimator for the drivetrain
-     *
-     * @return the pose estimator
-     */
-    PoseEstimator<?> getPoseEstimator();
-
-    /**
-     * Get the gyro for the drivetrain
-     *
-     * @return the gyro
-     */
-    Gyro getGyro();
-
     /**
      * Get the current pose of the robot
      *
@@ -47,14 +36,14 @@ public interface Drivetrain extends Subsystem {
      *
      * @return the current speeds of the robot
      */
-    ChassisSpeeds getRobotRelativeSpeeds();
+    ChassisSpeeds getRobotCentricSpeeds();
 
     /**
      * Drive the robot at the specified speeds
      *
      * @param chassisSpeeds the speeds to drive the robot at
      */
-    void driveRobotRelative(ChassisSpeeds chassisSpeeds);
+    void driveRobotCentric(ChassisSpeeds chassisSpeeds);
 
     /**
      * Get the path following controller for the drivetrain
@@ -90,4 +79,9 @@ public interface Drivetrain extends Subsystem {
      * Brake the drivetrain
      */
     void brake();
+
+    AngularVelocity getAngularVelocity();
+
+    void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds,
+                              Matrix<N3, N1> visionMeasurementStdDevs);
 }

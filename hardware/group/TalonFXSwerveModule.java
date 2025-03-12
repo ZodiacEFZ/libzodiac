@@ -1,5 +1,6 @@
 package frc.libzodiac.hardware.group;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -8,7 +9,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import frc.libzodiac.api.Encoder;
 import frc.libzodiac.api.SwerveModule;
-import frc.libzodiac.drivetrain.Swerve;
+import frc.libzodiac.drivetrain.TalonFXSwerve;
 import frc.libzodiac.hardware.TalonFXMotor;
 
 public class TalonFXSwerveModule implements SwerveModule {
@@ -18,13 +19,13 @@ public class TalonFXSwerveModule implements SwerveModule {
     private final Encoder encoder;
     private Rotation2d lastAngle;
 
-    public TalonFXSwerveModule(Config config, Swerve.Config parent) {
+    public TalonFXSwerveModule(Config config, TalonFXSwerve.Config parent) {
         this.drive = new TalonFXMotor(config.drive);
         this.angle = new TalonFXMotor(config.angle);
         this.angle.factoryDefault();
         this.drive.factoryDefault();
-        this.angle.setPID(config.anglePID != null ? config.anglePID : parent.anglePID);
-        this.drive.setPID(config.drivePID != null ? config.drivePID : parent.drivePID);
+        this.angle.applyConfiguration(config.angleConfig != null ? config.angleConfig : parent.angleConfig);
+        this.drive.applyConfiguration(config.driveConfig != null ? config.driveConfig : parent.driveConfig);
         this.angle.setInverted(config.angleInverted);
         this.drive.setInverted(config.driveInverted);
         this.angle.setSensorToMechanismRatio(parent.angleGearRatio);
@@ -142,11 +143,11 @@ public class TalonFXSwerveModule implements SwerveModule {
         /**
          * PID arguments for drive motor.
          */
-        public PIDController drivePID = null;
+        public Slot0Configs driveConfig = null;
         /**
          * PID arguments for angle motor.
          */
-        public PIDController anglePID = null;
+        public Slot0Configs angleConfig = null;
 
         public Config withAngleInverted(boolean angleInverted) {
             this.angleInverted = angleInverted;
@@ -158,7 +159,7 @@ public class TalonFXSwerveModule implements SwerveModule {
             return this;
         }
 
-        public TalonFXSwerveModule build(Swerve.Config parent) {
+        public TalonFXSwerveModule build(TalonFXSwerve.Config parent) {
             return new TalonFXSwerveModule(this, parent);
         }
 
@@ -177,13 +178,13 @@ public class TalonFXSwerveModule implements SwerveModule {
             return this;
         }
 
-        public Config withDrivePID(PIDController drivePID) {
-            this.drivePID = drivePID;
+        public Config withDriveConfig(Slot0Configs driveConfig) {
+            this.driveConfig = driveConfig;
             return this;
         }
 
-        public Config withAnglePID(PIDController anglePID) {
-            this.anglePID = anglePID;
+        public Config withAngleConfig(Slot0Configs angleConfig) {
+            this.angleConfig = angleConfig;
             return this;
         }
     }

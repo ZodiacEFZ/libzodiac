@@ -87,7 +87,7 @@ public class PathPlanner {
         if (state.isPresent()) {
             this.swerveSetpointGenerator = new SwerveSetpointGenerator(config,
                                                                        this.drivetrain.getMaxAngularVelocity());
-            this.previousSetpoint = new SwerveSetpoint(this.drivetrain.getRobotRelativeSpeeds(),
+            this.previousSetpoint = new SwerveSetpoint(this.drivetrain.getRobotCentricSpeeds(),
                                                        state.get(),
                                                        DriveFeedforwards.zeros(config.numModules));
         } else {
@@ -100,9 +100,9 @@ public class PathPlanner {
         AutoBuilder.configure(this.drivetrain::getPose, // Robot pose supplier
                               this.drivetrain::setPose,
                               // Method to reset odometry (will be called if your auto has a starting pose)
-                              this.drivetrain::getRobotRelativeSpeeds,
+                              this.drivetrain::getRobotCentricSpeeds,
                               // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                              (ChassisSpeeds speeds, DriveFeedforwards feedforwards) -> this.drivetrain.driveRobotRelative(
+                              (ChassisSpeeds speeds, DriveFeedforwards feedforwards) -> this.drivetrain.driveRobotCentric(
                                       speeds),
                               // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also, optionally outputs individual module feedforwards
                               this.drivetrain.getPathFollowingController(),
@@ -148,9 +148,9 @@ public class PathPlanner {
      *
      * @param speeds The desired chassis speeds.
      *
-     * @return SwerveModuleState[] The desired swerve module states.
+     * @return SwerveSetpoint The desired swerve setpoint.
      */
-    public static SwerveModuleState[] generateSwerveSetpoint(ChassisSpeeds speeds) {
+    public static SwerveSetpoint generateSwerveSetpoint(ChassisSpeeds speeds) {
         if (!SWERVE_SETPOINT_GENERATOR_ENABLED || PATHPLANNER == null ||
             PATHPLANNER.swerveSetpointGenerator == null) {
             return null;
@@ -162,7 +162,7 @@ public class PathPlanner {
                 speeds, // The desired target speeds
                 0.02 // The loop time of the robot code, in seconds
                                                                                            );
-        return PATHPLANNER.previousSetpoint.moduleStates();
+        return PATHPLANNER.previousSetpoint;
     }
 
     /**

@@ -2,11 +2,14 @@ package frc.libzodiac.drivetrain;
 
 import com.pathplanner.lib.controllers.PPLTVController;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -227,6 +230,72 @@ public final class Differential extends SubsystemBase implements Drivetrain {
         this.field.setRobotPose(this.getPose());
     }
 
+    @Override
+    public Pose2d getPose() {
+        return this.poseEstimator.getEstimatedPosition();
+    }
+
+    @Override
+    public void setPose(Pose2d pose) {
+        this.poseEstimator.resetPosition(this.getGyroYaw(), this.getWheelPositions(), pose);
+    }
+
+    @Override
+    public ChassisSpeeds getRobotCentricSpeeds() {
+        return this.kinematics.toChassisSpeeds(this.getWheelSpeeds());
+    }
+
+    @Override
+    public void driveRobotCentric(ChassisSpeeds chassisSpeeds) {
+        this.drive(chassisSpeeds);
+    }
+
+    @Override
+    public PPLTVController getPathFollowingController() {
+        return new PPLTVController(0.02, this.config.maxSpeed.in(Units.MetersPerSecond));
+    }
+
+    @Override
+    public Field2d getField() {
+        return this.field;
+    }
+
+    @Override
+    public double getMaxAngularVelocity() {
+        return this.config.maxAngularVelocity.in(Units.RadiansPerSecond);
+    }
+
+    @Override
+    public Optional<SwerveModuleState[]> getModuleStates() {
+        return Optional.empty();
+    }
+
+    @Override
+    public void shutdown() {
+        this.leftLeader.shutdown();
+        this.rightLeader.shutdown();
+    }
+
+    /**
+     * Brake the robot.
+     */
+    @Override
+    public void brake() {
+        this.leftLeader.brake();
+        this.rightLeader.brake();
+    }
+
+    @Override
+    public AngularVelocity getAngularVelocity() {
+        return this.gyro.getYawAngularVelocity();
+    }
+
+    @Override
+    public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds,
+                                     Matrix<N3, N1> visionMeasurementStdDevs) {
+
+    }
+
     /**
      * Initializes the sendable for the drivetrain.
      *
@@ -404,71 +473,6 @@ public final class Differential extends SubsystemBase implements Drivetrain {
                         velocity), Units.MetersPerSecond.of(0),
                 (this.slowMode ? this.config.maxAngularVelocity.div(1.5) :
                          this.config.maxAngularVelocity).times(rotation));
-    }
-
-    @Override
-    public DifferentialDrivePoseEstimator getPoseEstimator() {
-        return this.poseEstimator;
-    }
-
-    @Override
-    public Gyro getGyro() {
-        return this.gyro;
-    }
-
-    @Override
-    public Pose2d getPose() {
-        return this.poseEstimator.getEstimatedPosition();
-    }
-
-    @Override
-    public void setPose(Pose2d pose) {
-        this.poseEstimator.resetPosition(this.getGyroYaw(), this.getWheelPositions(), pose);
-    }
-
-    @Override
-    public ChassisSpeeds getRobotRelativeSpeeds() {
-        return this.kinematics.toChassisSpeeds(this.getWheelSpeeds());
-    }
-
-    @Override
-    public void driveRobotRelative(ChassisSpeeds chassisSpeeds) {
-        this.drive(chassisSpeeds);
-    }
-
-    @Override
-    public PPLTVController getPathFollowingController() {
-        return new PPLTVController(0.02, this.config.maxSpeed.in(Units.MetersPerSecond));
-    }
-
-    @Override
-    public Field2d getField() {
-        return this.field;
-    }
-
-    @Override
-    public double getMaxAngularVelocity() {
-        return this.config.maxAngularVelocity.in(Units.RadiansPerSecond);
-    }
-
-    @Override
-    public Optional<SwerveModuleState[]> getModuleStates() {
-        return Optional.empty();
-    }
-
-    @Override
-    public void shutdown() {
-        this.leftLeader.shutdown();
-        this.rightLeader.shutdown();
-    }
-
-    /**
-     * Brake the robot.
-     */
-    @Override
-    public void brake() {
-        this.leftLeader.brake();
-        this.rightLeader.brake();
     }
 
     /**
