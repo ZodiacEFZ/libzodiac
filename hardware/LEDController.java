@@ -46,7 +46,7 @@ public class LEDController extends SubsystemBase {
     }
 
     public void applyAll(LEDPattern pattern) {
-        this.leds.values().forEach(led -> led.apply(pattern));
+        this.leds.values().forEach(led -> led.getApplyPatternCommand(pattern).schedule());
     }
 
     @Override
