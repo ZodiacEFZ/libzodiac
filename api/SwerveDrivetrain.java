@@ -41,13 +41,25 @@ public interface SwerveDrivetrain extends Drivetrain, Sendable {
 
     void toggleSlowMode();
 
-    ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation);
-
     double calculateRotation(Rotation2dSupplier headingSupplier);
 
     Collection<TalonFX> getTalonFXMotors();
 
     void setTargetHeading(Rotation2d targetHeading);
+
+    default void drive(Translation2d translation, double rotation, boolean fieldRelative) {
+        this.drive(this.calculateChassisSpeeds(translation, rotation), fieldRelative);
+    }
+
+    private void drive(ChassisSpeeds chassisSpeeds, boolean fieldRelative) {
+        if (fieldRelative) {
+            this.driveFieldCentric(chassisSpeeds);
+        } else {
+            this.driveRobotCentric(chassisSpeeds);
+        }
+    }
+
+    ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation);
 
     default void driveFieldCentric(ChassisSpeeds speeds) {
         this.driveRobotCentric(
@@ -74,21 +86,10 @@ public interface SwerveDrivetrain extends Drivetrain, Sendable {
         return this.getPose().getRotation();
     }
 
-    default void drive(Translation2d translation, double rotation, boolean fieldRelative) {
-        this.drive(this.calculateChassisSpeeds(translation, rotation), fieldRelative);
-    }
-
-    private void drive(ChassisSpeeds chassisSpeeds, boolean fieldRelative) {
-        if (fieldRelative) {
-            this.driveFieldCentric(chassisSpeeds);
-        } else {
-            this.driveRobotCentric(chassisSpeeds);
-        }
-    }
-
     default Command getDriveCommand(Supplier<ChassisSpeeds> directAngle,
                                     Supplier<ChassisSpeeds> angularVelocity,
-                                    BooleanSupplier driveDirectAngle, BooleanSupplier fieldRelative) {
+                                    BooleanSupplier driveDirectAngle,
+                                    BooleanSupplier fieldRelative) {
         return run(() -> this.drive(
                 driveDirectAngle.getAsBoolean() ? directAngle.get() : angularVelocity.get(),
                 fieldRelative.getAsBoolean()));

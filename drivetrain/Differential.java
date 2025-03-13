@@ -297,6 +297,23 @@ public final class Differential extends SubsystemBase implements Drivetrain {
     }
 
     /**
+     * Returns the current wheel speeds of the robot.
+     *
+     * @return The current wheel speeds.
+     */
+    private DifferentialDriveWheelSpeeds getWheelSpeeds() {
+
+        return new DifferentialDriveWheelSpeeds(this.leftLeader.getVelocity()
+                                                               .asFrequency()
+                                                               .times(this.config.wheelRadius.times(
+                                                                       2 * Math.PI)),
+                                                this.rightLeader.getVelocity()
+                                                                .asFrequency()
+                                                                .times(this.config.wheelRadius.times(
+                                                                        2 * Math.PI)));
+    }
+
+    /**
      * Initializes the sendable for the drivetrain.
      *
      * @param builder The sendable builder.
@@ -381,23 +398,6 @@ public final class Differential extends SubsystemBase implements Drivetrain {
      */
     public Rotation2d getYawRelative() {
         return GameUtil.toAllianceRelativeYaw(this.getYaw());
-    }
-
-    /**
-     * Returns the current wheel speeds of the robot.
-     *
-     * @return The current wheel speeds.
-     */
-    private DifferentialDriveWheelSpeeds getWheelSpeeds() {
-
-        return new DifferentialDriveWheelSpeeds(this.leftLeader.getVelocity()
-                                                               .asFrequency()
-                                                               .times(this.config.wheelRadius.times(
-                                                                       2 * Math.PI)),
-                                                this.rightLeader.getVelocity()
-                                                                .asFrequency()
-                                                                .times(this.config.wheelRadius.times(
-                                                                        2 * Math.PI)));
     }
 
     /**

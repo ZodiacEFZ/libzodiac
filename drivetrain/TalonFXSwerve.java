@@ -334,18 +334,6 @@ public class TalonFXSwerve implements SwerveDrivetrain {
     }
 
     @Override
-    public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
-        final var velocity = Maths.limitTranslation(translation, 1)
-                                  .times((this.slowMode ?
-                                                  this.config.constraints.maxVelocity().div(3) :
-                                                  this.config.constraints.maxVelocity()).in(
-                                          Units.MetersPerSecond));
-        return new ChassisSpeeds(velocity.getX(), velocity.getY(), rotation *
-                                                                   this.config.constraints.maxAngularVelocity()
-                                                                                          .in(Units.RadiansPerSecond));
-    }
-
-    @Override
     public double calculateRotation(Rotation2dSupplier headingSupplier) {
         this.targetHeading = headingSupplier.asTranslation().getNorm() < 0.5 ? this.targetHeading :
                                      headingSupplier.get();
@@ -370,6 +358,18 @@ public class TalonFXSwerve implements SwerveDrivetrain {
     @Override
     public void setTargetHeading(Rotation2d targetHeading) {
         this.targetHeading = targetHeading;
+    }
+
+    @Override
+    public ChassisSpeeds calculateChassisSpeeds(Translation2d translation, double rotation) {
+        final var velocity = Maths.limitTranslation(translation, 1)
+                                  .times((this.slowMode ?
+                                                  this.config.constraints.maxVelocity().div(3) :
+                                                  this.config.constraints.maxVelocity()).in(
+                                          Units.MetersPerSecond));
+        return new ChassisSpeeds(velocity.getX(), velocity.getY(), rotation *
+                                                                   this.config.constraints.maxAngularVelocity()
+                                                                                          .in(Units.RadiansPerSecond));
     }
 
     public static class Config {
