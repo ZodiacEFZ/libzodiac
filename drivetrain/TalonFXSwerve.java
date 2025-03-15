@@ -367,9 +367,10 @@ public class TalonFXSwerve implements SwerveDrivetrain {
                                                   this.config.constraints.maxVelocity().div(3) :
                                                   this.config.constraints.maxVelocity()).in(
                                           Units.MetersPerSecond));
-        return new ChassisSpeeds(velocity.getX(), velocity.getY(), rotation *
-                                                                   this.config.constraints.maxAngularVelocity()
-                                                                                          .in(Units.RadiansPerSecond));
+        return new ChassisSpeeds(velocity.getX(), velocity.getY(),
+                                 (this.slowMode ? rotation / 3 : rotation) *
+                                 this.config.constraints.maxAngularVelocity()
+                                                        .in(Units.RadiansPerSecond));
     }
 
     public static class Config {
