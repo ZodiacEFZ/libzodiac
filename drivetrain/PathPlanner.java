@@ -35,7 +35,7 @@ public class PathPlanner {
      * the setpoint generator will be used to generate swerve module states from robot-relative
      * chassis speeds. If it is disabled, the setpoint generator will not be used.
      */
-    private static final boolean SWERVE_SETPOINT_GENERATOR_ENABLED = true;
+    private static final boolean SWERVE_SETPOINT_GENERATOR_ENABLED = false;
     /**
      * The instance of the PathPlanner class.
      */
@@ -107,7 +107,6 @@ public class PathPlanner {
                               this.drivetrain.getPathFollowingController(),
                               // The path following controller
                               config, // The robot configuration
-                              // TODO: Test this with different alliance colors
                               GameUtil::isRedAlliance, this.drivetrain
                               // Reference to this subsystem to set requirements
                              );
