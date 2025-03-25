@@ -1,5 +1,6 @@
 package frc.libzodiac.hardware.group;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -27,6 +28,16 @@ public class TalonFXSwerveModule implements SwerveModule {
                 config.angleConfig != null ? config.angleConfig : parent.angleConfig);
         this.drive.applyConfiguration(
                 config.driveConfig != null ? config.driveConfig : parent.driveConfig);
+        if (parent.angleCurrent != null) {
+            this.angle.applyConfiguration(
+                    new CurrentLimitsConfigs().withStatorCurrentLimitEnable(true)
+                                              .withStatorCurrentLimit(parent.angleCurrent));
+        }
+        if (parent.driveCurrent != null) {
+            this.drive.applyConfiguration(
+                    new CurrentLimitsConfigs().withStatorCurrentLimitEnable(true)
+                                              .withStatorCurrentLimit(parent.driveCurrent));
+        }
         this.angle.setInverted(config.angleInverted);
         this.drive.setInverted(config.driveInverted);
         this.angle.setSensorToMechanismRatio(parent.angleGearRatio);

@@ -20,6 +20,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
@@ -35,6 +36,7 @@ import frc.libzodiac.util.Maths;
 import frc.libzodiac.util.Rotation2dSupplier;
 
 import java.util.Collection;
+import java.util.Currency;
 import java.util.HashSet;
 import java.util.Optional;
 
@@ -418,6 +420,8 @@ public class TalonFXSwerve implements SwerveDrivetrain {
          * PID arguments shall be set separately for each module, these values serve as a fallback.
          */
         public Slot0Configs angleConfig;
+        public Current driveCurrent;
+        public Current angleCurrent;
 
         public Config withInitialPose(Pose2d initialPose) {
             this.initialPose = initialPose;
@@ -486,6 +490,12 @@ public class TalonFXSwerve implements SwerveDrivetrain {
 
         public Config withAngleConfig(Slot0Configs angleConfig) {
             this.angleConfig = angleConfig;
+            return this;
+        }
+
+        public Config withCurrentLimit(Current drive, Current angle) {
+            this.driveCurrent = drive;
+            this.angleCurrent = angle;
             return this;
         }
 
